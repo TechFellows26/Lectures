@@ -1,0 +1,155 @@
+\documentclass[main.tex]{subfiles}
+
+\begin{document}
+
+\section*{\Huge\textcolor{mantis}{Logistic Regression}}
+\addcontentsline{toc}{section}{Logistic Regression}
+\vspace{-0.3cm}
+{\large\textit{Practical Guide: Methods, Formulas, and When to Use Them}}
+\vspace{0.5cm}
+
+\section{The Problem}
+
+Given data $(\mathbf{x}_i, y_i)$ where $y \in \{0, 1\}$, we want to predict the probability that $y = 1$:
+$$P(Y = 1 | X = \mathbf{x}) = \sigma(\beta_0 + \mathbf{x}^\top\boldsymbol{\beta})$$
+
+\textbf{Key insight}: We can't use linear regression directly because probabilities must be in $[0, 1]$.
+
+\section{The Logistic Model}
+
+\subsection{The Sigmoid Function}
+
+$$\boxed{\sigma(z) = \frac{1}{1 + e^{-z}} = \frac{e^z}{1 + e^z}}$$
+
+\textbf{Properties}:
+\begin{itemize}
+    \item Output always in $(0, 1)$ - valid probability
+    \item $\sigma(0) = 0.5$
+    \item $\sigma(-z) = 1 - \sigma(z)$
+    \item Derivative: $\sigma'(z) = \sigma(z)(1 - \sigma(z))$
+\end{itemize}
+
+\subsection{The Logit Transformation}
+
+$$\boxed{\text{logit}(p) = \log\left(\frac{p}{1-p}\right) = \beta_0 + \mathbf{x}^\top\boldsymbol{\beta}}$$
+
+The log-odds is linear in the features. Inverse: $p = \sigma(\beta_0 + \mathbf{x}^\top\boldsymbol{\beta})$.
+
+\subsection{Interpretation of Coefficients}
+
+\begin{itemize}
+    \item $\beta_j > 0$: increasing $x_j$ increases probability of $Y = 1$
+    \item $e^{\beta_j}$ = odds ratio for one-unit increase in $x_j$
+    \item $\beta_0$ = log-odds when all $x_j = 0$
+\end{itemize}
+
+\section{Decision Boundary}
+
+\subsection{Classification Rule}
+
+Predict $\hat{Y} = 1$ if $P(Y=1|\mathbf{x}) \geq 0.5$, equivalently:
+
+$$\boxed{\hat{Y} = \begin{cases} 1 & \text{if } \beta_0 + \mathbf{x}^\top\boldsymbol{\beta} \geq 0 \\ 0 & \text{otherwise} \end{cases}}$$
+
+\textbf{Result}: Logistic regression is a \textbf{linear classifier}. The decision boundary $\beta_0 + \mathbf{x}^\top\boldsymbol{\beta} = 0$ is a hyperplane.
+
+\subsection{Distance from Decision Boundary}
+
+$$\text{signed distance} = \frac{\beta_0 + \mathbf{x}^\top\boldsymbol{\beta}}{|\boldsymbol{\beta}|}$$
+
+Larger $|\boldsymbol{\beta}|$ means probabilities change more sharply near the boundary.
+
+\section{Loss Functions and Estimation}
+
+\subsection{Why Not Squared Loss?}
+
+Binary loss (0-1) is NP-hard to optimize. Squared loss leads to non-convex optimization. Solution: use a convex surrogate.
+
+\subsection{The Logistic Loss (Cross-Entropy)}
+
+$$\boxed{\ell(\hat{y}, y) = y \log(1 + e^{-\hat{y}}) + (1-y) \log(1 + e^{\hat{y}})}$$
+
+where $\hat{y} = \mathbf{x}^\top\boldsymbol{\beta}$.
+
+Equivalently: $\ell = -y\log(\hat{p}) - (1-y)\log(1-\hat{p})$ where $\hat{p} = \sigma(\hat{y})$.
+
+\subsection{Maximum Likelihood Equivalence}
+
+$$\boxed{-\text{Log-Likelihood} = \sum_{i=1}^{n} \ell(\hat{y}^{(i)}, y^{(i)})}$$
+
+Minimizing logistic loss = maximizing likelihood under Bernoulli model.
+
+\section{Optimization}
+
+\subsection{No Closed-Form Solution}
+
+Unlike OLS, we must use iterative methods:
+\begin{itemize}
+    \item Gradient descent/ascent
+    \item Newton's method (faster convergence)
+    \item Stochastic gradient descent (large datasets)
+\end{itemize}
+
+\subsection{The Gradient}
+
+$$\boxed{\nabla LL(\boldsymbol{\theta}) = \mathbf{X}^\top(\mathbf{y} - \hat{\mathbf{p}}) = \sum_{i=1}^{n} (y^{(i)} - \hat{p}^{(i)})\mathbf{x}^{(i)}}$$
+
+where $\hat{p}^{(i)} = \sigma(\boldsymbol{\theta}^\top\mathbf{x}^{(i)})$.
+
+\textbf{Intuition}: Gradient is zero when predictions match labels.
+
+\subsection{Gradient Ascent Update}
+
+$$\boldsymbol{\theta} \leftarrow \boldsymbol{\theta} + \eta \cdot \mathbf{X}^\top(\mathbf{y} - \hat{\mathbf{p}})$$
+
+\subsection{Convexity}
+
+The logistic loss is \textbf{strictly convex} $\Rightarrow$ unique global optimum exists.
+
+\section{The Training Algorithm}
+
+\begin{center}
+\fbox{\parbox{0.85\textwidth}{
+\vspace{0.3cm}
+\textbf{\large Algorithm: Logistic Regression via Gradient Ascent}
+\vspace{0.2cm}
+\hrule
+\vspace{0.3cm}
+
+\textbf{Input:} Training set $\{(\mathbf{x}^{(i)}, y^{(i)})\}_{i=1}^{n}$, learning rate $\eta > 0$
+
+\textbf{Output:} Parameter vector $\boldsymbol{\theta} \in \R^d$
+
+\vspace{0.3cm}
+
+\begin{tabular}{@{\hspace{0.5cm}}l@{\hspace{0.3cm}}l}
+1: & Initialize $\theta_j \gets 0$ for all $j = 0, 1, \ldots, d$ \\[6pt]
+2: & \textbf{repeat} \\[6pt]
+3: & \hspace{0.5cm} $\text{gradient}_j \gets 0$ for all $j = 0, 1, \ldots, d$ \\[6pt]
+4: & \hspace{0.5cm} \textbf{for} each training example $(\mathbf{x}, y)$ \textbf{do} \\[6pt]
+5: & \hspace{1.0cm} \textbf{for} each parameter $j$ \textbf{do} \\[6pt]
+6: & \hspace{1.5cm} $\displaystyle \text{gradient}_j \gets \text{gradient}_j + x_j \left( y - \frac{1}{1 + e^{-\boldsymbol{\theta}^\top \mathbf{x}}} \right)$ \\[12pt]
+7: & \hspace{1.0cm} \textbf{end for} \\[6pt]
+8: & \hspace{0.5cm} \textbf{end for} \\[6pt]
+9: & \hspace{0.5cm} $\theta_j \gets \theta_j + \eta \cdot \text{gradient}_j$ for all $j = 0, 1, \ldots, d$ \\[6pt]
+10: & \textbf{until} convergence \\[6pt]
+11: & \textbf{return} $\boldsymbol{\theta}$
+\end{tabular}
+
+\vspace{0.3cm}
+}}
+\end{center}
+
+\section{Quick Reference: Key Formulas}
+
+\begin{align*}
+\text{Sigmoid:} \quad & \sigma(z) = \frac{1}{1 + e^{-z}}, \quad \sigma'(z) = \sigma(z)(1-\sigma(z)) \\[6pt]
+\text{Model:} \quad & P(Y=1|\mathbf{x}) = \sigma(\beta_0 + \mathbf{x}^\top\boldsymbol{\beta}) \\[6pt]
+\text{Logit:} \quad & \log\frac{p}{1-p} = \beta_0 + \mathbf{x}^\top\boldsymbol{\beta} \\[6pt]
+\text{Decision:} \quad & \hat{Y} = 1 \iff \beta_0 + \mathbf{x}^\top\boldsymbol{\beta} \geq 0 \\[6pt]
+\text{Loss:} \quad & \ell = -y\log\hat{p} - (1-y)\log(1-\hat{p}) \\[6pt]
+\text{Gradient:} \quad & \nabla LL = \mathbf{X}^\top(\mathbf{y} - \hat{\mathbf{p}}) \\[6pt]
+\text{Update:} \quad & \boldsymbol{\theta} \leftarrow \boldsymbol{\theta} + \eta \cdot \nabla LL
+\end{align*}
+
+\end{document}

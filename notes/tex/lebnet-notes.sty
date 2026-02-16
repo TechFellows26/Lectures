@@ -1,0 +1,93 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{lebnet-notes}[2025/12/12 Shared styling for Lebnet notes]
+
+\RequirePackage[a4paper,margin=0.85in]{geometry}
+\RequirePackage{parskip}
+\RequirePackage{fancyhdr}
+\RequirePackage{titlesec}
+\RequirePackage{xcolor}
+\RequirePackage{lastpage}
+\RequirePackage{hyperref}
+\RequirePackage{subfiles}
+\RequirePackage{graphicx}
+\RequirePackage{natbib}
+\RequirePackage{amsmath}
+\RequirePackage{amssymb}
+\RequirePackage{amsthm}
+\RequirePackage{bm}
+\RequirePackage{tikz}
+\RequirePackage{pgfplots}
+\RequirePackage{needspace}
+
+\pgfplotsset{compat=1.18}
+\graphicspath{{../images/}{images/}}
+\allowdisplaybreaks[1]
+
+\definecolor{mantis}{RGB}{0, 105, 62}
+\definecolor{darkgray}{RGB}{50, 50, 50}
+
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+\lhead{Lebnet Tech Fellows Program}
+\rhead{\thepage/\pageref{LastPage}}
+\newcommand{\LNSetFooter}[1]{\cfoot{#1}}
+
+\titleformat{\section}
+  {\normalfont\Large\bfseries\color{mantis}}
+  {}
+  {0em}
+  {}
+  [\titlerule]
+
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{mantis}}
+  {}
+  {0em}
+  {}
+
+\titleformat{\subsubsection}
+  {\normalfont\normalsize\bfseries\color{mantis}}
+  {}
+  {0em}
+  {}
+
+\newtheoremstyle{cleanstyle}
+  {10pt}
+  {10pt}
+  {\normalfont\itshape}
+  {0pt}
+  {\bfseries\color{mantis}}
+  {.}
+  {5pt plus 1pt minus 1pt}
+  {}
+
+\theoremstyle{cleanstyle}
+\newtheorem{theorem}{Theorem}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{remark}[theorem]{Remark}
+
+\def\Z{\mathbb{Z}}
+\def\N{\mathbb{N}}
+\def\R{\mathbb{R}}
+\def\E{\mathbb{E}}
+\def\Var{\text{Var}}
+\def\Cov{\text{Cov}}
+\def\Bias{\text{Bias}}
+\def\MSE{\text{MSE}}
+\def\tr{\text{tr}}
+\def\rank{\text{rank}}
+
+\newcommand{\LNTitleBlock}[2]{%
+  \begin{center}
+    \Huge\textbf{\textcolor{mantis}{#1}}\\[0.5cm]
+    \large\textit{#2}
+  \end{center}
+  \vspace{0.5cm}
+}
+
+

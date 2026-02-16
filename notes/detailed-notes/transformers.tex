@@ -1,0 +1,335 @@
+\documentclass[main.tex]{subfiles}
+
+\begin{document}
+
+\section*{\Huge\textcolor{mantis}{Transformers}}
+\addcontentsline{toc}{section}{Transformers}
+\vspace{0.5cm}
+
+\section{Overview}
+
+The transformer is the standard architecture for large language models (LLMs). In the \textbf{causal} (autoregressive, left-to-right) setting, we are given a sequence of input tokens and predict output tokens one by one, conditioning on the prior context.
+
+At a high level, a transformer:
+\begin{enumerate}
+    \item \textbf{Embeds} each token via an embedding matrix $\mathbf{E}$ and adds a positional encoding.
+    \item Passes the result through $N$ \textbf{transformer blocks}, each containing multi-head attention, a feedforward network, residual connections, and layer normalization.
+    \item Applies a \textbf{language modeling head} (unembedding matrix $\mathbf{U}$ + softmax) to produce a distribution over the next token.
+\end{enumerate}
+
+The key idea is the \textbf{residual stream}: the initial embedding is passed directly up through the network, and each component (attention, feedforward) \emph{adds} information into this stream. The value at any layer is the sum of the original embedding and all outputs from previous layers.
+
+\section{Attention}
+
+\subsection{Motivation: Contextual Representations}
+
+Static embeddings (e.g.\ word2vec) assign the \textbf{same vector} to a word regardless of context. But meaning is context-dependent:
+
+\begin{itemize}
+    \item \emph{``The chicken didn't cross the road because \textbf{it} was too tired.''} $\Rightarrow$ \textbf{it} = chicken
+    \item \emph{``The chicken didn't cross the road because \textbf{it} was too wide.''} $\Rightarrow$ \textbf{it} = road
+\end{itemize}
+
+Transformers build \textbf{contextual embeddings} by integrating information from surrounding tokens layer by layer, using \textbf{attention} as the mechanism for weighing and combining representations from other tokens.
+
+\subsection{Simplified Attention}
+
+At its core, attention computes a \textbf{weighted sum} of context vectors. For token position $i$, the attention output is:
+$$\mathbf{a}_i = \sum_{j \leq i} \alpha_{ij} \, \mathbf{x}_j \tag{8.6}$$
+
+The weights $\alpha_{ij}$ are computed by measuring similarity (dot product) between the current token and each prior token, then normalizing with softmax:
+\begin{align}
+\text{score}(\mathbf{x}_i, \mathbf{x}_j) &= \mathbf{x}_i \cdot \mathbf{x}_j \tag{8.7} \\[6pt]
+\alpha_{ij} &= \text{softmax}\left(\text{score}(\mathbf{x}_i, \mathbf{x}_j)\right) \quad \forall\, j \leq i \tag{8.8}
+\end{align}
+
+\textbf{Intuition:} The output for token $i$ is a sum of all prior embeddings, weighted by how similar they are to token $i$.
+
+\subsection{Single Attention Head (Query, Key, Value)}
+
+The simplified version uses the same vector for comparison and for summing. In practice, each input plays \textbf{three distinct roles}:
+
+\begin{itemize}
+    \item \textbf{Query} ($\mathbf{q}_i$): the current element being compared against predecessors.
+    \item \textbf{Key} ($\mathbf{k}_j$): a preceding element used to compute a similarity weight.
+    \item \textbf{Value} ($\mathbf{v}_j$): the content of a preceding element that gets weighted and summed.
+\end{itemize}
+
+These are produced by learnable weight matrices $\mathbf{W}^Q$, $\mathbf{W}^K$, $\mathbf{W}^V$:
+$$\mathbf{q}_i = \mathbf{x}_i \mathbf{W}^Q, \quad \mathbf{k}_j = \mathbf{x}_j \mathbf{W}^K, \quad \mathbf{v}_j = \mathbf{x}_j \mathbf{W}^V \tag{8.9}$$
+
+The attention computation for a single head is:
+\begin{align}
+\text{score}(\mathbf{x}_i, \mathbf{x}_j) &= \frac{\mathbf{q}_i \cdot \mathbf{k}_j}{\sqrt{d_k}} \tag{8.11} \\[6pt]
+\alpha_{ij} &= \text{softmax}\left(\text{score}(\mathbf{x}_i, \mathbf{x}_j)\right) \quad \forall\, j \leq i \tag{8.12} \\[6pt]
+\text{head}_i &= \sum_{j \leq i} \alpha_{ij} \, \mathbf{v}_j \tag{8.13} \\[6pt]
+\mathbf{a}_i &= \text{head}_i \, \mathbf{W}^O \tag{8.14}
+\end{align}
+
+\begin{remark}
+We divide by $\sqrt{d_k}$ (\textbf{scaled dot-product attention}) to prevent large dot products from causing numerical issues and gradient loss during training.
+\end{remark}
+
+\subsection{Shapes}
+
+Let $d$ be the model dimensionality, $d_k$ the query/key dimension, and $d_v$ the value dimension.
+
+\begin{center}
+\begin{tabular}{l c l}
+\textbf{Object} & \textbf{Shape} & \textbf{Notes} \\
+\hline
+$\mathbf{x}_i$, $\mathbf{a}_i$ & $[1 \times d]$ & Input and output of attention \\
+$\mathbf{q}_i$, $\mathbf{k}_j$ & $[1 \times d_k]$ & Dot product produces a scalar \\
+$\mathbf{v}_j$ & $[1 \times d_v]$ & \\
+$\mathbf{W}^Q$, $\mathbf{W}^K$ & $[d \times d_k]$ & \\
+$\mathbf{W}^V$ & $[d \times d_v]$ & \\
+$\mathbf{W}^O$ & $[d_v \times d]$ & Reshapes head output to $[1 \times d]$ \\
+\end{tabular}
+\end{center}
+
+In the original transformer (Vaswani et al., 2017): $d = 512$, $d_k = d_v = 64$.
+
+\subsection{Multi-Head Attention}
+
+Instead of a single attention head, transformers use $A$ \textbf{parallel heads}, each with its own $\mathbf{W}^{Qc}$, $\mathbf{W}^{Kc}$, $\mathbf{W}^{Vc}$ for $c = 1, \ldots, A$. Each head can specialize in capturing different linguistic relationships.
+
+\begin{align}
+\mathbf{q}_i^c = \mathbf{x}_i \mathbf{W}^{Qc}; \quad \mathbf{k}_j^c = \mathbf{x}_j \mathbf{W}^{Kc}; \quad \mathbf{v}_j^c &= \mathbf{x}_j \mathbf{W}^{Vc} \quad \forall\, 1 \leq c \leq A \tag{8.15} \\[6pt]
+\text{score}^c(\mathbf{x}_i, \mathbf{x}_j) &= \frac{\mathbf{q}_i^c \cdot \mathbf{k}_j^c}{\sqrt{d_k}} \tag{8.16} \\[6pt]
+\alpha_{ij}^c &= \text{softmax}\left(\text{score}^c(\mathbf{x}_i, \mathbf{x}_j)\right) \quad \forall\, j \leq i \tag{8.17} \\[6pt]
+\text{head}_i^c &= \sum_{j \leq i} \alpha_{ij}^c \, \mathbf{v}_j^c \tag{8.18} \\[6pt]
+\mathbf{a}_i &= \left(\text{head}^1 \oplus \text{head}^2 \oplus \cdots \oplus \text{head}^A\right) \mathbf{W}^O \tag{8.19}
+\end{align}
+
+Each head output is $[1 \times d_v]$, so the concatenation is $[1 \times A d_v]$. The projection $\mathbf{W}^O \in \R^{A d_v \times d}$ reshapes back to $[1 \times d]$. Typically $d_v = d / A$, so $\mathbf{W}^O$ is $[d \times d]$.
+
+\section{Transformer Blocks}
+
+Each transformer block consists of four components: (1) \textbf{multi-head attention}, (2) a \textbf{feedforward network}, (3) \textbf{residual connections}, and (4) \textbf{layer normalization}. All inputs and outputs have dimensionality $d$, so blocks can be stacked (12 to 96+ layers).
+
+\subsection{Feedforward Layer}
+
+A fully-connected 2-layer network applied independently at each token position. The hidden dimension $d_{\text{ff}}$ is typically larger than $d$ (e.g.\ $d = 512$, $d_{\text{ff}} = 2048$):
+$$\text{FFN}(\mathbf{x}_i) = \text{ReLU}(\mathbf{x}_i \mathbf{W}_1 + b_1) \mathbf{W}_2 + b_2 \tag{8.21}$$
+
+\subsection{Layer Normalization}
+
+Layer norm normalizes a \textbf{single token's embedding vector} (not the entire layer). Given $\mathbf{x}$ of dimensionality $d$:
+
+\begin{align}
+\mu &= \frac{1}{d} \sum_{i=1}^{d} x_i \tag{8.22} \\[6pt]
+\sigma &= \sqrt{\frac{1}{d} \sum_{i=1}^{d} (x_i - \mu)^2} \tag{8.23} \\[6pt]
+\hat{\mathbf{x}} &= \frac{\mathbf{x} - \mu}{\sigma} \tag{8.24}
+\end{align}
+
+With learnable gain $\gamma$ and offset $\beta$:
+$$\boxed{\text{LayerNorm}(\mathbf{x}) = \gamma \frac{(\mathbf{x} - \mu)}{\sigma} + \beta} \tag{8.25}$$
+
+\begin{remark}
+Layer norm is a variation of the z-score from statistics. It produces a vector with zero mean and unit standard deviation, then applies a learned affine transformation.
+\end{remark}
+
+\subsection{Putting It All Together (Single Token)}
+
+Using the \textbf{prenorm} architecture (layer norm before attention/FFN):
+\begin{align}
+\mathbf{t}_i^1 &= \text{LayerNorm}(\mathbf{x}_i) \tag{8.26} \\
+\mathbf{t}_i^2 &= \text{MultiHeadAttention}(\mathbf{t}_i^1, [\mathbf{t}_1^1, \ldots, \mathbf{t}_N^1]) \tag{8.27} \\
+\mathbf{t}_i^3 &= \mathbf{t}_i^2 + \mathbf{x}_i \quad \text{(residual connection)} \tag{8.28} \\
+\mathbf{t}_i^4 &= \text{LayerNorm}(\mathbf{t}_i^3) \tag{8.29} \\
+\mathbf{t}_i^5 &= \text{FFN}(\mathbf{t}_i^4) \tag{8.30} \\
+\mathbf{h}_i &= \mathbf{t}_i^5 + \mathbf{t}_i^3 \quad \text{(residual connection)} \tag{8.31}
+\end{align}
+
+\textbf{Key insight:} Only multi-head attention mixes information across token positions (\textbf{token-mixing}). The FFN and layer norm operate independently per token.
+
+\section{Parallelization via Matrix $\mathbf{X}$}
+
+We pack all $N$ token embeddings into a single matrix $\mathbf{X} \in \R^{N \times d}$. This allows all tokens to be processed in parallel.
+
+\subsection{Parallel Single-Head Attention}
+
+\begin{align}
+\mathbf{Q} = \mathbf{X}\mathbf{W}^Q, \quad \mathbf{K} = \mathbf{X}\mathbf{W}^K, \quad \mathbf{V} &= \mathbf{X}\mathbf{W}^V \tag{8.32} \\[8pt]
+\text{head} &= \text{softmax}\!\left(\text{mask}\!\left(\frac{\mathbf{Q}\mathbf{K}^\top}{\sqrt{d_k}}\right)\right) \mathbf{V} \tag{8.33}
+\end{align}
+
+The product $\mathbf{Q}\mathbf{K}^\top$ is an $[N \times N]$ matrix computing all pairwise query-key similarities at once.
+
+\subsection{Causal Masking}
+
+In a left-to-right language model, token $i$ must not attend to tokens $j > i$. We enforce this by adding a mask matrix $M$ where $M_{ij} = -\infty$ for $j > i$ and $M_{ij} = 0$ otherwise. After the softmax, the $-\infty$ entries become zero.
+
+\textbf{Consequence:} Attention is \textbf{quadratic} in sequence length $N$ (the $N \times N$ matrix), making it expensive for very long sequences.
+
+\subsection{Parallel Multi-Head Attention}
+
+For each head $c$:
+\begin{align}
+\mathbf{Q}^c = \mathbf{X}\mathbf{W}^{Qc}, \quad \mathbf{K}^c = \mathbf{X}\mathbf{W}^{Kc}, \quad \mathbf{V}^c &= \mathbf{X}\mathbf{W}^{Vc} \tag{8.35} \\[6pt]
+\text{head}_c = \text{softmax}\!\left(\text{mask}\!\left(\frac{\mathbf{Q}^c {\mathbf{K}^c}^\top}{\sqrt{d_k}}\right)\right) &\mathbf{V}^c \tag{8.36} \\[6pt]
+\text{MultiHeadAttention}(\mathbf{X}) = \left(\text{head}_1 \oplus \cdots \oplus \text{head}_A\right) &\mathbf{W}^O \tag{8.37}
+\end{align}
+
+\subsection{Full Transformer Layer (Parallel)}
+
+\begin{align}
+\mathbf{O} &= \mathbf{X} + \text{MultiHeadAttention}(\text{LayerNorm}(\mathbf{X})) \tag{8.38} \\
+\mathbf{H} &= \mathbf{O} + \text{FFN}(\text{LayerNorm}(\mathbf{O})) \tag{8.39}
+\end{align}
+
+Both $\mathbf{X}$ and $\mathbf{H}$ have shape $[N \times d]$, so layers stack directly. For subsequent layers, $\mathbf{X}$ is replaced by $\mathbf{H}^{k-1}$ from the previous layer.
+
+\section{Input: Token and Positional Embeddings}
+
+\subsection{Token Embeddings}
+
+The embedding matrix $\mathbf{E}$ has shape $[|V| \times d]$, with one row per vocabulary token. Given token indices $\mathbf{w} = [w_1, \ldots, w_N]$, we select the corresponding rows from $\mathbf{E}$.
+
+Equivalently, represent each token as a \textbf{one-hot vector} $\in \R^{|V|}$ and multiply by $\mathbf{E}$: the one-hot vector selects the row corresponding to that token.
+
+\subsection{Positional Embeddings}
+
+Token embeddings alone carry no information about position. We add \textbf{positional embeddings} from a matrix $\mathbf{E}_{\text{pos}}$ of shape $[N \times d]$:
+$$\mathbf{X}[i] = \mathbf{E}[\text{id}(i)] + \mathbf{E}_{\text{pos}}[i]$$
+
+\textbf{Absolute position:} Randomly initialized, learned during training. Simple but may generalize poorly at the outer limits of the context window.
+
+\textbf{Sinusoidal position:} A static function using sine/cosine at different frequencies. Captures that nearby positions are more related.
+
+\textbf{Relative position:} Encodes the \emph{distance} between tokens rather than absolute index, often implemented within the attention mechanism at each layer.
+
+\section{The Language Modeling Head}
+
+The language modeling head maps the output of the final transformer layer to a distribution over the vocabulary.
+
+Given the output embedding $\mathbf{h}_N^L$ from the last token at the last layer (shape $[1 \times d]$):
+
+\begin{align}
+\mathbf{u} &= \mathbf{h}_N^L \, \mathbf{E}^\top \quad \text{(logits, shape } [1 \times |V|]\text{)} \tag{8.46} \\[6pt]
+\mathbf{y} &= \text{softmax}(\mathbf{u}) \quad \text{(probabilities over vocabulary)} \tag{8.47}
+\end{align}
+
+\begin{remark}[\textbf{Weight Tying}]
+The unembedding matrix is typically the \textbf{transpose} of the embedding matrix $\mathbf{E}$. At the input, $\mathbf{E}$ maps one-hot $\to$ embedding ($[|V| \times d]$). At the output, $\mathbf{E}^\top$ maps embedding $\to$ logits ($[d \times |V|]$). This is called \textbf{weight tying}.
+\end{remark}
+
+\section{Sampling Methods}
+
+When generating text, we sample a token from the output distribution $\mathbf{y}$. There is a tradeoff: methods favoring high-probability tokens produce more \textbf{coherent/factual} but \textbf{less diverse} text, and vice versa.
+
+\subsection{Top-$k$ Sampling}
+
+\begin{enumerate}
+    \item Choose a fixed $k$.
+    \item Compute $p(w_t \mid \mathbf{w}_{<t})$ for all words in $V$.
+    \item Keep only the top $k$ most probable words; discard the rest.
+    \item Renormalize the $k$ probabilities.
+    \item Sample from this truncated distribution.
+\end{enumerate}
+
+When $k = 1$, this is \textbf{greedy decoding}.
+
+\subsection{Top-$p$ (Nucleus) Sampling}
+
+Instead of a fixed number of words, keep the smallest set $V^{(p)}$ such that:
+$$\sum_{w \in V^{(p)}} P(w \mid \mathbf{w}_{<t}) \geq p \tag{8.48}$$
+
+This \textbf{adapts dynamically}: in peaked distributions fewer words are kept; in flat distributions more are kept.
+
+\section{Training}
+
+The model is trained with \textbf{cross-entropy loss} (negative log-likelihood). At time $t$, the loss is $-\log p(w_{t+1})$. The loss for a sequence is the \textbf{average} over all positions.
+
+Each token in the sequence can be processed \textbf{in parallel} since outputs are computed independently. The context window is filled with text (multiple documents separated by end-of-text tokens if needed). Batch sizes can be very large (e.g.\ 3.2M tokens for GPT-3).
+
+\section{Dealing with Scale}
+
+\subsection{Scaling Laws}
+
+Performance (loss) scales as a \textbf{power law} with model size $N$, dataset size $D$, and compute budget $C$:
+\begin{align}
+L(N) &= \left(\frac{N_c}{N}\right)^{\alpha_N} \tag{8.49} \\[6pt]
+L(D) &= \left(\frac{D_c}{D}\right)^{\alpha_D} \tag{8.50} \\[6pt]
+L(C) &= \left(\frac{C_c}{C}\right)^{\alpha_C} \tag{8.51}
+\end{align}
+
+The number of non-embedding parameters can be approximated as:
+$$\boxed{N \approx 12 \, n_{\text{layer}} \, d^2} \tag{8.52}$$
+
+assuming $d_{\text{attn}} = d$ and $d_{\text{ff}} = 4d$. For example, GPT-3: $96 \times 12 \times 12288^2 \approx 175\text{B}$ parameters.
+
+\subsection{KV Cache}
+
+During \textbf{inference}, tokens are generated one at a time. For a new token $\mathbf{x}_i$, we compute its $\mathbf{q}_i$, $\mathbf{k}_i$, $\mathbf{v}_i$, but the key and value vectors for all prior tokens $\mathbf{x}_{<i}$ were already computed at earlier steps. The \textbf{KV cache} stores these previously computed $\mathbf{k}$ and $\mathbf{v}$ vectors in memory so they don't need to be recomputed.
+
+\subsection{LoRA (Low-Rank Adaptation)}
+
+Fine-tuning all parameters of a large model is very expensive. \textbf{LoRA} freezes the pretrained weight matrix $\mathbf{W} \in \R^{k \times d}$ and instead trains a low-rank decomposition:
+$$\mathbf{h} = \mathbf{x}\mathbf{W} + \mathbf{x}\mathbf{A}\mathbf{B} \tag{8.54}$$
+
+where $\mathbf{A} \in \R^{k \times r}$, $\mathbf{B} \in \R^{r \times d}$, and $r \ll \min(d, k)$.
+
+\textbf{Advantages:}
+\begin{itemize}
+    \item Dramatically reduces the number of trainable parameters.
+    \item No additional inference cost ($\mathbf{AB}$ can be merged into $\mathbf{W}$).
+    \item Domain-specific LoRA modules can be swapped in and out.
+\end{itemize}
+
+\section{Interpretability}
+
+\subsection{Induction Heads}
+
+\textbf{Induction heads} are attention circuits that implement pattern completion: given a pattern $AB \ldots A$ in the input, they predict $B$ will follow. They do this via:
+\begin{enumerate}
+    \item \textbf{Prefix matching:} search back over the context to find a prior instance of the current token $A$.
+    \item \textbf{Copying:} increase the probability of the token $B$ that followed the earlier $A$.
+\end{enumerate}
+
+A generalized fuzzy version ($A^* B^* \ldots A \to B$, where $A^* \approx A$) may underlie \textbf{in-context learning} --- the ability of LLMs to learn from demonstrations in their prompt without gradient updates.
+
+\subsection{Logit Lens}
+
+Take any intermediate vector from any layer, multiply it by the \textbf{unembedding matrix} $\mathbf{E}^\top$, and apply softmax. This gives a distribution over words, offering a window into what the internal layers might be representing. Since the network wasn't trained to make internal representations function this way, this is an approximate but useful visualization tool.
+
+\section{Summary}
+
+\begin{center}
+\fbox{\parbox{0.9\textwidth}{
+\vspace{0.3cm}
+\textbf{\large Key Components of a Transformer LM}
+\vspace{0.2cm}
+\hrule
+\vspace{0.3cm}
+
+\textbf{Input:} Token embedding ($\mathbf{E}$) + positional embedding $\to$ $\mathbf{X} \in \R^{N \times d}$
+
+\vspace{0.2cm}
+
+\textbf{Transformer Block} ($\times N$ layers):
+\begin{itemize}
+    \item LayerNorm $\to$ Multi-Head Attention $\to$ Residual Add
+    \item LayerNorm $\to$ FFN $\to$ Residual Add
+\end{itemize}
+
+\vspace{0.2cm}
+
+\textbf{Output:} Final LayerNorm $\to$ Unembedding ($\mathbf{E}^\top$) $\to$ Softmax $\to$ $P(\text{next token})$
+
+\vspace{0.2cm}
+
+\textbf{Attention:} $\text{softmax}\!\left(\frac{\mathbf{Q}\mathbf{K}^\top}{\sqrt{d_k}}\right)\mathbf{V}$ \quad with causal mask
+
+\vspace{0.2cm}
+
+\textbf{Training:} Cross-entropy loss, parallelized over all token positions.
+
+\vspace{0.2cm}
+
+\textbf{Efficiency:} KV cache (inference), LoRA (fine-tuning), scaling laws (planning).
+\vspace{0.3cm}
+}}
+\end{center}
+
+\end{document}

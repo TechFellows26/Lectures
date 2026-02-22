@@ -106,7 +106,7 @@ def load_header(mo):
 
 @app.cell
 def load_data(pd):
-    raw = pd.read_csv("data/regression/lebanese_zillow_like_listings.csv")
+    raw = pd.read_csv("data/linear_regression/lebanese_zillow_like_listings.csv")
     print(f"Raw shape: {raw.shape}")
     print(f"Columns: {list(raw.columns)}")
     raw.head()

@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neural Networks &amp; Backpropagation - LebNet</title>
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.css">
+<script>if(localStorage.getItem('lebnet-theme')==='light')document.documentElement.classList.add('theme-light');</script>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="../index.html" class="navbar-brand"><img src="../img/lebnet-logo-light.png" alt="LebNet" class="navbar-logo logo-dark"><img src="../img/lebnet-logo.png" alt="LebNet" class="navbar-logo logo-light"></a>
+  <ul class="navbar-links">
+    <li><a href="../index.html" class="active">Notes</a></li>
+    <li><a href="../notebooks.html">Notebooks</a></li>
+    <li><a href="../ethics.html">Ethics</a></li>
+  </ul>
+  <div class="navbar-right">
+    <a href="https://github.com/TechFellows26/Lectures" target="_blank" rel="noopener" class="navbar-icon" title="GitHub Repository"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .3a12 12 0 0 0-3.8 23.38c.6.1.82-.26.82-.58v-2.02c-3.34.73-4.04-1.61-4.04-1.61a3.18 3.18 0 0 0-1.33-1.76c-1.09-.74.08-.73.08-.73a2.52 2.52 0 0 1 1.84 1.24 2.56 2.56 0 0 0 3.5 1 2.56 2.56 0 0 1 .76-1.61c-2.67-.3-5.47-1.33-5.47-5.93a4.64 4.64 0 0 1 1.24-3.22 4.3 4.3 0 0 1 .12-3.18s1-.33 3.3 1.23a11.38 11.38 0 0 1 6 0c2.28-1.56 3.29-1.23 3.29-1.23a4.3 4.3 0 0 1 .12 3.18 4.64 4.64 0 0 1 1.23 3.22c0 4.61-2.8 5.63-5.48 5.92a2.86 2.86 0 0 1 .82 2.23v3.29c0 .32.21.7.82.58A12 12 0 0 0 12 .3"/></svg></a>
+    <a href="https://lebnet.us/TechFellows" target="_blank" rel="noopener" class="navbar-icon" title="LebNet TechFellows"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></a>
+    <button class="theme-toggle" title="Toggle theme" aria-label="Toggle theme">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M12 2 A10 10 0 0 0 12 22 Z" style="fill:var(--bg)"/><path d="M12 2 A10 10 0 0 1 12 22 Z" style="fill:var(--fg)"/></svg>
+    </button>
+  </div>
+</nav>
+
+<button class="sidebar-toggle" aria-label="Toggle sidebar">&#9776;</button>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-title">On this page</div>
+  <ul class="sidebar-nav"></ul>
+</aside>
+
+<div class="paper">
+<h1>Neural Networks &amp; Backpropagation</h1>
+<p class="subtitle">LebNet Tech Fellows &mdash; Detailed Notes</p>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     PART I: Perceptron, SVM, Kernels
+     ═══════════════════════════════════════════════════════════════ -->
+
+<h2>The Perceptron Algorithm</h2>
+
+<p>Binary classification is the task of classifying data into two categories. Given data with labels, we seek to learn the classifier. Inspired by neurons in the brain, the Perceptron algorithm learns a binary classifier from labeled data.</p>
+
+<h3>Problem Setting</h3>
+
+<p>Consider labeled data $(x, l(x))$, where $x \in X \subset \mathbb{R}^n$, $l(x) \in \{1, -1\}$. Each data point is labeled as:</p>
+
+$$l(x) = \text{sign}(\langle w^*, x \rangle) = \text{sign}\left(\sum_{i=1}^{n} w_i^* x_i\right)$$
+
+<p>Here $w^* \in \mathbb{R}^n$ is the unknown normal vector to a separating hyperplane. We assume that $\|w^*\| = 1$ and $\|x\| \leq 1$ for all data points.</p>
+
+<div class="def"><span class="label">Definition (Margin)</span>
+<p>The <strong>margin</strong> for $w^*$ is defined as:</p>
+$$\gamma := \min_{x \in D} |\langle w^*, x \rangle|$$
+</div>
+
+<p>This implies that for any $x$ with label $l(x) = 1$, we have $\langle w^*, x \rangle \geq \gamma$; for any $x$ with label $l(x) = -1$, we have $\langle w^*, x \rangle \leq -\gamma$.</p>
+
+<div class="figure"><img src="../img/nn-perceptron-margin.png" alt="Perceptron margin diagram showing separating hyperplane with positive and negative data points and margin γ"><p class="figure-caption">Separating hyperplane with margin $\gamma$, normal vector $w^*$, and positive/negative data points.</p></div>
+
+<h3>Geometric Interpretation of the Weight Vector</h3>
+
+<p>The weight vector $w$ has a fundamental geometric meaning: it is <strong>orthogonal to the separating hyperplane</strong>.</p>
+
+<div class="prop"><span class="label">Proposition</span>
+<p>The weight vector $w$ is normal to the decision boundary $H = \{x : \langle w, x \rangle = 0\}$.</p>
+</div>
+
+<div class="proof"><span class="label">Proof.</span>
+<p>Let $x_1, x_2 \in H$ be any two points on the hyperplane. Then:</p>
+$$\langle w, x_1 \rangle = 0 \quad \text{and} \quad \langle w, x_2 \rangle = 0$$
+<p>Subtracting: $\langle w, x_1 - x_2 \rangle = 0$. Since $x_1 - x_2$ is an arbitrary vector lying in $H$, we conclude that $w \perp H$. ∎</p>
+</div>
+
+<div class="prop"><span class="label">Proposition (Signed Distance to Hyperplane)</span>
+<p>The signed distance from a point $x$ to the hyperplane $H = \{z : \langle w, z \rangle = 0\}$ is:</p>
+$$\text{dist}(x, H) = \frac{\langle w, x \rangle}{\|w\|}$$
+</div>
+
+<div class="proof"><span class="label">Proof.</span>
+<p>Let $x_0 \in H$ be any point on the hyperplane, so $\langle w, x_0 \rangle = 0$. The signed distance is the projection of $(x - x_0)$ onto the unit normal $\frac{w}{\|w\|}$:</p>
+$$\begin{aligned}
+\text{dist}(x, H) &= \langle x - x_0, \frac{w}{\|w\|} \rangle \\[6pt]
+&= \frac{\langle x, w \rangle - \langle x_0, w \rangle}{\|w\|} \\[6pt]
+&= \frac{\langle w, x \rangle - 0}{\|w\|} = \frac{\langle w, x \rangle}{\|w\|}
+\end{aligned}$$
+<p>∎</p>
+</div>
+
+<h3>The Geometry of Weight Updates</h3>
+
+<p>When we update the weight vector $w \leftarrow w + l(x)x$, we are <strong>tilting the hyperplane</strong> toward the misclassified point.</p>
+
+<div class="prop"><span class="label">Proposition (Update Improves Classification)</span>
+<p>If $(x, l(x))$ is misclassified under $w$, then after the update $\tilde{w} = w + l(x)x$:</p>
+$$l(x) \langle \tilde{w}, x \rangle > l(x) \langle w, x \rangle$$
+</div>
+
+<div class="proof"><span class="label">Proof.</span>
+<p>We compute:</p>
+$$\begin{aligned}
+l(x) \langle \tilde{w}, x \rangle &= l(x) \langle w + l(x)x, x \rangle \\[6pt]
+&= l(x) \langle w, x \rangle + l(x)^2 \|x\|^2 \\[6pt]
+&= l(x) \langle w, x \rangle + \|x\|^2
+\end{aligned}$$
+<p>Since $\|x\|^2 > 0$, the improvement is strictly positive. ∎</p>
+</div>
+
+<h2>The Perceptron Algorithm</h2>
+
+<div class="algo"><span class="label">Algorithm (Perceptron)</span>
+<p><strong>Input:</strong> Labeled data $\{(x_i, l(x_i))\}_{i=1}^n$ with $l(x_i) \in \{-1, +1\}$</p>
+<p><strong>Output:</strong> Weight vector $w$</p>
+<ol>
+  <li>Start with $w = 0$</li>
+  <li><strong>for each</strong> input $x$ <strong>do</strong>
+    <ol>
+      <li>Predict $\text{sign}(\langle w, x \rangle)$</li>
+      <li>On a mistake, set $w \leftarrow w + l(x)x$</li>
+    </ol>
+  </li>
+  <li><strong>end for</strong></li>
+</ol>
+</div>
+
+<h2>Convergence Analysis</h2>
+
+<div class="thm"><span class="label">Theorem (Perceptron Convergence Bound)</span>
+<p>The number of mistakes made by the Perceptron Algorithm on any input sequence is at most $1/\gamma^2$.</p>
+</div>
+
+<div class="proof"><span class="label">Proof.</span>
+<p>Consider the potential function $\frac{\langle w, w^* \rangle}{\|w\|}$, starting at $0$. Whenever the algorithm makes a mistake, we update $\tilde{w} := w + l(x)x$. We analyze the numerator and denominator separately.</p>
+
+<p><strong>Step 1: Lower bound on the numerator.</strong></p>
+
+$$\begin{aligned}
+\langle \tilde{w}, w^* \rangle &= \langle w + l(x)x, w^* \rangle \\[6pt]
+&= \langle w, w^* \rangle + l(x)\langle x, w^* \rangle \\[6pt]
+&\geq \langle w, w^* \rangle + \gamma
+\end{aligned}$$
+
+<p>The last inequality follows from the definition of margin $\gamma$: since $l(x) = \text{sign}(\langle w^*, x \rangle)$, we have $l(x)\langle x, w^* \rangle = |\langle x, w^* \rangle| \geq \gamma$.</p>
+
+<p><strong>Step 2: Upper bound on the denominator.</strong></p>
+
+$$\begin{aligned}
+\|\tilde{w}\|^2 &= \langle \tilde{w}, \tilde{w} \rangle \\[6pt]
+&= \langle w + l(x)x, w + l(x)x \rangle \\[6pt]
+&= \langle w, w \rangle + \langle x, x \rangle + 2l(x)\langle w, x \rangle
+\end{aligned}$$
+
+<p>Since $x$ is incorrectly predicted by $w$, we know $l(x) \neq \text{sign}(\langle w, x \rangle)$. This implies that $l(x)\langle w, x \rangle \leq 0$. Also, we assume that $\|x\| \leq 1$. Therefore:</p>
+
+$$\|\tilde{w}\|^2 \leq \langle w, w \rangle + \langle x, x \rangle \leq \|w\|^2 + 1$$
+
+<p><strong>Step 3: Induction after $T$ mistakes.</strong></p>
+
+<p>By induction, after $T$ mistakes:</p>
+<ul>
+  <li>Numerator: $\langle \tilde{w}, w^* \rangle \geq \gamma T$</li>
+  <li>Denominator: $\|\tilde{w}\| \leq \sqrt{T}$</li>
+</ul>
+
+<p><strong>Step 4: Combining via Cauchy-Schwarz.</strong></p>
+
+<p>By the Cauchy-Schwarz inequality:</p>
+$$|\langle \tilde{w}, w^* \rangle| \leq \|\tilde{w}\| \|w^*\| = \|\tilde{w}\|$$
+
+<p>since $\|w^*\| = 1$. This implies that $\frac{\langle \tilde{w}, w^* \rangle}{\|\tilde{w}\|} \leq 1$ at all time steps. Therefore:</p>
+
+$$1 \geq \frac{\langle \tilde{w}, w^* \rangle}{\|\tilde{w}\|} \geq \frac{\gamma T}{\sqrt{T}} = \gamma\sqrt{T}$$
+
+<p>It follows that:</p>
+$$\boxed{T \leq \frac{1}{\gamma^2}}$$
+<p>∎</p>
+</div>
+
+<h2>Lower Bound for the Perceptron Algorithm</h2>
+
+<p>Theorem 3.1 shows that the number of mistakes is bounded by $1/\gamma^2$. However, when the margin is tiny, for instance $\gamma \sim 1/2^n$, the number of mistakes can be as large as $2^{O(n)}$, which is not polynomial with respect to the input dimension $n$.</p>
+
+<p>We construct a dataset and show that for any given order, the Perceptron algorithm needs to see at least $2^{O(n)}$ examples before reaching the truth.</p>
+
+<h3>The Hard Instance Construction</h3>
+
+<p>For each data point $x^{(i)} \in \mathbb{R}^n$ with $i$ non-zero entries, we construct:</p>
+
+<table>
+<thead>
+<tr><th></th><th>$x$</th><th>$l(x)$</th></tr>
+</thead>
+<tbody>
+<tr><td>$x^{(1)}$</td><td>$(1, 0, 0, 0, \cdots, 0)$</td><td>$+1$</td></tr>
+<tr><td>$x^{(2)}$</td><td>$(1, -1, 0, 0, \cdots, 0)$</td><td>$-1$</td></tr>
+<tr><td>$x^{(3)}$</td><td>$(-1, -1, 1, 0, \cdots, 0)$</td><td>$+1$</td></tr>
+<tr><td>$x^{(4)}$</td><td>$(1, 1, 1, -1, 0, \cdots, 0)$</td><td>$-1$</td></tr>
+<tr><td>$\vdots$</td><td>$\vdots$</td><td>$\vdots$</td></tr>
+<tr><td>$x^{(i)}$</td><td>$((-1)^i, \cdots, (-1)^i, (-1)^{i+1}, 0, \cdots, 0)$</td><td>$(-1)^{i+1}$</td></tr>
+</tbody>
+</table>
+
+<div class="lem"><span class="label">Lemma</span>
+<p>For a unit vector $w^* \in \mathbb{R}^n$ that classifies the data above correctly, its $i$-th coordinate satisfies $w^*_i \geq 2^{i-1}$.</p>
+</div>
+
+<div class="proof"><span class="label">Proof.</span>
+<p>By rescaling $w^*$, we can assume WLOG that the margin is $\gamma = 1$.</p>
+
+<p><strong>Base case:</strong> Since $l(x^{(1)}) = 1$, we have $\langle w^*, x^{(1)} \rangle \geq 1$. This gives $w^*_1 \geq 1 = 2^0$.</p>
+
+<p><strong>Inductive step:</strong> Similarly, we have $\langle w^*, x^{(2)} \rangle \leq -1$, which gives $w^*_1 - w^*_2 \leq -1$, and thus $w^*_2 \geq w^*_1 + 1$.</p>
+
+<p>More generally, for odd $i$:</p>
+$$\langle w^*, x^{(i)} \rangle = -\sum_{j=1}^{i-1} w^*_j + w^*_i \geq 1 \quad \Rightarrow \quad w^*_i \geq \sum_{j=1}^{i-1} w^*_j + 1$$
+
+<p>For even $i$:</p>
+$$\langle w^*, x^{(i)} \rangle = \sum_{j=1}^{i-1} w^*_j - w^*_i \leq -1 \quad \Rightarrow \quad w^*_i \geq \sum_{j=1}^{i-1} w^*_j + 1$$
+
+<p>Therefore, $w^*_1 \geq 1$ and for each $i \geq 2$, $w^*_i \geq \sum_{j=1}^{i-1} w^*_j + 1$. By induction, for any $i \in [n]$:</p>
+$$w^*_i \geq 2^{i-1}$$
+<p>∎</p>
+</div>
+
+<div class="cor"><span class="label">Corollary (Lower Bound)</span>
+<p>To achieve the correct classifier $w^*$, the Perceptron algorithm needs at least $2^{n-1}$ examples with mistakes.</p>
+</div>
+
+<div class="proof"><span class="label">Proof.</span>
+<p>In each update step of the Perceptron algorithm, we set $w \leftarrow w + l(x)x$. By the construction of the data above, the absolute value of the change of $w$ is at most one in each coordinate.</p>
+
+<p>By Lemma 4.1, $w^*_n \geq 2^{n-1}$. Therefore, we need at least $2^{n-1}$ update steps to reach the $n$-th coordinate of $w^*$. ∎</p>
+</div>
+
+<h2>The Modified Perceptron Algorithm</h2>
+
+<p>In the previous section, we saw that the Perceptron algorithm cannot be polynomial when the margin is tiny. Here we consider a setting where we only care about data points that are "far" from the margin.</p>
+
+<p>Specifically, given a parameter $\sigma > 0$, we would like to find $w$ such that $\text{sign}(\langle w, x \rangle)$ is the correct label for all $x$ satisfying:</p>
+
+$$|\cos(w, x)| := \frac{|\langle w, x \rangle|}{\|w\| \|x\|} \geq \sigma$$
+
+<div class="algo"><span class="label">Algorithm (Modified Perceptron)</span>
+<p><strong>Input:</strong> Labeled data, parameter $\sigma > 0$</p>
+<p><strong>Output:</strong> Weight vector $w$</p>
+<ol>
+  <li>Start with $w \leftarrow$ random unit vector</li>
+  <li><strong>for each</strong> input $x$ <strong>do</strong>
+    <ol>
+      <li><strong>if</strong> $l(x) \neq \text{sign}(\langle w, x \rangle)$ <strong>and</strong> $|\cos(w, x)| \geq \sigma$ <strong>then</strong></li>
+      <li>$\quad w \leftarrow w - \langle w, \bar{x} \rangle \bar{x}$, where $\bar{x} = x/\|x\|$</li>
+      <li><strong>end if</strong></li>
+    </ol>
+  </li>
+  <li><strong>end for</strong></li>
+</ol>
+</div>
+
+<div class="thm"><span class="label">Theorem</span>
+<p>With probability at least $1/8$, the number of mistakes made by the Modified Perceptron Algorithm is at most $\frac{\ln n}{\sigma^2}$.</p>
+</div>
+
+<div class="proof"><span class="label">Proof.</span>
+<p>Consider the potential function $\cos(w, w^*) = \frac{\langle w, w^* \rangle}{\|w\| \|w^*\|}$.</p>
+
+<p><strong>Step 1: Initialization.</strong></p>
+
+<p>By random initialization, with probability at least $1/8$, we have $\langle w, w^* \rangle \geq 1/\sqrt{n}$.</p>
+
+<p><strong>Step 2: Numerator analysis.</strong></p>
+
+<p>For each update step $w \to \tilde{w}$, since $\text{sign}(\langle w, x \rangle) \neq \text{sign}(\langle w^*, x \rangle)$:</p>
+
+$$\langle \tilde{w}, w^* \rangle = \langle w, w^* \rangle - \langle w, \bar{x} \rangle \langle w^*, \bar{x} \rangle \geq \langle w, w^* \rangle$$
+
+<p>The inequality holds because $\langle w, \bar{x} \rangle$ and $\langle w^*, \bar{x} \rangle$ have opposite signs.</p>
+
+<p><strong>Step 3: Denominator analysis.</strong></p>
+
+<p>Since $|\cos(w, \bar{x})| = \frac{|\langle w, \bar{x} \rangle|}{\|w\|} \geq \sigma$, we have $|\langle w, \bar{x} \rangle| \geq \sigma\|w\|$.</p>
+
+$$\begin{aligned}
+\|\tilde{w}\|^2 &= \|w\|^2 + \langle w, \bar{x} \rangle^2 \|\bar{x}\|^2 - 2\langle w, \bar{x} \rangle^2 \\[6pt]
+&= \|w\|^2 - \langle w, \bar{x} \rangle^2 \\[6pt]
+&\leq \|w\|^2(1 - \sigma^2)
+\end{aligned}$$
+
+<p><strong>Step 4: Combining after $T$ steps.</strong></p>
+
+<p>After $T$ steps:</p>
+$$1 \geq \cos(w, w^*) \geq \frac{1}{\sqrt{n}} \cdot \frac{1}{(1-\sigma^2)^{T/2}}$$
+
+<p>Therefore:</p>
+$$(1 - \sigma^2)^{T/2} \geq \frac{1}{\sqrt{n}}$$
+
+<p>And thus:</p>
+$$\left(\frac{1}{1-\sigma^2}\right)^T \leq n$$
+
+<p>Taking logarithms:</p>
+$$T \leq \frac{\ln n}{\ln(1/(1-\sigma^2))} \leq \frac{\ln n}{\sigma^2}$$
+
+<p>where in the last inequality we used $1 + x \leq e^x$, which implies:</p>
+$$(1 - \sigma^2) \leq e^{-\sigma^2} \implies \frac{1}{1-\sigma^2} \geq e^{\sigma^2} \implies \ln\left(\frac{1}{1-\sigma^2}\right) \geq \sigma^2$$
+<p>∎</p>
+</div>
+
+<div class="cor"><span class="label">Corollary (High-Probability Bound)</span>
+<p>By running the Modified Perceptron Algorithm repeatedly for $\log_{4/3}(1/\delta)$ rounds, with probability at least $1 - \delta$, the total number of mistakes is at most:</p>
+$$O\left(\frac{\log n \cdot \log(1/\delta)}{\sigma^2}\right)$$
+</div>
+
+<div class="proof"><span class="label">Proof.</span>
+<p>By Theorem 5.1, the probability that one round fails is $7/8 \leq 3/4$. The probability that all $\log_{4/3}(1/\delta)$ rounds fail is:</p>
+$$(3/4)^{\log_{4/3}(1/\delta)} = \delta$$
+
+<p>So the algorithm succeeds with probability $1 - \delta$. The total number of mistakes is at most:</p>
+$$\log_{4/3}(1/\delta) \cdot \frac{\ln n}{\sigma^2} = O\left(\frac{\log n \cdot \log(1/\delta)}{\sigma^2}\right)$$
+<p>∎</p>
+</div>
+
+<h2>From Perceptron to Nonlinear Classifiers</h2>
+
+<p>The perceptron finds a linear separator. For nonlinear classification boundaries, we can map data to a higher-dimensional feature space.</p>
+
+<h3>Example: Quadratic Boundaries</h3>
+
+<p>Consider the label function $l(x) = \text{sign}(\|x - x_0\|^2 - r^2)$, which labels points outside a ball $B(x_0, r)$ as $+1$ and inside as $-1$. More generally:</p>
+$$l(x) = \text{sign}(x^\top A x - b)$$
+
+<p>For $l(x) = \text{sign}(x_1^2 + x_2^2 - 3x_1 x_2)$ with $x \in \mathbb{R}^2$, we can reduce to the linear case by mapping:</p>
+$$(x_1, x_2) \mapsto (x_1^2, x_2^2, x_1 x_2, x_1, x_2)$$
+
+<p>Then we get a linear classifier in the new coordinates with $w^* = (1, 1, -3, 0, 0)$.</p>
+
+<h2>Support Vector Machines</h2>
+
+<p>The Perceptron finds <em>some</em> separating hyperplane. Support Vector Machines (SVMs) find the <strong>maximum margin</strong> hyperplane.</p>
+
+<h3>Hard-Margin SVM</h3>
+
+<div class="def"><span class="label">Definition (Maximum Margin Problem)</span>
+$$\begin{aligned}
+\max_{w, b} \quad & \gamma \\
+\text{s.t.} \quad & y_i(\langle w, x_i \rangle + b) \geq \gamma \quad \forall i \\
+& \|w\| = 1
+\end{aligned}$$
+</div>
+
+<p>By rescaling, we can set $\gamma \|w\| = 1$, yielding the equivalent <strong>quadratic program</strong>:</p>
+
+$$\begin{aligned}
+\min_{w, b} \quad & \frac{1}{2}\|w\|^2 \\
+\text{s.t.} \quad & y_i(\langle w, x_i \rangle + b) \geq 1 \quad \forall i
+\end{aligned}$$
+
+<h3>Soft-Margin SVM</h3>
+
+<p>For non-separable data, we introduce <strong>slack variables</strong> $\xi_i \geq 0$:</p>
+
+$$\begin{aligned}
+\min_{w, b, \xi} \quad & \frac{1}{2}\|w\|^2 + C \sum_{i=1}^{n} \xi_i \\
+\text{s.t.} \quad & y_i(\langle w, x_i \rangle + b) \geq 1 - \xi_i \quad \forall i \\
+& \xi_i \geq 0 \quad \forall i
+\end{aligned}$$
+
+<p>The parameter $C > 0$ controls the trade-off between margin maximization and classification error. The term $\|w\|^2$ is the regularization; note that $\gamma_w = \min_x \frac{|\langle w, x \rangle|}{\|w\|}$, so $\|w\|^2 \propto 1/\gamma_w^2$.</p>
+
+<div class="thm"><span class="label">Theorem (Perceptron with Slack)</span>
+<p>The number of mistakes made by the perceptron is bounded by:</p>
+$$M \leq \frac{1}{\gamma_w^2} + 2\sum_i \zeta_i$$
+<p>where $\zeta_i$ are the slack variables from the soft-margin SVM.</p>
+</div>
+
+<h3>The Dual Problem</h3>
+
+<p>The Lagrangian is:</p>
+$$\mathcal{L}(w, b, \xi, \alpha, \mu) = \frac{1}{2}\|w\|^2 + C\sum_i \xi_i - \sum_i \alpha_i [y_i(\langle w, x_i \rangle + b) - 1 + \xi_i] - \sum_i \mu_i \xi_i$$
+
+<p>Taking derivatives with respect to the primal variables and substituting yields the <strong>dual problem</strong>:</p>
+
+$$\begin{aligned}
+\max_{\alpha} \quad & \sum_{i=1}^{n} \alpha_i - \frac{1}{2} \sum_{i,j} \alpha_i \alpha_j y_i y_j \langle x_i, x_j \rangle \\
+\text{s.t.} \quad & 0 \leq \alpha_i \leq C \quad \forall i \\
+& \sum_{i=1}^{n} \alpha_i y_i = 0
+\end{aligned}$$
+
+<p><strong>Key observation:</strong> The solution depends on the data only through inner products $\langle x_i, x_j \rangle$.</p>
+
+<div class="def"><span class="label">Definition (Support Vectors)</span>
+<p>Points $x_i$ with $\alpha_i > 0$ are called <strong>support vectors</strong>. They are the points closest to (or violating) the decision boundary.</p>
+</div>
+
+<p>The optimal weight vector is: $w^* = \sum_{i=1}^{n} \alpha_i y_i x_i$</p>
+
+<h2>Kernel Methods</h2>
+
+<h3>The Kernel Trick</h3>
+
+<p>Since the SVM dual depends only on inner products, we can replace $\langle x_i, x_j \rangle$ with a <strong>kernel function</strong> $K(x_i, x_j)$.</p>
+
+<div class="def"><span class="label">Definition (Kernel Function)</span>
+<p>A function $K: \mathcal{X} \times \mathcal{X} \to \mathbb{R}$ is a <strong>valid kernel</strong> if there exists a feature map $\phi: \mathcal{X} \to \mathcal{H}$ (into some Hilbert space) such that:</p>
+$$K(x, z) = \langle \phi(x), \phi(z) \rangle_{\mathcal{H}}$$
+</div>
+
+<div class="thm"><span class="label">Theorem (Mercer's Theorem)</span>
+<p>A function $K$ is a valid kernel if and only if it is symmetric and positive semi-definite: for any $\{x_1, \ldots, x_n\} \subset \mathcal{X}$, the Gram matrix $K_{ij} = K(x_i, x_j)$ is positive semi-definite.</p>
+</div>
+
+<h3>Common Kernels</h3>
+
+<table>
+<thead>
+<tr><th><strong>Kernel</strong></th><th><strong>Definition</strong></th><th><strong>Feature Space</strong></th></tr>
+</thead>
+<tbody>
+<tr><td>Linear</td><td>$K(x, z) = \langle x, z \rangle$</td><td>$\mathbb{R}^d$</td></tr>
+<tr><td>Polynomial</td><td>$K(x, z) = (\langle x, z \rangle + c)^p$</td><td>Monomials up to degree $p$</td></tr>
+<tr><td>RBF/Gaussian</td><td>$K(x, z) = \exp(-\gamma\|x - z\|^2)$</td><td>Infinite-dimensional</td></tr>
+</tbody>
+</table>
+
+<h3>Why Kernels Work: Implicit High-Dimensional Mapping</h3>
+
+<div class="ex"><span class="label">Example (Polynomial Kernel in $\mathbb{R}^2$)</span>
+<p>For $x = (x_1, x_2)$, $z = (z_1, z_2)$, and $K(x, z) = (\langle x, z \rangle)^2$:</p>
+$$\begin{aligned}
+K(x, z) &= (x_1 z_1 + x_2 z_2)^2 \\[6pt]
+&= x_1^2 z_1^2 + 2x_1 x_2 z_1 z_2 + x_2^2 z_2^2
+\end{aligned}$$
+<p>This equals $\langle \phi(x), \phi(z) \rangle$ where $\phi(x) = (x_1^2, \sqrt{2}x_1 x_2, x_2^2) \in \mathbb{R}^3$.</p>
+</div>
+
+<h3>Kernelized Perceptron</h3>
+
+<p>To learn a classifier in feature space $\phi(x)$, we run the perceptron on $\phi(x)$. The weight vector has the form $w = \sum_{i=1}^{m} \ell(x^{(i)})\phi(x^{(i)})$, so predictions depend only on inner products:</p>
+
+$$\langle w, \phi(x) \rangle = \sum_{i=1}^{m} \ell(x^{(i)}) \langle \phi(x^{(i)}), \phi(x) \rangle = \sum_{i=1}^{m} \ell(x^{(i)}) K(x^{(i)}, x)$$
+
+<div class="algo"><span class="label">Algorithm (Kernelized Perceptron)</span>
+<p><strong>Input:</strong> Kernel function $K$, labeled data</p>
+<p><strong>Output:</strong> Set $M$ of mistake points</p>
+<ol>
+  <li>Let $M = \emptyset$</li>
+  <li><strong>for each</strong> input $x$ <strong>do</strong>
+    <ol>
+      <li>Predict $\text{sign}\left(\sum_{y \in M} \ell(y) K(y, x)\right)$</li>
+      <li>On a mistake, append $x$ to $M$</li>
+    </ol>
+  </li>
+  <li><strong>end for</strong></li>
+</ol>
+</div>
+
+<p>The algorithm never explicitly computes $\phi(x)$; it only evaluates the kernel $K$.</p>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     PART II: Feedforward Neural Networks
+     ═══════════════════════════════════════════════════════════════ -->
+
+<hr>
+<h1 class="part-title" style="margin-top:60px;">Part II: Feedforward Neural Networks</h1>
+
+<h2>From Linear to Nonlinear Models</h2>
+
+<h3>The Limitation of Linear Models</h3>
+
+<div class="thm"><span class="label">Theorem (Composition of Linear Functions is Linear)</span>
+<p>If $f(x) = Ax + b$ and $g(z) = Cz + d$, then their composition is linear:</p>
+$$(g \circ f)(x) = C(Ax + b) + d = (CA)x + (Cb + d)$$
+</div>
+
+<div class="proof"><span class="label">Proof.</span>
+<p>Direct computation. The composition is affine with matrix $CA$ and bias $Cb + d$. ∎</p>
+</div>
+
+<div class="cor"><span class="label">Corollary</span>
+<p>A neural network with only linear activations collapses to a single linear transformation, regardless of depth.</p>
+</div>
+
+<p>Stacking layers without nonlinearities provides no additional representational power. A 100-layer linear network is equivalent to a single-layer network.</p>
+
+<h3>The Need for Nonlinearity</h3>
+
+<p>To break the linear limitation, we introduce <strong>activation functions</strong> $\sigma: \mathbb{R} \to \mathbb{R}$ applied element-wise:</p>
+$$h^{(l)} = \sigma(W^{(l)} h^{(l-1)} + b^{(l)})$$
+
+<table>
+<thead>
+<tr><th><strong>Name</strong></th><th><strong>Definition</strong></th><th><strong>Derivative</strong></th></tr>
+</thead>
+<tbody>
+<tr><td>Sigmoid</td><td>$\sigma(z) = \frac{1}{1+e^{-z}}$</td><td>$\sigma(z)(1-\sigma(z))$</td></tr>
+<tr><td>Tanh</td><td>$\tanh(z) = \frac{e^z - e^{-z}}{e^z + e^{-z}}$</td><td>$1 - \tanh^2(z)$</td></tr>
+<tr><td>ReLU</td><td>$\text{ReLU}(z) = \max(0, z)$</td><td>$\mathbf{1}_{z > 0}$</td></tr>
+<tr><td>Leaky ReLU</td><td>$\max(\alpha z, z)$</td><td>$\alpha \cdot \mathbf{1}_{z \leq 0} + \mathbf{1}_{z > 0}$</td></tr>
+</tbody>
+</table>
+
+<div class="figure"><img src="../img/nn-activation-functions.png" alt="Common activation functions: Sigmoid, ReLU, and Tanh plotted on the same axes"><p class="figure-caption">Common activation functions: Sigmoid, ReLU, and Tanh.</p></div>
+
+<h2>The Universal Approximation Theorem</h2>
+
+<h3>Statement</h3>
+
+<div class="thm"><span class="label">Theorem (Universal Approximation)</span>
+<p>Let $\sigma: \mathbb{R} \to \mathbb{R}$ be any continuous, non-polynomial activation function. For any continuous function $f: [0,1]^d \to \mathbb{R}$ and any $\varepsilon > 0$, there exists a single-hidden-layer neural network</p>
+$$g(x) = \sum_{j=1}^{N} c_j \sigma(\langle w_j, x \rangle + b_j)$$
+<p>such that $\sup_{x \in [0,1]^d} |f(x) - g(x)| < \varepsilon$.</p>
+</div>
+
+<h3>Constructive Proof via ReLU</h3>
+
+<p>We give an elementary constructive proof using ReLU activations.</p>
+
+<div class="lem"><span class="label">Lemma (Step Function from Two ReLUs)</span>
+<p>For any $\epsilon > 0$, define:</p>
+$$h_\epsilon(x) = \frac{1}{\epsilon}\left[\text{ReLU}(x - a) - \text{ReLU}(x - a - \epsilon)\right]$$
+<p>Then $h_\epsilon \to \mathbf{1}_{x \geq a}$ pointwise as $\epsilon \to 0^+$.</p>
+</div>
+
+<div class="proof"><span class="label">Proof.</span>
+<p><strong>Case 1: $x &lt; a$.</strong> Both arguments are negative, so $h_\epsilon(x) = 0$.</p>
+
+<p><strong>Case 2: $a \leq x &lt; a + \epsilon$.</strong> Only the first ReLU is active:</p>
+$$h_\epsilon(x) = \frac{1}{\epsilon}(x - a) \in [0, 1)$$
+
+<p><strong>Case 3: $x \geq a + \epsilon$.</strong> Both ReLUs are active:</p>
+$$h_\epsilon(x) = \frac{1}{\epsilon}[(x-a) - (x-a-\epsilon)] = \frac{\epsilon}{\epsilon} = 1$$
+
+<p>As $\epsilon \to 0^+$, the transition region $[a, a+\epsilon)$ shrinks to a point, giving $\mathbf{1}_{x \geq a}$. ∎</p>
+</div>
+
+<div class="lem"><span class="label">Lemma (Bump Function)</span>
+<p>A "bump" function (or "tent" function) on $[a, b]$ can be constructed:</p>
+$$\text{bump}_{[a,b]}(x) = \text{ReLU}(x-a) - 2\cdot\text{ReLU}\left(x - \frac{a+b}{2}\right) + \text{ReLU}(x-b)$$
+</div>
+
+<div class="figure"><img src="../img/nn-bump-function.png" alt="Single bump (tent) function constructed from ReLU units"><p class="figure-caption">Single bump function constructed from three ReLU units.</p></div>
+
+<p>By scaling and shifting bump functions, we can approximate any continuous function. Each bump is scaled to match the function's value at that region:</p>
+
+<div class="figure"><img src="../img/nn-relu-approximation.png" alt="Approximation of a smooth function using scaled ReLU bump functions"><p class="figure-caption">Approximating $f(x) = \sin(2\pi x) \cdot e^{-x} + 0.5$ with scaled ReLU bumps.</p></div>
+
+<p>The approximation improves as we use more bump functions (finer partition). By uniform continuity, for any $\varepsilon > 0$, a sufficiently fine partition yields $\|f - \hat{f}\|_\infty < \varepsilon$.</p>
+
+<div class="thm"><span class="label">Theorem (UAT via ReLU, Constructive)</span>
+<p>Any continuous $f: [0,1] \to \mathbb{R}$ can be approximated by a finite ReLU network.</p>
+</div>
+
+<div class="proof"><span class="label">Proof.</span>
+<p><strong>Step 1: Partition.</strong> Divide $[0,1]$ into $n$ intervals $[x_{k-1}, x_k]$ of width $1/n$, where $x_k = k/n$.</p>
+
+<p><strong>Step 2: Piecewise linear approximation.</strong> Construct $\hat{f}$ by connecting the points $(x_k, f(x_k))$ with line segments. This is a piecewise linear function.</p>
+
+<p><strong>Step 3: ReLU representation.</strong> Each piecewise linear function can be written using ReLU "hinges":</p>
+$$\hat{f}(x) = f(0) + s_0 x + \sum_{k=1}^{n-1} (s_k - s_{k-1}) \cdot \text{ReLU}(x - x_k)$$
+<p>where $s_k = \frac{f(x_{k+1}) - f(x_k)}{x_{k+1} - x_k}$ is the slope of the $k$-th piece.</p>
+
+<p><strong>Step 4: Approximation error.</strong> By uniform continuity of $f$ on $[0,1]$, for any $\varepsilon > 0$, there exists $\delta > 0$ such that $|x - y| < \delta \implies |f(x) - f(y)| < \varepsilon$. Choosing $n > 1/\delta$:</p>
+$$\|f - \hat{f}\|_\infty \leq \varepsilon$$
+
+<p>Since $\hat{f}$ is a ReLU network with $n$ hidden units, the result follows. ∎</p>
+</div>
+
+<h3>Formal Analysis via Functional Analysis</h3>
+
+<div class="def"><span class="label">Definition (Discriminatory Function)</span>
+<p>A function $\sigma: \mathbb{R} \to \mathbb{R}$ is <strong>discriminatory</strong> if for any finite signed Borel measure $\mu$ on $[0,1]^d$:</p>
+$$\int_{[0,1]^d} \sigma(\langle w, x \rangle + b) \, d\mu(x) = 0 \quad \forall w \in \mathbb{R}^d, b \in \mathbb{R} \implies \mu = 0$$
+</div>
+
+<div class="thm"><span class="label">Theorem (Cybenko)</span>
+<p>If $\sigma$ is continuous and discriminatory, then the span</p>
+$$\mathcal{S} = \text{span}\{\sigma(\langle w, x \rangle + b) : w \in \mathbb{R}^d, b \in \mathbb{R}\}$$
+<p>is dense in $C([0,1]^d)$ under the supremum norm.</p>
+</div>
+
+<div class="proof"><span class="label">Proof.</span>
+<p>Suppose for contradiction that $\overline{\mathcal{S}} \neq C([0,1]^d)$.</p>
+
+<p><strong>Step 1: Apply Hahn-Banach.</strong> By the Hahn-Banach theorem, there exists a non-zero bounded linear functional $L: C([0,1]^d) \to \mathbb{R}$ that vanishes on $\mathcal{S}$.</p>
+
+<p><strong>Step 2: Apply Riesz Representation.</strong> By the Riesz representation theorem, there exists a non-zero finite signed Borel measure $\mu$ on $[0,1]^d$ such that:</p>
+$$L(g) = \int_{[0,1]^d} g(x) \, d\mu(x) \quad \forall g \in C([0,1]^d)$$
+
+<p><strong>Step 3: Contradiction.</strong> Since $L$ vanishes on $\mathcal{S}$:</p>
+$$\int_{[0,1]^d} \sigma(\langle w, x \rangle + b) \, d\mu(x) = 0 \quad \forall w, b$$
+
+<p>But $\sigma$ is discriminatory, so $\mu = 0$, contradicting the fact that $\mu \neq 0$. ∎</p>
+</div>
+
+<div class="lem"><span class="label">Lemma (Sigmoidal Functions are Discriminatory)</span>
+<p>A function $\sigma$ is <strong>sigmoidal</strong> if $\lim_{t \to -\infty} \sigma(t) = 0$ and $\lim_{t \to +\infty} \sigma(t) = 1$. Sigmoidal functions are discriminatory.</p>
+</div>
+
+<div class="proof"><span class="label">Proof.</span>
+<p>Define $\sigma_{\lambda,\theta}(x) = \sigma(\lambda(\langle w, x \rangle + b) + \theta)$. As $\lambda \to \infty$:</p>
+
+$$\sigma_{\lambda,\theta}(x) \to \begin{cases} 1 & \text{if } \langle w, x \rangle + b > 0 \\ \sigma(\theta) & \text{if } \langle w, x \rangle + b = 0 \\ 0 & \text{if } \langle w, x \rangle + b < 0 \end{cases}$$
+
+<p>By the dominated convergence theorem (since $\sigma$ is bounded):</p>
+$$\int \sigma_{\lambda,\theta} \, d\mu \to \int \mathbf{1}_{H^+_{w,b}} \, d\mu + \sigma(\theta) \cdot \mu(H_{w,b})$$
+
+<p>where $H^+_{w,b} = \{x : \langle w, x \rangle + b > 0\}$ is the open half-space and $H_{w,b}$ is the hyperplane.</p>
+
+<p>If $\int \sigma(\langle w, x \rangle + b) \, d\mu = 0$ for all $w, b$, then varying $\theta$ shows $\mu(H^+_{w,b}) = 0$ for all half-spaces. Since half-spaces generate the Borel $\sigma$-algebra, $\mu = 0$. ∎</p>
+</div>
+
+<div class="lem"><span class="label">Lemma (ReLU is Discriminatory)</span>
+<p>The ReLU function $\text{ReLU}(z) = \max(0, z)$ is discriminatory.</p>
+</div>
+
+<div class="proof"><span class="label">Proof.</span>
+<p>Consider the function:</p>
+$$f(x) = \text{ReLU}(\langle w, x \rangle + b_1) - \text{ReLU}(\langle w, x \rangle + b_2)$$
+<p>for $b_1 > b_2$. This is a bounded, continuous function. As $\langle w, x \rangle \to +\infty$, $f(x) \to b_1 - b_2$ (constant). As $\langle w, x \rangle \to -\infty$, $f(x) \to 0$.</p>
+
+<p>With appropriate scaling and choice of $b_1, b_2$, the function $\frac{1}{b_1 - b_2}f(x)$ is sigmoidal. Therefore, if:</p>
+$$\int \text{ReLU}(\langle w, x \rangle + b) \, d\mu(x) = 0 \quad \forall w, b$$
+
+<p>then subtracting two such integrals:</p>
+$$\int f(x) \, d\mu(x) = 0 \quad \forall w, b_1, b_2$$
+
+<p>Since we can construct sigmoidal functions from differences of ReLUs, and sigmoidal functions are discriminatory, it follows that $\mu = 0$. ∎</p>
+</div>
+
+<h3>Alternative Proof via Fourier Series</h3>
+
+<div class="thm"><span class="label">Theorem (Fourier Representation)</span>
+<p>Any $f \in L^2([0, 2\pi])$ can be written as:</p>
+$$f(x) = \sum_{n=-\infty}^{\infty} c_n e^{inx} = a_0 + \sum_{n=1}^{\infty} (a_n \cos(nx) + b_n \sin(nx))$$
+<p>converging in $L^2$.</p>
+</div>
+
+<p><strong>Connection to Neural Networks:</strong></p>
+
+<p>The functions $\sin$ and $\cos$ can be approximated by neural networks with smooth activations (e.g., tanh, sigmoid). Since any continuous periodic function is a uniform limit of trigonometric polynomials (by Weierstrass approximation), and these can be approximated by neural networks, we obtain UAT.</p>
+
+<h3>Alternative Proof via Taylor Series</h3>
+
+<div class="thm"><span class="label">Theorem (Stone-Weierstrass)</span>
+<p>If $\mathcal{A} \subset C(K)$ is an algebra (closed under pointwise multiplication and linear combinations) that:</p>
+<ol>
+  <li>Separates points: for $x \neq y$, there exists $f \in \mathcal{A}$ with $f(x) \neq f(y)$</li>
+  <li>Vanishes nowhere: for each $x$, there exists $f \in \mathcal{A}$ with $f(x) \neq 0$</li>
+</ol>
+<p>Then $\overline{\mathcal{A}} = C(K)$.</p>
+</div>
+
+<p><strong>Application:</strong> Neural networks with analytic activations (like sigmoid) can approximate polynomials of any degree (since sigmoid is analytic, products and compositions can approximate any polynomial via Taylor series). By Taylor's theorem, this suffices to approximate any smooth function locally. Patching together local approximations yields global approximation.</p>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     PART III: Training Neural Networks
+     ═══════════════════════════════════════════════════════════════ -->
+
+<hr>
+<h1 class="part-title" style="margin-top:60px;">Part III: Training Neural Networks</h1>
+
+<h2>The Training Problem</h2>
+
+<h3>Loss Functions</h3>
+
+<p>Given a neural network $f_\theta: \mathbb{R}^d \to \mathbb{R}^k$ parameterized by weights $\theta$, and training data $\{(x_i, y_i)\}_{i=1}^{n}$, we minimize the <strong>empirical risk</strong>:</p>
+
+$$\mathcal{L}(\theta) = \frac{1}{n} \sum_{i=1}^{n} \ell(f_\theta(x_i), y_i)$$
+
+<table>
+<thead>
+<tr><th><strong>Task</strong></th><th><strong>Loss Function</strong></th><th><strong>Formula</strong></th></tr>
+</thead>
+<tbody>
+<tr><td>Regression</td><td>Mean Squared Error</td><td>$\ell(\hat{y}, y) = \frac{1}{2}\|\hat{y} - y\|^2$</td></tr>
+<tr><td>Binary Classification</td><td>Cross-Entropy</td><td>$\ell(\hat{y}, y) = -y\log(\hat{y}) - (1-y)\log(1-\hat{y})$</td></tr>
+<tr><td>Multi-class</td><td>Softmax Cross-Entropy</td><td>$\ell(\hat{y}, y) = -\log(\text{softmax}(\hat{y})_y)$</td></tr>
+</tbody>
+</table>
+
+<h2>Gradient Descent and SGD</h2>
+
+<h3>Gradient Descent</h3>
+
+<div class="algo"><span class="label">Algorithm (Gradient Descent)</span>
+<p><strong>Input:</strong> Initial weights $\theta_0$, learning rate $\eta$, iterations $T$</p>
+<ol>
+  <li><strong>for</strong> $t = 0$ to $T-1$ <strong>do</strong></li>
+  <li>$\quad \theta_{t+1} \leftarrow \theta_t - \eta \nabla \mathcal{L}(\theta_t)$</li>
+  <li><strong>end for</strong></li>
+</ol>
+</div>
+
+<p><strong>Per-iteration cost:</strong> $O(n)$ gradient computations (one per data point).</p>
+
+<h3>Stochastic Gradient Descent</h3>
+
+<p><strong>Key Idea:</strong> Replace the full gradient with an unbiased estimator using a random sample.</p>
+
+<div class="algo"><span class="label">Algorithm (SGD)</span>
+<ol>
+  <li><strong>for</strong> $t = 0$ to $T-1$ <strong>do</strong></li>
+  <li>$\quad$ Sample $i_t \in \{1, \ldots, n\}$ uniformly at random</li>
+  <li>$\quad \theta_{t+1} \leftarrow \theta_t - \eta_t \nabla \ell(f_{\theta_t}(x_{i_t}), y_{i_t})$</li>
+  <li><strong>end for</strong></li>
+</ol>
+</div>
+
+<div class="prop"><span class="label">Proposition (Unbiased Gradient Estimate)</span>
+<p>The stochastic gradient is an unbiased estimator:</p>
+$$\E_{i}[\nabla \ell(f_\theta(x_i), y_i)] = \nabla \mathcal{L}(\theta)$$
+</div>
+
+<div class="proof"><span class="label">Proof.</span>
+$$\begin{aligned}
+\E_{i}[\nabla \ell(f_\theta(x_i), y_i)] &= \sum_{i=1}^{n} \frac{1}{n} \nabla \ell(f_\theta(x_i), y_i) \\[6pt]
+&= \nabla \left[\frac{1}{n} \sum_{i=1}^{n} \ell(f_\theta(x_i), y_i)\right] \\[6pt]
+&= \nabla \mathcal{L}(\theta)
+\end{aligned}$$
+<p>∎</p>
+</div>
+
+<h3>Convergence Theory</h3>
+
+<div class="def"><span class="label">Definition ($L$-Smoothness)</span>
+<p>A differentiable function $f$ is <strong>$L$-smooth</strong> if its gradient is $L$-Lipschitz:</p>
+$$\|\nabla f(x) - \nabla f(y)\| \leq L\|x - y\| \quad \forall x, y$$
+</div>
+
+<p>Equivalently, for all $x, y$:</p>
+$$f(y) \leq f(x) + \langle \nabla f(x), y - x \rangle + \frac{L}{2}\|y - x\|^2$$
+
+<div class="def"><span class="label">Definition ($\mu$-Strong Convexity)</span>
+<p>A differentiable function $f$ is <strong>$\mu$-strongly convex</strong> if:</p>
+$$f(y) \geq f(x) + \langle \nabla f(x), y - x \rangle + \frac{\mu}{2}\|y - x\|^2 \quad \forall x, y$$
+</div>
+
+<div class="thm"><span class="label">Theorem (GD Convergence, Strongly Convex Case)</span>
+<p>If $\mathcal{L}$ is $\mu$-strongly convex and $L$-smooth, then gradient descent with $\eta = 1/L$ satisfies:</p>
+$$\|\theta_t - \theta^*\|^2 \leq \left(1 - \frac{\mu}{L}\right)^t \|\theta_0 - \theta^*\|^2$$
+<p>The convergence rate is <strong>linear</strong> with rate depending on the condition number $\kappa = L/\mu$.</p>
+</div>
+
+<div class="proof"><span class="label">Proof.</span>
+<p>Let $\theta^* = \arg\min \mathcal{L}(\theta)$. By strong convexity applied at $\theta_t$ and $\theta^*$:</p>
+$$\mathcal{L}(\theta^*) \geq \mathcal{L}(\theta_t) + \langle \nabla \mathcal{L}(\theta_t), \theta^* - \theta_t \rangle + \frac{\mu}{2}\|\theta^* - \theta_t\|^2$$
+
+<p>Since $\theta^*$ is optimal, $\mathcal{L}(\theta_t) \geq \mathcal{L}(\theta^*)$. Rearranging:</p>
+$$\langle \nabla \mathcal{L}(\theta_t), \theta_t - \theta^* \rangle \geq \frac{\mu}{2}\|\theta_t - \theta^*\|^2$$
+
+<p>By $L$-smoothness, with $\eta = 1/L$:</p>
+$$\begin{aligned}
+\|\theta_{t+1} - \theta^*\|^2 &= \|\theta_t - \eta\nabla\mathcal{L}(\theta_t) - \theta^*\|^2 \\[6pt]
+&= \|\theta_t - \theta^*\|^2 - 2\eta\langle \nabla\mathcal{L}(\theta_t), \theta_t - \theta^*\rangle + \eta^2\|\nabla\mathcal{L}(\theta_t)\|^2 \\[6pt]
+&\leq \|\theta_t - \theta^*\|^2 - 2\eta\cdot\frac{\mu}{2}\|\theta_t - \theta^*\|^2 + \eta^2 L^2 \|\theta_t - \theta^*\|^2
+\end{aligned}$$
+
+<p>Using $\|\nabla\mathcal{L}(\theta_t)\| \leq L\|\theta_t - \theta^*\|$ (by $L$-smoothness and $\nabla\mathcal{L}(\theta^*) = 0$):</p>
+$$\|\theta_{t+1} - \theta^*\|^2 \leq (1 - \eta\mu + \eta^2 L^2)\|\theta_t - \theta^*\|^2$$
+
+<p>With $\eta = 1/L$:</p>
+$$\|\theta_{t+1} - \theta^*\|^2 \leq \left(1 - \frac{\mu}{L}\right)\|\theta_t - \theta^*\|^2$$
+<p>∎</p>
+</div>
+
+<div class="thm"><span class="label">Theorem (SGD Convergence, Non-Convex Case)</span>
+<p>Under $L$-smoothness and bounded variance $\E[\|\nabla \ell_i - \nabla \mathcal{L}\|^2] \leq \sigma^2$, SGD with constant step size $\eta = \frac{1}{L\sqrt{T}}$ satisfies:</p>
+$$\frac{1}{T}\sum_{t=0}^{T-1}\E[\|\nabla\mathcal{L}(\theta_t)\|^2] = O\left(\frac{L(\mathcal{L}(\theta_0) - \mathcal{L}^*)}{\sqrt{T}} + \frac{\sigma}{\sqrt{T}}\right)$$
+</div>
+
+<div class="proof"><span class="label">Proof.</span>
+<p>By $L$-smoothness:</p>
+$$\mathcal{L}(\theta_{t+1}) \leq \mathcal{L}(\theta_t) + \langle \nabla\mathcal{L}(\theta_t), \theta_{t+1} - \theta_t \rangle + \frac{L}{2}\|\theta_{t+1} - \theta_t\|^2$$
+
+<p>Substituting $\theta_{t+1} - \theta_t = -\eta g_t$ where $g_t$ is the stochastic gradient:</p>
+$$\mathcal{L}(\theta_{t+1}) \leq \mathcal{L}(\theta_t) - \eta\langle \nabla\mathcal{L}(\theta_t), g_t \rangle + \frac{L\eta^2}{2}\|g_t\|^2$$
+
+<p>Taking expectations conditioned on $\theta_t$, using $\E[g_t | \theta_t] = \nabla\mathcal{L}(\theta_t)$ and $\E[\|g_t\|^2 | \theta_t] = \|\nabla\mathcal{L}(\theta_t)\|^2 + \sigma^2$:</p>
+$$\E[\mathcal{L}(\theta_{t+1}) | \theta_t] \leq \mathcal{L}(\theta_t) - \eta\|\nabla\mathcal{L}(\theta_t)\|^2 + \frac{L\eta^2}{2}(\|\nabla\mathcal{L}(\theta_t)\|^2 + \sigma^2)$$
+
+<p>Rearranging:</p>
+$$\|\nabla\mathcal{L}(\theta_t)\|^2 \leq \frac{1}{\eta(1 - L\eta/2)}\left[\mathcal{L}(\theta_t) - \E[\mathcal{L}(\theta_{t+1}) | \theta_t]\right] + \frac{L\eta\sigma^2}{2(1 - L\eta/2)}$$
+
+<p>Taking full expectations and summing from $t = 0$ to $T-1$:</p>
+$$\sum_{t=0}^{T-1} \E[\|\nabla\mathcal{L}(\theta_t)\|^2] \leq \frac{\mathcal{L}(\theta_0) - \mathcal{L}^*}{\eta(1 - L\eta/2)} + \frac{TL\eta\sigma^2}{2(1 - L\eta/2)}$$
+
+<p>Setting $\eta = \frac{1}{L\sqrt{T}}$ (which satisfies $L\eta/2 = \frac{1}{2\sqrt{T}} < 1/2$ for $T \geq 1$):</p>
+$$\frac{1}{T}\sum_{t=0}^{T-1} \E[\|\nabla\mathcal{L}(\theta_t)\|^2] = O\left(\frac{L(\mathcal{L}(\theta_0) - \mathcal{L}^*)}{\sqrt{T}} + \frac{\sigma}{\sqrt{T}}\right)$$
+<p>∎</p>
+</div>
+
+<h2>Computing Gradients: Forward vs. Backward</h2>
+
+<h3>Neural Networks as Computational Graphs</h3>
+
+<p>A feedforward neural network $f: \mathbb{R}^d \to \mathbb{R}$ can be viewed as a <strong>directed acyclic graph</strong> (DAG) where:</p>
+<ul>
+  <li>Input nodes: $x_1, \ldots, x_d$</li>
+  <li>Intermediate nodes: $v = \sigma(u)$ where $u = \sum_k w_k v_k$ is a weighted sum of parent nodes</li>
+  <li>Output node: $f$</li>
+</ul>
+
+<p><strong>The goal:</strong> Compute $\frac{\partial f}{\partial w}$ for every weight $w$ in the network.</p>
+
+<h3>The Chain Rule for Computational Graphs</h3>
+
+<p>Consider a node $v$ in the network. Let $u$ be the weighted sum before the activation:</p>
+$$u = \theta_1 t_1 + \theta_2 t_2 + \cdots + \theta_n t_n$$
+$$v = \sigma(u)$$
+
+<p>By the chain rule:</p>
+$$\frac{\partial f}{\partial \theta_1} = \frac{\partial f}{\partial v} \cdot \frac{\partial v}{\partial u} \cdot \frac{\partial u}{\partial \theta_1}$$
+
+<ul>
+  <li>$\frac{\partial v}{\partial u} = \sigma'(u)$ &mdash; depends only on the activation function</li>
+  <li>$\frac{\partial u}{\partial \theta_1} = t_1$ &mdash; the input to this weight</li>
+  <li>$\frac{\partial f}{\partial v}$ &mdash; <strong>this is the challenge</strong>: how does changing $v$ affect the final output?</li>
+</ul>
+
+<h3>The Multivariable Chain Rule</h3>
+
+<p>When node $v$ has multiple downstream nodes $w_1, \ldots, w_m$:</p>
+$$\frac{\partial f}{\partial v} = \sum_{j=1}^{m} \frac{\partial f}{\partial w_j} \cdot \frac{\partial w_j}{\partial v}$$
+
+<h3>Forward Mode Differentiation</h3>
+
+<p><strong>Idea:</strong> For each weight $\theta$, propagate $\frac{\partial v}{\partial \theta}$ forward through the graph.</p>
+
+<p><strong>Algorithm (Forward Mode):</strong></p>
+<ol>
+  <li>Fix a weight $\theta_{ij}$ in layer $l$</li>
+  <li>Initialize $\frac{\partial v}{\partial \theta_{ij}} = 0$ for all nodes $v$ before the weight</li>
+  <li>At the node where $\theta_{ij}$ appears: $\frac{\partial v_i}{\partial \theta_{ij}} = \sigma'(u_i) \cdot v_j^{(l-1)}$</li>
+  <li>Propagate forward through all downstream nodes using the chain rule</li>
+  <li>At the output, we have $\frac{\partial f}{\partial \theta_{ij}}$</li>
+</ol>
+
+<p><strong>Cost:</strong> $O(E)$ per weight, where $E$ = number of edges. For $W$ weights: $O(WE)$ total.</p>
+
+<h3>The Inefficiency of Forward Mode</h3>
+
+<p><strong>Key Insight (Gundersen):</strong> In forward mode, we compute <em>the same terms repeatedly</em>.</p>
+
+<p>Consider computing $\frac{\partial f}{\partial \theta_i}$ and $\frac{\partial f}{\partial \theta_k}$ for two weights in the same layer:</p>
+$$\frac{\partial f}{\partial \theta_i} = \frac{\partial f}{\partial v} \cdot \frac{\partial v}{\partial u} \cdot \frac{\partial u}{\partial \theta_i}$$
+$$\frac{\partial f}{\partial \theta_k} = \frac{\partial f}{\partial v} \cdot \frac{\partial v}{\partial u} \cdot \frac{\partial u}{\partial \theta_k}$$
+
+<p>The terms $\frac{\partial f}{\partial v}$ and $\frac{\partial v}{\partial u}$ are <strong>repeated</strong> but computed separately in forward mode for each weight.</p>
+
+<p><strong>The fundamental problem:</strong> At node $v$, we cannot compute $\frac{\partial f}{\partial v}$ (which depends on downstream nodes) without visiting all downstream nodes. In forward mode, we must do this separately for each weight.</p>
+
+<div class="figure"><img src="../img/nn-forward-mode.png" alt="Forward mode differentiation diagram showing repeated computation of shared terms"><p class="figure-caption">Forward mode: $\frac{\partial f}{\partial v}$ is computed separately for each path from weight to output.</p></div>
+
+<h3>Backpropagation: The Efficient Solution</h3>
+
+<p><strong>Key Insight:</strong> If we compute $\frac{\partial f}{\partial v}$ for all nodes $v$ in a <em>backward</em> pass, we can share these computations across all weights.</p>
+
+<p>The multivariable chain rule tells us:</p>
+$$\frac{\partial f}{\partial v} = \sum_{j : w_j \text{ child of } v} \frac{\partial f}{\partial w_j} \cdot \frac{\partial w_j}{\partial v}$$
+
+<p>If we already have $\frac{\partial f}{\partial w_j}$ from the backward pass, we can compute $\frac{\partial f}{\partial v}$ using only <strong>local</strong> information.</p>
+
+<div class="algo"><span class="label">Algorithm (Backpropagation)</span>
+<p><strong>Forward Pass:</strong></p>
+<ol>
+  <li>Compute all activations $v^{(l)}$ layer by layer</li>
+  <li>Store intermediate values $(u^{(l)}, v^{(l)})$ for the backward pass</li>
+</ol>
+<p><strong>Backward Pass:</strong></p>
+<ol>
+  <li>Initialize $\delta^{(L)} := \frac{\partial \mathcal{L}}{\partial v^{(L)}}$ at the output layer</li>
+  <li><strong>for</strong> $l = L-1$ down to $1$ <strong>do</strong>
+    <ol>
+      <li>Compute $\delta^{(l)} = (W^{(l+1)})^\top \delta^{(l+1)} \odot \sigma'(u^{(l)})$</li>
+      <li>Compute $\frac{\partial \mathcal{L}}{\partial W^{(l)}} = \delta^{(l)} (v^{(l-1)})^\top$</li>
+      <li>Compute $\frac{\partial \mathcal{L}}{\partial b^{(l)}} = \delta^{(l)}$</li>
+    </ol>
+  </li>
+  <li><strong>end for</strong></li>
+</ol>
+</div>
+
+<p>Here $\delta^{(l)} = \frac{\partial \mathcal{L}}{\partial u^{(l)}}$ is the "error signal" at layer $l$, and $\odot$ denotes element-wise multiplication.</p>
+
+<div class="thm"><span class="label">Theorem (Backprop Complexity)</span>
+<p>Backpropagation computes all partial derivatives in $O(E)$ time, where $E$ is the number of edges (weights) in the network.</p>
+</div>
+
+<div class="proof"><span class="label">Proof.</span>
+<p>Each edge is visited exactly once in the forward pass (to compute activations) and exactly once in the backward pass (to compute gradients). Each visit requires $O(1)$ operations. Therefore, total time is $O(E)$. ∎</p>
+</div>
+
+<p><strong>Comparison:</strong></p>
+
+<table>
+<thead>
+<tr><th><strong>Method</strong></th><th><strong>Time Complexity</strong></th></tr>
+</thead>
+<tbody>
+<tr><td>Numerical differentiation</td><td>$O(WE)$ (finite differences)</td></tr>
+<tr><td>Forward mode autodiff</td><td>$O(WE)$</td></tr>
+<tr><td><strong>Backpropagation</strong></td><td>$O(E)$</td></tr>
+</tbody>
+</table>
+
+<h2>The Vanishing and Exploding Gradient Problem</h2>
+
+<h3>The Vanishing Gradient Problem</h3>
+
+<p>Consider a deep network with $L$ layers and sigmoid activations. The gradient at layer $l$ involves:</p>
+$$\frac{\partial \mathcal{L}}{\partial W^{(l)}} \propto \prod_{k=l}^{L} \sigma'(u^{(k)}) \cdot W^{(k)}$$
+
+<p><strong>The Issue:</strong> For sigmoid, $\sigma'(z) = \sigma(z)(1-\sigma(z))$.</p>
+
+<div class="prop"><span class="label">Proposition</span>
+<p>The sigmoid derivative satisfies $\sigma'(z) \leq \frac{1}{4}$ for all $z \in \mathbb{R}$, with equality at $z = 0$.</p>
+</div>
+
+<div class="proof"><span class="label">Proof.</span>
+<p>$\sigma'(z) = \sigma(z)(1-\sigma(z))$. Let $s = \sigma(z) \in (0,1)$. Then $\sigma'(z) = s(1-s)$.</p>
+
+<p>By AM-GM: $s(1-s) \leq \left(\frac{s + (1-s)}{2}\right)^2 = \frac{1}{4}$, with equality when $s = 1/2$, i.e., $z = 0$. ∎</p>
+</div>
+
+<div class="thm"><span class="label">Theorem (Vanishing Gradients)</span>
+<p>For a network with sigmoid activations and $L$ layers, if $\|W^{(k)}\| \leq 1$ for all $k$:</p>
+$$\left\|\frac{\partial \mathcal{L}}{\partial W^{(1)}}\right\| = O\left(\frac{1}{4^{L-1}}\right)$$
+<p>Gradients vanish exponentially with depth.</p>
+</div>
+
+<h3>The Exploding Gradient Problem</h3>
+
+<p>Conversely, if $\|W^{(k)}\| > 4$, gradients can <strong>explode</strong> exponentially:</p>
+$$\left\|\frac{\partial \mathcal{L}}{\partial W^{(1)}}\right\| = O\left(\lambda^{L-1}\right) \quad \text{for } \lambda > 1$$
+
+<h3>Solutions</h3>
+
+<p><strong>1. ReLU Activation:</strong></p>
+$$\sigma'(z) = \begin{cases} 1 & z > 0 \\ 0 & z \leq 0 \end{cases}$$
+<p>Gradients are either 0 or 1; no shrinking occurs in the active region.</p>
+
+<p><strong>2. Careful Initialization (Xavier/He):</strong></p>
+<ul>
+  <li><strong>Xavier (Glorot):</strong> $\text{Var}(w) = \frac{2}{n_{\text{in}} + n_{\text{out}}}$ (for tanh/sigmoid)</li>
+  <li><strong>He:</strong> $\text{Var}(w) = \frac{2}{n_{\text{in}}}$ (for ReLU)</li>
+</ul>
+
+<p>The idea is to keep the variance of activations constant across layers.</p>
+
+<p><strong>3. Batch Normalization:</strong></p>
+
+<p>Normalize activations within each mini-batch to have mean 0 and variance 1:</p>
+$$\hat{z} = \frac{z - \mu_B}{\sqrt{\sigma_B^2 + \epsilon}}$$
+
+<p>This keeps activations in the "active" region of the activation function.</p>
+
+<p><strong>4. Residual Connections (ResNets):</strong></p>
+$$h^{(l+1)} = h^{(l)} + F(h^{(l)})$$
+
+<p>Gradients can flow directly through the identity path, avoiding the vanishing gradient problem.</p>
+
+<h2>Summary</h2>
+
+<h3>The Progression of Ideas</h3>
+
+<table>
+<thead>
+<tr><th><strong>Model</strong></th><th><strong>Key Insight</strong></th><th><strong>Limitation</strong></th></tr>
+</thead>
+<tbody>
+<tr><td>Perceptron</td><td>Linear separation via hyperplane</td><td>Only linearly separable data</td></tr>
+<tr><td>SVM</td><td>Maximum margin + kernel trick</td><td>Fixed feature space</td></tr>
+<tr><td>Neural Network</td><td>Nonlinear activation → UAT</td><td>Training is non-convex</td></tr>
+<tr><td>Deep Networks</td><td>Depth gives expressiveness</td><td>Vanishing/exploding gradients</td></tr>
+</tbody>
+</table>
+
+<h3>Key Theorems</h3>
+
+<ol>
+  <li><strong>Perceptron Convergence:</strong> At most $1/\gamma^2$ mistakes</li>
+  <li><strong>Perceptron Lower Bound:</strong> $\Omega(2^{n-1})$ mistakes possible</li>
+  <li><strong>Modified Perceptron:</strong> $O(\log n / \sigma^2)$ mistakes with high probability</li>
+  <li><strong>Universal Approximation:</strong> Single hidden layer suffices for any continuous function</li>
+  <li><strong>Backprop Efficiency:</strong> $O(E)$ vs $O(WE)$ for forward mode</li>
+</ol>
+
+<h3>Practical Guidelines</h3>
+
+<ol>
+  <li>Use ReLU (or variants) for hidden layers</li>
+  <li>Use proper initialization (He for ReLU, Xavier for tanh/sigmoid)</li>
+  <li>Consider batch normalization for deep networks</li>
+  <li>Monitor gradient norms during training</li>
+  <li>Use residual connections for very deep networks ($> 20$ layers)</li>
+</ol>
+
+</div>
+<script src="../js/theme.js"></script>
+<script src="../js/sidebar.js?v=2"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false},{left:'$',right:'$',display:false}],macros:{'\\R':'\\mathbb{R}','\\E':'\\mathbb{E}','\\Var':'\\text{Var}','\\Cov':'\\text{Cov}','\\Bias':'\\text{Bias}','\\MSE':'\\text{MSE}','\\tr':'\\text{tr}','\\rank':'\\text{rank}','\\N':'\\mathbb{N}','\\Z':'\\mathbb{Z}'},throwOnError:false});"></script>
+</body>
+</html>

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ethics: Neural Networks - LebNet</title>
+<link rel="stylesheet" href="../css/style.css">
+<script>if(localStorage.getItem('lebnet-theme')==='light')document.documentElement.classList.add('theme-light');</script>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="../index.html" class="navbar-brand"><img src="../img/lebnet-logo-light.png" alt="LebNet" class="navbar-logo logo-dark"><img src="../img/lebnet-logo.png" alt="LebNet" class="navbar-logo logo-light"></a>
+  <ul class="navbar-links">
+    <li><a href="../index.html" class="active">Notes</a></li>
+    <li><a href="../notebooks.html">Notebooks</a></li>
+    <li><a href="../ethics.html">Ethics</a></li>
+  </ul>
+  <div class="navbar-right">
+    <a href="https://github.com/TechFellows26/Lectures" target="_blank" rel="noopener" class="navbar-icon" title="GitHub Repository"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .3a12 12 0 0 0-3.8 23.38c.6.1.82-.26.82-.58v-2.02c-3.34.73-4.04-1.61-4.04-1.61a3.18 3.18 0 0 0-1.33-1.76c-1.09-.74.08-.73.08-.73a2.52 2.52 0 0 1 1.84 1.24 2.56 2.56 0 0 0 3.5 1 2.56 2.56 0 0 1 .76-1.61c-2.67-.3-5.47-1.33-5.47-5.93a4.64 4.64 0 0 1 1.24-3.22 4.3 4.3 0 0 1 .12-3.18s1-.33 3.3 1.23a11.38 11.38 0 0 1 6 0c2.28-1.56 3.29-1.23 3.29-1.23a4.3 4.3 0 0 1 .12 3.18 4.64 4.64 0 0 1 1.23 3.22c0 4.61-2.8 5.63-5.48 5.92a2.86 2.86 0 0 1 .82 2.23v3.29c0 .32.21.7.82.58A12 12 0 0 0 12 .3"/></svg></a>
+    <a href="https://lebnet.us/TechFellows" target="_blank" rel="noopener" class="navbar-icon" title="LebNet TechFellows"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></a>
+    <button class="theme-toggle" title="Toggle theme" aria-label="Toggle theme">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M12 2 A10 10 0 0 0 12 22 Z" style="fill:var(--bg)"/><path d="M12 2 A10 10 0 0 1 12 22 Z" style="fill:var(--fg)"/></svg>
+    </button>
+  </div>
+</nav>
+
+<button class="sidebar-toggle" aria-label="Toggle sidebar">&#9776;</button>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-title">On this page</div>
+  <ul class="sidebar-nav"></ul>
+</aside>
+
+<div class="paper">
+<h1>Ethics: Neural Networks</h1>
+<p class="subtitle">LebNet Tech Fellows &mdash; Ethics &amp; Statistical Pitfalls</p>
+
+<h2>Section 1: Model Design &amp; Evaluation Pitfalls</h2>
+<h3>Overfitting &amp; Memorization</h3>
+<div class="def"><span class="label">Question</span><p>A startup trains a deep neural network with 10 million parameters on a medical imaging dataset of 5,000 X-rays to detect pneumonia. The model achieves 99.5% training accuracy but only 62% on a held-out test set. The CTO wants to collect more features rather than more data. What is the fundamental problem?</p></div>
+<div class="rem"><span class="label">Answer</span><p>The model has massively more parameters than training examples, so it has memorized the training data rather than learning generalizable patterns. It may have learned artifacts like specific scanner noise, patient ID markers on the images, or other irrelevant details unique to the training set. Collecting more features would make the problem worse by giving the model more noise to memorize. The team needs more training data, aggressive regularization (dropout, weight decay, data augmentation), or a smaller architecture. Deploying this model would mean roughly 4 in 10 pneumonia cases are misclassified - a dangerous failure rate for a clinical tool.</p></div>
+<h3>Overconfident Predictions</h3>
+<div class="def"><span class="label">Question</span><p>A neural network classifier for identifying plant species outputs a 99.7% confidence score for an image that is actually a photograph of a shoe. A user trusts the classification because of the high confidence. What does this reveal about neural network uncertainty?</p></div>
+<div class="rem"><span class="label">Answer</span><p>Neural networks are notoriously poorly calibrated - their softmax output probabilities do not reflect true uncertainty. When presented with an input far from anything in the training data, the model doesn’t output low confidence; it confidently maps the input to whichever class happens to have the highest activation. The model has no concept of “I’ve never seen anything like this.” This is fundamentally different from human reasoning, where unfamiliar inputs produce uncertainty. For any deployment where users will act on confidence scores, the model needs calibration techniques (temperature scaling, Platt scaling) and ideally out-of-distribution detection. Without these, high confidence becomes dangerous misinformation.</p></div>
+<h2>Section 2: Fairness, Bias &amp; Social Impact</h2>
+<h3>Bias Encoded in Training Data</h3>
+<div class="def"><span class="label">Question</span><p>A neural network trained on millions of internet images for facial recognition achieves 99% accuracy on light-skinned faces but only 65% on dark-skinned faces. The company argues the model is trained on “real-world data” and reflects natural data distributions. What’s wrong with this argument?</p></div>
+<div class="rem"><span class="label">Answer</span><p>The internet is not a neutral sample of the world - it overrepresents certain demographics and underrepresents others. The training data reflects the biases of who creates, uploads, and labels images online. A model trained on this data inherits those biases: it learns rich feature representations for overrepresented groups and impoverished ones for underrepresented groups. The 34-percentage-point accuracy gap means the model is essentially unusable for dark-skinned individuals. Calling this “real-world data” naturalizes a social bias as a technical inevitability. The company has a responsibility to curate balanced training data, evaluate performance across demographic groups, and not deploy a model that works well only for some people.</p></div>
+<h3>Representation Harm in Embeddings</h3>
+<div class="def"><span class="label">Question</span><p>A company uses a neural network’s learned word embeddings to automatically screen resumes. The embeddings, trained on historical text, encode associations like “man is to programmer as woman is to homemaker.” Resumes with traditionally female-associated language are systematically ranked lower for technical roles. The engineering team says the embeddings just reflect language patterns. What’s the issue?</p></div>
+<div class="rem"><span class="label">Answer</span><p>Word embeddings learn statistical associations from text, and text reflects societal biases. The model doesn’t just “reflect language” - it operationalizes historical stereotypes as hiring criteria. When deployed in a decision system, these biases have material consequences: qualified women are filtered out before a human ever sees their resume. The fact that the bias originates in the data doesn’t absolve the deployer. The company is choosing to use a biased tool for consequential decisions. Debiasing techniques exist (projection-based debiasing, counterfactual data augmentation), but more fundamentally, the company needs to audit downstream outcomes and take responsibility for the decisions their system makes.</p></div>
+<h3>Opacity and Accountability</h3>
+<div class="def"><span class="label">Question</span><p>A government agency uses a deep neural network to determine welfare benefit eligibility. When applicants are denied, they ask for an explanation but are told the model is too complex to explain. An applicant who was incorrectly denied has no way to understand or challenge the decision. What are the ethical and legal concerns?</p></div>
+<div class="rem"><span class="label">Answer</span><p>This raises fundamental issues of due process and accountability. When consequential decisions - welfare eligibility, criminal sentencing, loan approvals - are made by opaque models, affected individuals cannot meaningfully contest errors. Neural networks are often treated as black boxes, but this is a choice, not an inevitability. Interpretability techniques (SHAP values, attention visualization, counterfactual explanations) can provide partial explanations. More importantly, if a model cannot be explained sufficiently for affected individuals to understand and challenge decisions, it may be inappropriate for that use case regardless of accuracy. Many legal frameworks, including GDPR, establish a right to explanation for automated decisions. Using an opaque model for welfare eligibility may violate these requirements.</p></div>
+
+</div>
+
+
+<script src="../js/theme.js"></script>
+<script src="../js/sidebar.js?v=2"></script>
+</body>
+</html>

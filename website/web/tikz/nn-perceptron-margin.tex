@@ -1,0 +1,47 @@
+\documentclass[tikz,border=10pt]{standalone}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\definecolor{mantis}{RGB}{0, 105, 62}
+\begin{document}
+\begin{tikzpicture}[scale=1.1]
+    % Main separating hyperplane (solid black) - line y = 0.5x
+    \draw[thick, black] (-3,-1.5) -- (3,1.5);
+    
+    % Margin lines (dashed, parallel to separator)
+    \draw[dashed, black] (-3,-0.5) -- (3,2.5);  % upper margin: y = 0.5x + 1
+    \draw[dashed, black] (-3,-2.5) -- (3,0.5);  % lower margin: y = 0.5x - 1
+    
+    % Normal vector w* (perpendicular to separator, pointing to + class)
+    % Perpendicular direction to slope 0.5 is (-1, 2) normalized
+    \draw[->, thick, black] (0,0) -- (-0.8,1.6);
+    \node[black] at (-0.5,1.8) {$w^*$};
+    
+    % Gamma annotations - PERPENDICULAR to separator
+    % From point (1, 0.5) on separator to upper margin at (0.6, 1.3)
+    \draw[<->, thick, green!50!black] (1,0.5) -- (0.6,1.3);
+    \node[green!50!black] at (1.1,1.0) {$\gamma$};
+    % From point (1, 0.5) on separator to lower margin at (1.4, -0.3)
+    \draw[<->, thick, green!50!black] (1,0.5) -- (1.4,-0.3);
+    \node[green!50!black] at (1.5,0.2) {$\gamma$};
+    
+    % Positive points (+) - blue, above upper margin
+    \node[blue, font=\bfseries\large] at (-2,1.5) {$+$};
+    \node[blue, font=\bfseries\large] at (-1,2.2) {$+$};
+    \node[blue, font=\bfseries\large] at (0,2.5) {$+$};
+    \node[blue, font=\bfseries\large] at (1,2.8) {$+$};
+    \node[blue, font=\bfseries\large] at (0.6,1.3) {$+$};  % support vector on margin
+    \node[blue, font=\bfseries\large] at (1.5,2.3) {$+$};
+    \node[blue, font=\bfseries\large] at (-1.5,2.0) {$+$};
+    \node[blue, font=\bfseries\large] at (2,2.9) {$+$};
+    
+    % Negative points (-) - orange, below lower margin
+    \node[orange, font=\bfseries\large] at (2,-0.5) {$-$};
+    \node[orange, font=\bfseries\large] at (1,-0.8) {$-$};
+    \node[orange, font=\bfseries\large] at (1.4,-0.3) {$-$};  % support vector on margin
+    \node[orange, font=\bfseries\large] at (-1,-1.5) {$-$};
+    \node[orange, font=\bfseries\large] at (1.5,-1.2) {$-$};
+    \node[orange, font=\bfseries\large] at (2.5,-0.8) {$-$};
+    \node[orange, font=\bfseries\large] at (0.5,-1.8) {$-$};
+    \node[orange, font=\bfseries\large] at (-0.5,-2.0) {$-$};
+\end{tikzpicture}
+\end{document}

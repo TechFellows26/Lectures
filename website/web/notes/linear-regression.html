@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Linear Regression - LebNet</title>
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.css">
+<script>if(localStorage.getItem('lebnet-theme')==='light')document.documentElement.classList.add('theme-light');</script>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="../index.html" class="navbar-brand"><img src="../img/lebnet-logo-light.png" alt="LebNet" class="navbar-logo logo-dark"><img src="../img/lebnet-logo.png" alt="LebNet" class="navbar-logo logo-light"></a>
+  <ul class="navbar-links">
+    <li><a href="../index.html" class="active">Notes</a></li>
+    <li><a href="../notebooks.html">Notebooks</a></li>
+    <li><a href="../ethics.html">Ethics</a></li>
+  </ul>
+  <div class="navbar-right">
+    <a href="https://github.com/TechFellows26/Lectures" target="_blank" rel="noopener" class="navbar-icon" title="GitHub Repository"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .3a12 12 0 0 0-3.8 23.38c.6.1.82-.26.82-.58v-2.02c-3.34.73-4.04-1.61-4.04-1.61a3.18 3.18 0 0 0-1.33-1.76c-1.09-.74.08-.73.08-.73a2.52 2.52 0 0 1 1.84 1.24 2.56 2.56 0 0 0 3.5 1 2.56 2.56 0 0 1 .76-1.61c-2.67-.3-5.47-1.33-5.47-5.93a4.64 4.64 0 0 1 1.24-3.22 4.3 4.3 0 0 1 .12-3.18s1-.33 3.3 1.23a11.38 11.38 0 0 1 6 0c2.28-1.56 3.29-1.23 3.29-1.23a4.3 4.3 0 0 1 .12 3.18 4.64 4.64 0 0 1 1.23 3.22c0 4.61-2.8 5.63-5.48 5.92a2.86 2.86 0 0 1 .82 2.23v3.29c0 .32.21.7.82.58A12 12 0 0 0 12 .3"/></svg></a>
+    <a href="https://lebnet.us/TechFellows" target="_blank" rel="noopener" class="navbar-icon" title="LebNet TechFellows"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></a>
+    <button class="theme-toggle" title="Toggle theme" aria-label="Toggle theme">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M12 2 A10 10 0 0 0 12 22 Z" style="fill:var(--bg)"/><path d="M12 2 A10 10 0 0 1 12 22 Z" style="fill:var(--fg)"/></svg>
+    </button>
+  </div>
+</nav>
+
+<button class="sidebar-toggle" aria-label="Toggle sidebar">&#9776;</button>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-title">On this page</div>
+  <ul class="sidebar-nav"></ul>
+</aside>
+
+<div class="paper">
+<h1>Linear Regression</h1>
+<p class="subtitle">LebNet Tech Fellows &mdash; Detailed Notes</p>
+
+<h2>Problem Setup</h2>
+
+<p>Let $y$ be an explained variable and $x$ an explanatory variable related by $y = f(x)$. The linear model assumes $y = a + bx$, where $a, b \in \mathbb{R}$. This relationship does not hold exactly, but may hold up to some noise $\varepsilon$, a term capturing random processes we do not fully understand. We write:</p>
+
+$$Y = a + bX + \varepsilon$$
+
+<p>The goal is to find estimators $\hat{a}, \hat{b}$ of the true parameters $a, b$. The case $x \in \mathbb{R}$ is called univariate regression; the case $x \in \mathbb{R}^n$ with $n \geq 2$ is called multivariate regression.</p>
+
+<h3>Practical Example: Estimating Resistance via Ohm's Law</h3>
+
+<p>Ohm's Law states that voltage $V$ and current $I$ are related by $V = IR$, where $R$ is the resistance. Given measurements $(I_1, V_1), \ldots, (I_n, V_n)$ from a circuit, we can estimate $R$ by fitting a line through the origin.</p>
+
+<div class="figure"><img src="../img/lr-ohms-law.png" alt="Scatter plot of voltage vs current measurements with a fitted line of slope 10 ohms, illustrating Ohm's Law"><p class="figure-caption">Ohm's Law: Estimating Resistance. Measured voltage-current pairs with fitted line $\hat{R} = 10\,\Omega$.</p></div>
+
+<p>The slope of the fitted line gives the resistance $R$. This is a direct application of linear regression: the current $I$ is the explanatory variable, the voltage $V$ is the explained variable, and the unknown parameter $R$ is what we seek to estimate.</p>
+
+<h2>Choosing the Loss</h2>
+
+<p>To find estimators $\hat{a}, \hat{b}$, we need a notion of "goodness of fit" — a loss function measuring how far our predictions are from the observed values.</p>
+
+<h3>Geometric Interpretation</h3>
+
+<p>Given a point $(x_i, y_i)$ and a candidate line $\hat{y} = a + bx$, there are several ways to measure the "distance" from the point to the line:</p>
+
+<ul>
+<li><strong>Vertical distance</strong>: $|y_i - (a + bx_i)|$ — the difference in $y$-coordinates</li>
+<li><strong>Horizontal distance</strong>: difference in $x$-coordinates</li>
+<li><strong>Euclidean distance</strong>: perpendicular distance to the line</li>
+</ul>
+
+<p>In regression, we use the <strong>vertical distance</strong>. This is natural: we are trying to predict $y$ from $x$, so the error is how far off our prediction $\hat{y}_i = a + bx_i$ is from the observed $y_i$.</p>
+
+<p>Squaring these vertical distances gives the squared loss:</p>
+
+$$\ell(y, \hat{y}) = (y - \hat{y})^2$$
+
+<h3>Theoretical Justification: Bayes Optimality</h3>
+
+<p>Squared loss has a deeper justification. Under squared loss $\ell(y,z) = (y-z)^2$, the Bayes optimal predictor — the function minimizing expected risk — is the conditional expectation $\mathbb{E}[y|x]$. Intuitively, $\mathbb{E}[y|x=x']$ answers: <em>what do we expect $y$ to be, given we observed $x = x'$?</em></p>
+
+<p>To show this, let $y$ be the target, $x$ the input, and $z \in \mathbb{R}$ a candidate prediction. The optimal predictor satisfies:</p>
+
+$$\begin{aligned}
+f_*(x') &\in \underset{z \in \mathbb{R}}{\arg\min} \; \mathbb{E}\left[(y - z)^2 | x = x'\right] \\[8pt]
+&= \underset{z \in \mathbb{R}}{\arg\min} \left\{ \mathbb{E}\left[(y - \mathbb{E}[y|x=x'])^2 | x = x'\right] + (z - \mathbb{E}[y|x=x'])^2 \right\}
+\end{aligned}$$
+
+<p>The first term is the conditional variance, independent of $z$. The second term is minimized at $z = \mathbb{E}[y|x=x']$. Therefore:</p>
+
+$$f_*(x') = \mathbb{E}[y | x = x']$$
+
+<p>The Bayes risk $\mathcal{R}^*$ is the expected conditional variance. To see this, substitute $f_*$ into the risk:</p>
+
+$$\mathcal{R}^* = \mathbb{E}[(y - f_*(x))^2] = \mathbb{E}[(y - \mathbb{E}[y|x])^2] = \mathbb{E}_x\left[\text{Var}(y|x)\right]$$
+
+<p>This is the irreducible error: even with the optimal predictor, we cannot do better than the inherent noise in $y$ given $x$.</p>
+
+<p>When we fit a linear model $\hat{y} = a + bx$, we approximate $\mathbb{E}[y|x]$ with the best linear function. If the true conditional expectation is linear in $x$, the model is correctly specified; otherwise, we incur approximation error.</p>
+
+<h2>Deriving the OLS Estimators</h2>
+
+<p>Consider the univariate case. Let $(x_i, y_i) \in \mathcal{X} \times \mathcal{Y}$ be observations sampled from an unknown distribution $\nu$, with training set $D_n = \{(x_i, y_i)\}_{i=1}^{n}$. The goal is to predict $y \in \mathcal{Y}$ given a new input $x \in \mathcal{X}$.</p>
+
+<p>Under squared loss $\ell = (y - \hat{f})^2$, we minimize the empirical risk:</p>
+
+$$\hat{\mathcal{R}}_n(f) = \frac{1}{n} \sum_{i=1}^{n} (y_i - f(x_i))^2$$
+
+<p>For the linear model $f(x) = a + bx$, we seek $a, b \in \mathbb{R}$ minimizing $\hat{\mathcal{R}}_n$. We differentiate with respect to each parameter and set to zero.</p>
+
+<h3>Derivation of $\hat{a}$ (Intercept)</h3>
+
+<p>We compute $\frac{\partial \hat{\mathcal{R}}_n}{\partial a}$:</p>
+
+$$\begin{aligned}
+\frac{\partial \hat{\mathcal{R}}_n}{\partial a} &= \frac{\partial}{\partial a} \left[ \frac{1}{n} \sum_{i=1}^{n} (y_i - f(x_i))^2 \right] \\[8pt]
+&= \frac{\partial}{\partial a} \left[ \frac{1}{n} \sum_{i=1}^{n} (y_i - a - bx_i)^2 \right] \\[8pt]
+&= \frac{1}{n} \sum_{i=1}^{n} \frac{\partial}{\partial a} (y_i - a - bx_i)^2 \\[8pt]
+&= \frac{1}{n} \sum_{i=1}^{n} 2(y_i - a - bx_i) \cdot \frac{\partial}{\partial a}(y_i - a - bx_i) \\[8pt]
+&= \frac{1}{n} \sum_{i=1}^{n} 2(y_i - a - bx_i) \cdot (-1) \\[8pt]
+&= -\frac{2}{n} \sum_{i=1}^{n} (y_i - a - bx_i) \\[8pt]
+&= \frac{2}{n} \sum_{i=1}^{n} (a + bx_i - y_i)
+\end{aligned}$$
+
+<p>Setting this to zero:</p>
+
+$$\begin{aligned}
+0 &= \frac{2}{n} \sum_{i=1}^{n} (a + bx_i - y_i) \\[8pt]
+0 &= \sum_{i=1}^{n} (a + bx_i - y_i) \\[8pt]
+0 &= \sum_{i=1}^{n} a + \sum_{i=1}^{n} bx_i - \sum_{i=1}^{n} y_i \\[8pt]
+0 &= na + b\sum_{i=1}^{n} x_i - \sum_{i=1}^{n} y_i \\[8pt]
+na &= \sum_{i=1}^{n} y_i - b\sum_{i=1}^{n} x_i \\[8pt]
+\hat{a} &= \frac{1}{n}\sum_{i=1}^{n} y_i - b \cdot \frac{1}{n}\sum_{i=1}^{n} x_i \\[8pt]
+\hat{a} &= \bar{y} - b\bar{x}
+\end{aligned}$$
+
+<p>Here $\bar{x} = \frac{1}{n}\sum_{i=1}^{n} x_i$ and $\bar{y} = \frac{1}{n}\sum_{i=1}^{n} y_i$ are the sample means.</p>
+
+$$\boxed{\hat{a} = \bar{y} - \hat{b}\bar{x}}$$
+
+<h3>Derivation of $\hat{b}$ (Slope)</h3>
+
+<p>We compute $\frac{\partial \hat{\mathcal{R}}_n}{\partial b}$:</p>
+
+$$\begin{aligned}
+\frac{\partial \hat{\mathcal{R}}_n}{\partial b} &= \frac{\partial}{\partial b} \left[ \frac{1}{n} \sum_{i=1}^{n} (y_i - a - bx_i)^2 \right] \\[8pt]
+&= \frac{1}{n} \sum_{i=1}^{n} \frac{\partial}{\partial b} (y_i - a - bx_i)^2 \\[8pt]
+&= \frac{1}{n} \sum_{i=1}^{n} 2(y_i - a - bx_i) \cdot \frac{\partial}{\partial b}(y_i - a - bx_i) \\[8pt]
+&= \frac{1}{n} \sum_{i=1}^{n} 2(y_i - a - bx_i) \cdot (-x_i) \\[8pt]
+&= -\frac{2}{n} \sum_{i=1}^{n} x_i(y_i - a - bx_i) \\[8pt]
+&= \frac{2}{n} \sum_{i=1}^{n} (bx_i^2 - x_iy_i + ax_i)
+\end{aligned}$$
+
+<p>Setting this to zero:</p>
+
+$$\begin{aligned}
+\frac{2}{n} \sum_{i=1}^{n} (bx_i^2 - x_iy_i + ax_i) &= 0 \\[8pt]
+\sum_{i=1}^{n} (bx_i^2 - x_iy_i + ax_i) &= 0 \\[8pt]
+b\sum_{i=1}^{n} x_i^2 - \sum_{i=1}^{n} x_iy_i + a\sum_{i=1}^{n} x_i &= 0
+\end{aligned}$$
+
+<p>Substituting $\hat{a} = \bar{y} - b\bar{x}$:</p>
+
+$$\begin{aligned}
+b\sum_{i=1}^{n} x_i^2 - \sum_{i=1}^{n} x_iy_i + (\bar{y} - b\bar{x})\sum_{i=1}^{n} x_i &= 0 \\[8pt]
+b\sum_{i=1}^{n} x_i^2 - \sum_{i=1}^{n} x_iy_i + \bar{y}\sum_{i=1}^{n} x_i - b\bar{x}\sum_{i=1}^{n} x_i &= 0 \\[8pt]
+b\sum_{i=1}^{n} x_i^2 - b\bar{x}\sum_{i=1}^{n} x_i &= \sum_{i=1}^{n} x_iy_i - \bar{y}\sum_{i=1}^{n} x_i \\[8pt]
+b\left[\sum_{i=1}^{n} x_i^2 - \bar{x}\sum_{i=1}^{n} x_i\right] &= \sum_{i=1}^{n} x_iy_i - \bar{y}\sum_{i=1}^{n} x_i \\[8pt]
+b\left[\sum_{i=1}^{n} x_i^2 - \frac{1}{n}\sum_{i=1}^{n} x_i\sum_{i=1}^{n} x_i\right] &= \sum_{i=1}^{n} x_iy_i - \frac{1}{n}\sum_{i=1}^{n} y_i\sum_{i=1}^{n} x_i \\[8pt]
+\hat{b} &= \frac{\displaystyle\sum_{i=1}^{n} x_iy_i - \frac{1}{n}\sum_{i=1}^{n} y_i\sum_{i=1}^{n} x_i}{\displaystyle\sum_{i=1}^{n} x_i^2 - \frac{1}{n}\sum_{i=1}^{n} x_i\sum_{i=1}^{n} x_i}
+\end{aligned}$$
+
+<p><strong>Simplifying the numerator (sample covariance):</strong></p>
+
+$$\begin{aligned}
+&\sum_{i=1}^{n} x_iy_i - \frac{1}{n}\sum_{i=1}^{n} y_i\sum_{i=1}^{n} x_i \\[8pt]
+&= \sum_{i=1}^{n} x_iy_i - \bar{y}\sum_{i=1}^{n} x_i - \bar{x}\sum_{i=1}^{n} y_i + n\frac{1}{n}\sum_{i=1}^{n} y_i\frac{1}{n}\sum_{i=1}^{n} x_i \\[8pt]
+&= \sum_{i=1}^{n} x_iy_i - \bar{y}\sum_{i=1}^{n} x_i - \bar{x}\sum_{i=1}^{n} y_i + n\bar{y}\bar{x} \\[8pt]
+&= \sum_{i=1}^{n} (x_i - \bar{x})(y_i - \bar{y})
+\end{aligned}$$
+
+<p><strong>Simplifying the denominator (sample variance):</strong></p>
+
+$$\begin{aligned}
+&\sum_{i=1}^{n} x_i^2 - \frac{1}{n}\sum_{i=1}^{n} x_i\sum_{i=1}^{n} x_i \\[8pt]
+&= \sum_{i=1}^{n} x_i^2 - 2\frac{1}{n}\sum_{i=1}^{n} x_i\sum_{i=1}^{n} x_i + n\frac{1}{n}\sum_{i=1}^{n} x_i\frac{1}{n}\sum_{i=1}^{n} x_i \\[8pt]
+&= \sum_{i=1}^{n} x_i^2 - 2\bar{x}\sum_{i=1}^{n} x_i + n\bar{x}^2 \\[8pt]
+&= \sum_{i=1}^{n} (x_i - \bar{x})(x_i - \bar{x})
+\end{aligned}$$
+
+$$\boxed{\hat{b} = \frac{\displaystyle\sum_{i=1}^{n} (x_i - \bar{x})(y_i - \bar{y})}{\displaystyle\sum_{i=1}^{n} (x_i - \bar{x})^2} = \frac{\widehat{\text{Cov}}(X, Y)}{\widehat{\text{Var}}(X)}}$$
+
+<h2>Properties of the Residuals</h2>
+
+<p>The first-order conditions impose constraints on the residuals $\varepsilon_i = y_i - \hat{a} - \hat{b}x_i$.</p>
+
+<h3>Zero Mean</h3>
+
+<p>From the first-order condition for $a$:</p>
+
+$$\frac{2}{n}\sum_{i=1}^{n}(a + bx_i - y_i) = 0$$
+
+<p>Since $\varepsilon_i = y_i - a - bx_i$:</p>
+
+$$\begin{aligned}
+\frac{2}{n}\sum_{i=1}^{n}(-\varepsilon_i) &= 0 \\[8pt]
+\sum_{i=1}^{n}\varepsilon_i &= 0 \\[8pt]
+\bar{\varepsilon} &= 0
+\end{aligned}$$
+
+$$\boxed{\mathbb{E}[\varepsilon] = 0}$$
+
+<h3>Uncorrelated with Predictor</h3>
+
+<p>By definition:</p>
+
+$$\text{Cov}(X, \varepsilon) = \mathbb{E}[(X - \mu_X)(\varepsilon - \mu_\varepsilon)] = \mathbb{E}[X\varepsilon] - \mathbb{E}[X]\mathbb{E}[\varepsilon]$$
+
+<p>Since $\mathbb{E}[\varepsilon] = 0$, this reduces to $\text{Cov}(X, \varepsilon) = \mathbb{E}[X\varepsilon]$.</p>
+
+<p>Substituting $\varepsilon = Y - a - bX$:</p>
+
+$$\mathbb{E}[X\varepsilon] = \mathbb{E}[X(Y - a - bX)] = \mathbb{E}[XY] - a\mathbb{E}[X] - b\mathbb{E}[X^2]$$
+
+<p>From the first-order condition for $b$:</p>
+
+$$-\frac{2}{n}\sum_{i=1}^{n}x_i(y_i - a - bx_i) = 0 \implies \sum_{i=1}^{n} x_i(y_i - a - bx_i) = 0$$
+
+<p>Dividing by $n$:</p>
+
+$$\frac{1}{n}\sum_{i=1}^{n} x_iy_i - a\frac{1}{n}\sum_{i=1}^{n}x_i - b\frac{1}{n}\sum_{i=1}^{n}x_i^2 = 0$$
+
+<p>This is the sample analogue of $\mathbb{E}[XY] - a\mathbb{E}[X] - b\mathbb{E}[X^2] = 0$. Therefore:</p>
+
+$$\text{Cov}(X, \varepsilon) = \mathbb{E}[X\varepsilon] = \mathbb{E}[XY] - a\mathbb{E}[X] - b\mathbb{E}[X^2] = 0$$
+
+$$\boxed{\text{Cov}(X, \varepsilon) = 0}$$
+
+<h2>Summary (Univariate Case)</h2>
+
+<p>For the linear model $Y = a + bX + \varepsilon$ with OLS estimators:</p>
+
+<ol>
+<li>$\mathbb{E}[\varepsilon] = 0$ — residuals have zero mean</li>
+<li>$\text{Cov}(X, \varepsilon) = 0$ — residuals are uncorrelated with the predictor</li>
+</ol>
+
+<p>These are not assumptions but consequences of the first-order conditions.</p>
+
+<h2>Matrix Notation</h2>
+
+<p>Let us now consider the matrix notation, which is helpful to generalize our model for higher dimensions. For each observation $i = 1, \ldots, n$, let $\mathbf{x}_i \in \mathbb{R}^d$ be the vector of explanatory variables and $y_i \in \mathbb{R}$ the dependent variable. The model is:</p>
+
+$$y_i = \mathbf{x}_i^\top \boldsymbol{\theta} + \varepsilon_i$$
+
+<p>where $\boldsymbol{\theta} \in \mathbb{R}^d$ is the parameter vector and $\{\varepsilon_i\}_{i=1,\ldots,n}$ are noise terms satisfying $\text{cov}(\mathbf{x}_i, \varepsilon_i) = \mathbf{0}$.</p>
+
+<p>To include an intercept, we assume the first coordinate of $\mathbf{x}_i$ is 1:</p>
+
+$$\mathbf{x}_i = \begin{bmatrix} 1 \\ x_{i1} \\ \vdots \\ x_{i,d-1} \end{bmatrix}, \quad \boldsymbol{\theta} = \begin{bmatrix} a \\ b_1 \\ \vdots \\ b_{d-1} \end{bmatrix}$$
+
+<p>so that $\mathbf{x}_i^\top \boldsymbol{\theta} = a + b_1 x_{i1} + \cdots + b_{d-1} x_{i,d-1}$, where $\theta_1 = a$ is the intercept.</p>
+
+<p>Let $\mathbf{y} = (y_1, \ldots, y_n)^\top \in \mathbb{R}^n$ be the vector of responses and $\mathbf{X} \in \mathbb{R}^{n \times d}$ the matrix whose $i$-th row is $\mathbf{x}_i^\top$:</p>
+
+$$\mathbf{y} = \begin{bmatrix} y_1 \\ y_2 \\ \vdots \\ y_n \end{bmatrix}, \quad \mathbf{X} = \begin{bmatrix} 1 & x_{11} & \cdots & x_{1,d-1} \\ 1 & x_{21} & \cdots & x_{2,d-1} \\ \vdots & \vdots & \ddots & \vdots \\ 1 & x_{n1} & \cdots & x_{n,d-1} \end{bmatrix}$$
+
+<p>The matrix $\mathbf{X}$ is called the <em>design matrix</em>. The model can be written compactly as:</p>
+
+$$\mathbf{y} = \mathbf{X}\boldsymbol{\theta} + \boldsymbol{\varepsilon}$$
+
+<p>The goal is to find an estimator $\hat{\boldsymbol{\theta}}$ of the true parameter $\boldsymbol{\theta}$. The empirical risk is:</p>
+
+$$\hat{\mathcal{R}}_n(\boldsymbol{\theta}) = \frac{1}{n}\|\mathbf{y} - \mathbf{X}\boldsymbol{\theta}\|_2^2$$
+
+<h2>Deriving the OLS Estimator (Matrix Form)</h2>
+
+<p>We expand the squared norm:</p>
+
+$$\begin{aligned}
+\hat{\mathcal{R}}_n(\boldsymbol{\theta}) &= \frac{1}{n}(\mathbf{y} - \mathbf{X}\boldsymbol{\theta})^\top(\mathbf{y} - \mathbf{X}\boldsymbol{\theta}) \\[8pt]
+&= \frac{1}{n}\left(\mathbf{y}^\top\mathbf{y} - \mathbf{y}^\top\mathbf{X}\boldsymbol{\theta} - \boldsymbol{\theta}^\top\mathbf{X}^\top\mathbf{y} + \boldsymbol{\theta}^\top\mathbf{X}^\top\mathbf{X}\boldsymbol{\theta}\right) \\[8pt]
+&= \frac{1}{n}\left(\boldsymbol{\theta}^\top\mathbf{X}^\top\mathbf{X}\boldsymbol{\theta} - 2\boldsymbol{\theta}^\top\mathbf{X}^\top\mathbf{y} + \|\mathbf{y}\|^2\right)
+\end{aligned}$$
+
+<p>The last line follows because $\mathbf{y}^\top\mathbf{X}\boldsymbol{\theta} = \boldsymbol{\theta}^\top\mathbf{X}^\top\mathbf{y}$, as the transpose of a scalar is itself.</p>
+
+<p>Since $\hat{\mathcal{R}}_n$ is differentiable, any minimizer must satisfy $\nabla\hat{\mathcal{R}}_n(\hat{\boldsymbol{\theta}}) = \mathbf{0}$. We compute the gradient using standard matrix calculus identities: for symmetric $\mathbf{A}$, we have $\nabla_{\boldsymbol{\theta}}(\boldsymbol{\theta}^\top \mathbf{A} \boldsymbol{\theta}) = 2\mathbf{A}\boldsymbol{\theta}$ and $\nabla_{\boldsymbol{\theta}}(\boldsymbol{\theta}^\top \mathbf{b}) = \mathbf{b}$. Since $\mathbf{X}^\top\mathbf{X} \in \mathbb{R}^{d \times d}$ is symmetric:</p>
+
+$$\begin{aligned}
+\nabla\hat{\mathcal{R}}_n(\boldsymbol{\theta}) &= \frac{1}{n}\left(2\mathbf{X}^\top\mathbf{X}\boldsymbol{\theta} - 2\mathbf{X}^\top\mathbf{y}\right) \\[8pt]
+&= \frac{2}{n}\left(\mathbf{X}^\top\mathbf{X}\boldsymbol{\theta} - \mathbf{X}^\top\mathbf{y}\right)
+\end{aligned}$$
+
+<p>Setting the gradient to zero yields the <em>normal equations</em>:</p>
+
+$$\mathbf{X}^\top\mathbf{X}\hat{\boldsymbol{\theta}} = \mathbf{X}^\top\mathbf{y}$$
+
+<p>If $\mathbf{X}^\top\mathbf{X}$ is invertible, we can multiply both sides by $(\mathbf{X}^\top\mathbf{X})^{-1}$:</p>
+
+$$\boxed{\hat{\boldsymbol{\theta}} = (\mathbf{X}^\top\mathbf{X})^{-1}\mathbf{X}^\top\mathbf{y}}$$
+
+<p><strong>The rank condition.</strong> The inverse $(\mathbf{X}^\top\mathbf{X})^{-1}$ exists iff $\text{rank}(\mathbf{X}) = d$. Without full column rank, infinitely many $\boldsymbol{\theta}$ satisfy the normal equations. Since $\text{rank}(\mathbf{X}) \leq \min(n, d)$, we need $n \geq d$. The case $\text{rank}(\mathbf{X}) < d$ is called <em>perfect multicollinearity</em>.</p>
+
+<p><strong>Verifying the minimum.</strong> The Hessian is $\nabla^2\hat{\mathcal{R}}_n(\boldsymbol{\theta}) = \frac{2}{n}\mathbf{X}^\top\mathbf{X}$. For any $\mathbf{v} \neq \mathbf{0}$:</p>
+
+$$\mathbf{v}^\top(\mathbf{X}^\top\mathbf{X})\mathbf{v} = \|\mathbf{X}\mathbf{v}\|^2 > 0$$
+
+<p>The strict inequality holds because full column rank implies $\mathbf{X}\mathbf{v} \neq \mathbf{0}$ for $\mathbf{v} \neq \mathbf{0}$. The Hessian is positive definite, so $\hat{\mathcal{R}}_n$ is strictly convex and $\hat{\boldsymbol{\theta}}$ is the unique global minimum.</p>
+
+<h2>Geometric Interpretation</h2>
+
+<p>The residual vector $\mathbf{y} - \hat{\mathbf{y}} \in \mathbb{R}^n$ has coordinates:</p>
+
+$$\mathbf{y} - \hat{\mathbf{y}} = \begin{bmatrix} y_1 - \hat{y}_1 \\ y_2 - \hat{y}_2 \\ \vdots \\ y_n - \hat{y}_n \end{bmatrix}$$
+
+<p>Each entry is one vertical residual. The squared Euclidean norm of this vector is:</p>
+
+$$\|\mathbf{y} - \hat{\mathbf{y}}\|_2^2 = (y_1 - \hat{y}_1)^2 + (y_2 - \hat{y}_2)^2 + \cdots + (y_n - \hat{y}_n)^2 = \sum_{i=1}^{n}(y_i - \hat{y}_i)^2$$
+
+<p>So minimizing the Euclidean distance in $\mathbb{R}^n$ between $\mathbf{y}$ and $\hat{\mathbf{y}}$ is exactly minimizing the sum of squared vertical distances.</p>
+
+<p>The vector $\mathbf{y} \in \mathbb{R}^n$ generally does not lie in $\text{Im}(\mathbf{X}) = \{\mathbf{X}\boldsymbol{\theta} : \boldsymbol{\theta} \in \mathbb{R}^d\}$, the $d$-dimensional subspace spanned by the columns of $\mathbf{X}$. The closest point in this subspace is the orthogonal projection of $\mathbf{y}$ onto $\text{Im}(\mathbf{X})$:</p>
+
+$$\hat{\mathbf{y}} = \mathbf{X}\hat{\boldsymbol{\theta}} = \mathbf{X}(\mathbf{X}^\top\mathbf{X})^{-1}\mathbf{X}^\top\mathbf{y} = \mathbf{P}_{\mathbf{X}}\mathbf{y}$$
+
+<p>The matrix $\mathbf{P}_{\mathbf{X}} := \mathbf{X}(\mathbf{X}^\top\mathbf{X})^{-1}\mathbf{X}^\top$ is the projection matrix onto $\text{Im}(\mathbf{X})$. The residual vector $\hat{\boldsymbol{\varepsilon}} = \mathbf{y} - \hat{\mathbf{y}}$ is orthogonal to every column of $\mathbf{X}$, which is the content of the normal equations: $\mathbf{X}^\top(\mathbf{y} - \mathbf{X}\hat{\boldsymbol{\theta}}) = \mathbf{0}$.</p>
+
+<h2>Numerical Methods</h2>
+
+<p>The closed-form $\hat{\boldsymbol{\theta}} = (\mathbf{X}^\top\mathbf{X})^{-1}\mathbf{X}^\top\mathbf{y}$ requires $O(nd^2)$ to form $\mathbf{X}^\top\mathbf{X}$ and $O(d^3)$ to invert it. When $d$ is large, this becomes infeasible.</p>
+
+<p>Gradient descent bypasses matrix inversion by iterating. Recall the gradient:</p>
+
+$$\nabla\hat{\mathcal{R}}_n(\boldsymbol{\theta}) = \frac{2}{n}\left(\mathbf{X}^\top\mathbf{X}\boldsymbol{\theta} - \mathbf{X}^\top\mathbf{y}\right)$$
+
+<p>Starting from $\hat{\boldsymbol{\theta}}_0 = \mathbf{0}$, we update:</p>
+
+$$\hat{\boldsymbol{\theta}}_{t+1} = \hat{\boldsymbol{\theta}}_t - \eta \nabla\hat{\mathcal{R}}_n(\hat{\boldsymbol{\theta}}_t) = \hat{\boldsymbol{\theta}}_t - \frac{2\eta}{n}\left(\mathbf{X}^\top\mathbf{X}\hat{\boldsymbol{\theta}}_t - \mathbf{X}^\top\mathbf{y}\right)$$
+
+<p>At convergence, $\hat{\boldsymbol{\theta}}_{t+1} = \hat{\boldsymbol{\theta}}_t$, which requires $\mathbf{X}^\top\mathbf{X}\hat{\boldsymbol{\theta}} = \mathbf{X}^\top\mathbf{y}$ — the normal equations. So gradient descent converges to the OLS solution.</p>
+
+<p>When $n$ is large, computing the full gradient requires summing over all observations:</p>
+
+$$\nabla\hat{\mathcal{R}}_n(\boldsymbol{\theta}) = \frac{2}{n}\sum_{i=1}^{n}\mathbf{x}_i(\mathbf{x}_i^\top\boldsymbol{\theta} - y_i)$$
+
+<p>Stochastic gradient descent (SGD) approximates this using a single observation:</p>
+
+$$\nabla_i(\boldsymbol{\theta}) = 2\mathbf{x}_i(\mathbf{x}_i^\top\boldsymbol{\theta} - y_i)$$
+
+<p>This is an unbiased estimate: $\mathbb{E}_i[\nabla_i(\boldsymbol{\theta})] = \nabla\hat{\mathcal{R}}_n(\boldsymbol{\theta})$. The SGD update is:</p>
+
+$$\hat{\boldsymbol{\theta}}_{t+1} = \hat{\boldsymbol{\theta}}_t - \eta_t \mathbf{x}_i(\mathbf{x}_i^\top\hat{\boldsymbol{\theta}}_t - y_i)$$
+
+<p>With a decaying learning rate $\eta_t \to 0$ (such that $\sum_t \eta_t = \infty$ and $\sum_t \eta_t^2 < \infty$), SGD converges to the OLS solution. Mini-batch gradient descent averages over a subset of $B$ observations, reducing variance while remaining tractable.</p>
+
+<h2>The Classical Linear Model Assumptions</h2>
+
+<p>So far, we have treated regression purely as an optimization problem. To make <em>statistical</em> statements about $\hat{\boldsymbol{\theta}}$ — its distribution, confidence intervals, hypothesis tests — we need assumptions about the data-generating process.</p>
+
+<div class="def"><span class="label">Definition (Classical Linear Model)</span>
+<p>The <strong>fixed-X</strong> or <strong>classical linear model</strong> assumes:</p>
+<ol>
+<li><strong>Linearity</strong>: $\mathbf{y} = \mathbf{X}\boldsymbol{\theta} + \boldsymbol{\varepsilon}$ for some true $\boldsymbol{\theta} \in \mathbb{R}^d$</li>
+<li><strong>Fixed design</strong>: $\mathbf{X}$ is non-random (fixed across repeated samples)</li>
+<li><strong>Strict exogeneity</strong>: $\E[\boldsymbol{\varepsilon} | \mathbf{X}] = \mathbf{0}$</li>
+<li><strong>Spherical errors</strong>: $\Var(\boldsymbol{\varepsilon} | \mathbf{X}) = \sigma^2 \mathbf{I}_n$ (homoskedasticity + no autocorrelation)</li>
+<li><strong>Full rank</strong>: $\rank(\mathbf{X}) = d < n$</li>
+</ol>
+</div>
+
+<p>Assumption (3) implies $\E[\varepsilon_i] = 0$ and $\Cov(\mathbf{x}_i, \varepsilon_i) = \mathbf{0}$. Assumption (4) says errors have constant variance $\sigma^2$ and are uncorrelated with each other.</p>
+
+<div class="rem"><span class="label">Remark.</span>
+<p>For inference (confidence intervals, $t$-tests), we add:</p>
+<ol start="6">
+<li><strong>Normality</strong>: $\boldsymbol{\varepsilon} | \mathbf{X} \sim \mathcal{N}(\mathbf{0}, \sigma^2 \mathbf{I}_n)$</li>
+</ol>
+<p>Under (1)–(5) alone, we get unbiasedness and BLUE. Adding (6) gives exact finite-sample distributions.</p>
+</div>
+
+<h2>Unbiasedness of OLS</h2>
+
+<div class="thm"><span class="label">Theorem (Unbiasedness)</span>
+<p>Under assumptions (1)–(3), the OLS estimator is unbiased: $\E[\hat{\boldsymbol{\theta}}] = \boldsymbol{\theta}$.</p>
+</div>
+
+<div class="proof"><span class="label">Proof.</span>
+<p>Substitute the true model $\mathbf{y} = \mathbf{X}\boldsymbol{\theta} + \boldsymbol{\varepsilon}$ into the OLS formula:</p>
+
+$$\begin{aligned}
+\hat{\boldsymbol{\theta}} &= (\mathbf{X}^\top\mathbf{X})^{-1}\mathbf{X}^\top\mathbf{y} \\
+&= (\mathbf{X}^\top\mathbf{X})^{-1}\mathbf{X}^\top(\mathbf{X}\boldsymbol{\theta} + \boldsymbol{\varepsilon}) \\
+&= (\mathbf{X}^\top\mathbf{X})^{-1}\mathbf{X}^\top\mathbf{X}\boldsymbol{\theta} + (\mathbf{X}^\top\mathbf{X})^{-1}\mathbf{X}^\top\boldsymbol{\varepsilon} \\
+&= \boldsymbol{\theta} + (\mathbf{X}^\top\mathbf{X})^{-1}\mathbf{X}^\top\boldsymbol{\varepsilon}
+\end{aligned}$$
+
+<p>Taking expectations (with $\mathbf{X}$ fixed):</p>
+
+$$\E[\hat{\boldsymbol{\theta}}] = \boldsymbol{\theta} + (\mathbf{X}^\top\mathbf{X})^{-1}\mathbf{X}^\top\E[\boldsymbol{\varepsilon}] = \boldsymbol{\theta} + \mathbf{0} = \boldsymbol{\theta}$$
+<p>∎</p>
+</div>
+
+<h2>Variance of the OLS Estimator</h2>
+
+<div class="thm"><span class="label">Theorem (Variance of OLS)</span>
+<p>Under assumptions (1)–(4):</p>
+$$\Var(\hat{\boldsymbol{\theta}}) = \sigma^2 (\mathbf{X}^\top\mathbf{X})^{-1}$$
+</div>
+
+<div class="proof"><span class="label">Proof.</span>
+<p>From $\hat{\boldsymbol{\theta}} = \boldsymbol{\theta} + (\mathbf{X}^\top\mathbf{X})^{-1}\mathbf{X}^\top\boldsymbol{\varepsilon}$:</p>
+
+$$\begin{aligned}
+\Var(\hat{\boldsymbol{\theta}}) &= \Var\left((\mathbf{X}^\top\mathbf{X})^{-1}\mathbf{X}^\top\boldsymbol{\varepsilon}\right) \\
+&= (\mathbf{X}^\top\mathbf{X})^{-1}\mathbf{X}^\top \Var(\boldsymbol{\varepsilon}) \mathbf{X}(\mathbf{X}^\top\mathbf{X})^{-1} \\
+&= (\mathbf{X}^\top\mathbf{X})^{-1}\mathbf{X}^\top (\sigma^2 \mathbf{I}_n) \mathbf{X}(\mathbf{X}^\top\mathbf{X})^{-1} \\
+&= \sigma^2 (\mathbf{X}^\top\mathbf{X})^{-1}\mathbf{X}^\top\mathbf{X}(\mathbf{X}^\top\mathbf{X})^{-1} \\
+&= \sigma^2 (\mathbf{X}^\top\mathbf{X})^{-1}
+\end{aligned}$$
+<p>∎</p>
+</div>
+
+<p>The variance of the $j$-th coefficient is $\Var(\hat{\theta}_j) = \sigma^2 [(\mathbf{X}^\top\mathbf{X})^{-1}]_{jj}$.</p>
+
+<h2>The Gauss-Markov Theorem</h2>
+
+<p>The Gauss-Markov theorem establishes OLS as the <em>best</em> among a restricted class of estimators.</p>
+
+<div class="def"><span class="label">Definition (Linear Estimator)</span>
+<p>An estimator $\tilde{\boldsymbol{\theta}}$ is <strong>linear</strong> in $\mathbf{y}$ if $\tilde{\boldsymbol{\theta}} = \mathbf{A}\mathbf{y}$ for some matrix $\mathbf{A} \in \mathbb{R}^{d \times n}$ that depends only on $\mathbf{X}$.</p>
+</div>
+
+<p>OLS is linear: $\hat{\boldsymbol{\theta}} = (\mathbf{X}^\top\mathbf{X})^{-1}\mathbf{X}^\top\mathbf{y} = \mathbf{A}_{\text{OLS}}\mathbf{y}$ with $\mathbf{A}_{\text{OLS}} = (\mathbf{X}^\top\mathbf{X})^{-1}\mathbf{X}^\top$.</p>
+
+<div class="thm"><span class="label">Theorem (Gauss-Markov)</span>
+<p>Under assumptions (1)–(5), the OLS estimator is <strong>BLUE</strong>: Best Linear Unbiased Estimator. That is, for any linear unbiased estimator $\tilde{\boldsymbol{\theta}} = \mathbf{A}\mathbf{y}$:</p>
+$$\Var(\tilde{\theta}_j) \geq \Var(\hat{\theta}_j) \quad \text{for all } j = 1, \ldots, d$$
+<p>Equivalently, $\Var(\tilde{\boldsymbol{\theta}}) - \Var(\hat{\boldsymbol{\theta}})$ is positive semi-definite.</p>
+</div>
+
+<div class="proof"><span class="label">Proof.</span>
+<p>Let $\tilde{\boldsymbol{\theta}} = \mathbf{A}\mathbf{y}$ be any linear unbiased estimator. Write $\mathbf{A} = \mathbf{A}_{\text{OLS}} + \mathbf{D}$ where $\mathbf{D} = \mathbf{A} - \mathbf{A}_{\text{OLS}}$.</p>
+
+<p><em>Step 1: Unbiasedness constraint.</em> For $\tilde{\boldsymbol{\theta}}$ to be unbiased:</p>
+
+$$\begin{aligned}
+\E[\tilde{\boldsymbol{\theta}}] &= \E[\mathbf{A}(\mathbf{X}\boldsymbol{\theta} + \boldsymbol{\varepsilon})] = \mathbf{A}\mathbf{X}\boldsymbol{\theta} = \boldsymbol{\theta} \quad \forall \boldsymbol{\theta}
+\end{aligned}$$
+
+<p>This requires $\mathbf{A}\mathbf{X} = \mathbf{I}_d$. Since $\mathbf{A}_{\text{OLS}}\mathbf{X} = (\mathbf{X}^\top\mathbf{X})^{-1}\mathbf{X}^\top\mathbf{X} = \mathbf{I}_d$, we need:</p>
+
+$$\mathbf{D}\mathbf{X} = (\mathbf{A} - \mathbf{A}_{\text{OLS}})\mathbf{X} = \mathbf{I}_d - \mathbf{I}_d = \mathbf{0}$$
+
+<p><em>Step 2: Variance of $\tilde{\boldsymbol{\theta}}$.</em></p>
+
+$$\begin{aligned}
+\Var(\tilde{\boldsymbol{\theta}}) &= \Var(\mathbf{A}\boldsymbol{\varepsilon}) = \sigma^2 \mathbf{A}\mathbf{A}^\top \\
+&= \sigma^2 (\mathbf{A}_{\text{OLS}} + \mathbf{D})(\mathbf{A}_{\text{OLS}} + \mathbf{D})^\top \\
+&= \sigma^2 \left(\mathbf{A}_{\text{OLS}}\mathbf{A}_{\text{OLS}}^\top + \mathbf{A}_{\text{OLS}}\mathbf{D}^\top + \mathbf{D}\mathbf{A}_{\text{OLS}}^\top + \mathbf{D}\mathbf{D}^\top\right)
+\end{aligned}$$
+
+<p><em>Step 3: Cross terms vanish.</em> Note that $\mathbf{A}_{\text{OLS}}^\top = \mathbf{X}(\mathbf{X}^\top\mathbf{X})^{-1}$. Since $\mathbf{D}\mathbf{X} = \mathbf{0}$:</p>
+
+$$\mathbf{D}\mathbf{A}_{\text{OLS}}^\top = \mathbf{D}\mathbf{X}(\mathbf{X}^\top\mathbf{X})^{-1} = \mathbf{0}$$
+
+<p>Similarly, $\mathbf{A}_{\text{OLS}}\mathbf{D}^\top = (\mathbf{D}\mathbf{A}_{\text{OLS}}^\top)^\top = \mathbf{0}$.</p>
+
+<p><em>Step 4: Conclusion.</em></p>
+
+$$\begin{aligned}
+\Var(\tilde{\boldsymbol{\theta}}) &= \sigma^2 \mathbf{A}_{\text{OLS}}\mathbf{A}_{\text{OLS}}^\top + \sigma^2 \mathbf{D}\mathbf{D}^\top \\
+&= \Var(\hat{\boldsymbol{\theta}}) + \sigma^2 \mathbf{D}\mathbf{D}^\top
+\end{aligned}$$
+
+<p>Since $\mathbf{D}\mathbf{D}^\top$ is positive semi-definite, $\Var(\tilde{\boldsymbol{\theta}}) \geq \Var(\hat{\boldsymbol{\theta}})$.</p>
+<p>∎</p>
+</div>
+
+<div class="rem"><span class="label">Remark.</span>
+<p>BLUE means best among <em>linear unbiased</em> estimators. Nonlinear or biased estimators may have lower MSE (see Part III on regularization).</p>
+</div>
+
+<h2>Beyond BLUE: The BUE Condition</h2>
+
+<p>Under normality (assumption 6), we can strengthen Gauss-Markov.</p>
+
+<div class="thm"><span class="label">Theorem (OLS is BUE under Normality)</span>
+<p>Under assumptions (1)–(6), OLS is <strong>BUE</strong>: Best Unbiased Estimator (not just linear). It achieves the Cramér-Rao lower bound.</p>
+</div>
+
+<p>The Cramér-Rao bound states that for any unbiased estimator $\tilde{\boldsymbol{\theta}}$:</p>
+
+$$\Var(\tilde{\boldsymbol{\theta}}) \geq \mathcal{I}(\boldsymbol{\theta})^{-1}$$
+
+<p>where $\mathcal{I}(\boldsymbol{\theta})$ is the Fisher information matrix. Under the normal linear model, $\mathcal{I}(\boldsymbol{\theta}) = \frac{1}{\sigma^2}\mathbf{X}^\top\mathbf{X}$, so the bound is $\sigma^2(\mathbf{X}^\top\mathbf{X})^{-1}$ — exactly the variance of OLS.</p>
+
+<h2>Estimating $\sigma^2$</h2>
+
+<p>The error variance $\sigma^2$ is unknown and must be estimated. A natural estimator uses the residuals:</p>
+
+$$\hat{\sigma}^2 = \frac{1}{n-d}\sum_{i=1}^{n}\hat{\varepsilon}_i^2 = \frac{\|\mathbf{y} - \mathbf{X}\hat{\boldsymbol{\theta}}\|^2}{n-d} = \frac{\text{RSS}}{n-d}$$
+
+<p>where RSS = Residual Sum of Squares.</p>
+
+<div class="thm"><span class="label">Theorem</span>
+<p>Under assumptions (1)–(5), $\hat{\sigma}^2$ is unbiased: $\E[\hat{\sigma}^2] = \sigma^2$.</p>
+</div>
+
+<div class="proof"><span class="label">Proof.</span>
+<p>The residual vector is $\hat{\boldsymbol{\varepsilon}} = \mathbf{y} - \mathbf{X}\hat{\boldsymbol{\theta}} = (\mathbf{I} - \mathbf{P}_{\mathbf{X}})\mathbf{y} = \mathbf{M}\boldsymbol{\varepsilon}$, where $\mathbf{M} = \mathbf{I} - \mathbf{P}_{\mathbf{X}}$.</p>
+
+<p>The matrix $\mathbf{M}$ is symmetric and idempotent ($\mathbf{M}^2 = \mathbf{M}$), with $\tr(\mathbf{M}) = n - d$.</p>
+
+$$\begin{aligned}
+\E[\text{RSS}] &= \E[\hat{\boldsymbol{\varepsilon}}^\top\hat{\boldsymbol{\varepsilon}}] = \E[\boldsymbol{\varepsilon}^\top\mathbf{M}^\top\mathbf{M}\boldsymbol{\varepsilon}] = \E[\boldsymbol{\varepsilon}^\top\mathbf{M}\boldsymbol{\varepsilon}]
+\end{aligned}$$
+
+<p>Using $\E[\boldsymbol{\varepsilon}^\top\mathbf{A}\boldsymbol{\varepsilon}] = \tr(\mathbf{A}\Var(\boldsymbol{\varepsilon})) + \E[\boldsymbol{\varepsilon}]^\top\mathbf{A}\E[\boldsymbol{\varepsilon}]$ with $\E[\boldsymbol{\varepsilon}] = \mathbf{0}$:</p>
+
+$$\E[\text{RSS}] = \tr(\mathbf{M} \cdot \sigma^2\mathbf{I}) = \sigma^2 \tr(\mathbf{M}) = \sigma^2(n-d)$$
+
+<p>Hence $\E[\hat{\sigma}^2] = \sigma^2$.</p>
+<p>∎</p>
+</div>
+
+<h2>Sampling Distribution of $\hat{\boldsymbol{\theta}}$</h2>
+
+<p>Under normality (assumption 6):</p>
+
+<div class="thm"><span class="label">Theorem</span>
+<p>Under assumptions (1)–(6):</p>
+$$\hat{\boldsymbol{\theta}} \sim \mathcal{N}\left(\boldsymbol{\theta}, \sigma^2(\mathbf{X}^\top\mathbf{X})^{-1}\right)$$
+</div>
+
+<p>This follows because $\hat{\boldsymbol{\theta}} = \boldsymbol{\theta} + (\mathbf{X}^\top\mathbf{X})^{-1}\mathbf{X}^\top\boldsymbol{\varepsilon}$ is a linear transformation of the normal vector $\boldsymbol{\varepsilon}$.</p>
+
+<p>For individual coefficients:</p>
+
+$$\hat{\theta}_j \sim \mathcal{N}\left(\theta_j, \sigma^2[(\mathbf{X}^\top\mathbf{X})^{-1}]_{jj}\right)$$
+
+<h2>The $t$-Test for Coefficients</h2>
+
+<p>Since $\sigma^2$ is unknown, we use $\hat{\sigma}^2$ to form a $t$-statistic.</p>
+
+<div class="thm"><span class="label">Theorem</span>
+<p>Under assumptions (1)–(6):</p>
+$$t_j = \frac{\hat{\theta}_j - \theta_j}{\text{se}(\hat{\theta}_j)} \sim t_{n-d}$$
+<p>where $\text{se}(\hat{\theta}_j) = \hat{\sigma}\sqrt{[(\mathbf{X}^\top\mathbf{X})^{-1}]_{jj}}$ is the standard error.</p>
+</div>
+
+<p>To test $H_0: \theta_j = 0$ vs $H_1: \theta_j \neq 0$, compute $t_j = \hat{\theta}_j / \text{se}(\hat{\theta}_j)$ and reject if $|t_j| > t_{n-d, \alpha/2}$.</p>
+
+<p>A $(1-\alpha)$ confidence interval for $\theta_j$:</p>
+
+$$\hat{\theta}_j \pm t_{n-d, \alpha/2} \cdot \text{se}(\hat{\theta}_j)$$
+
+<h2>The $F$-Test for Multiple Coefficients</h2>
+
+<p>To test whether a subset of coefficients are jointly zero, use the $F$-test.</p>
+
+<p><strong>Setup:</strong> Partition $\boldsymbol{\theta} = (\boldsymbol{\theta}_1^\top, \boldsymbol{\theta}_2^\top)^\top$ where $\boldsymbol{\theta}_1 \in \mathbb{R}^{d_1}$ (intercept and retained variables) and $\boldsymbol{\theta}_2 \in \mathbb{R}^{d_2}$ (variables to test). We test $H_0: \boldsymbol{\theta}_2 = \mathbf{0}$.</p>
+
+<p>Let $\text{RSS}_{\text{full}}$ = RSS from the full model, $\text{RSS}_{\text{reduced}}$ = RSS from the model without $\boldsymbol{\theta}_2$.</p>
+
+<div class="thm"><span class="label">Theorem</span>
+<p>Under $H_0$ and assumptions (1)–(6):</p>
+$$F = \frac{(\text{RSS}_{\text{reduced}} - \text{RSS}_{\text{full}})/d_2}{\text{RSS}_{\text{full}}/(n-d)} \sim F_{d_2, n-d}$$
+</div>
+
+<p>Reject $H_0$ if $F > F_{d_2, n-d, \alpha}$.</p>
+
+<h2>Mean Squared Error Decomposition</h2>
+
+<p>The MSE of an estimator $\hat{\theta}$ for a parameter $\theta$ is:</p>
+
+$$\MSE(\hat{\theta}) = \E[(\hat{\theta} - \theta)^2]$$
+
+<div class="thm"><span class="label">Theorem (Bias-Variance Decomposition)</span>
+$$\MSE(\hat{\theta}) = \Bias(\hat{\theta})^2 + \Var(\hat{\theta})$$
+<p>where $\Bias(\hat{\theta}) = \E[\hat{\theta}] - \theta$.</p>
+</div>
+
+<div class="proof"><span class="label">Proof.</span>
+<p>Let $\mu = \E[\hat{\theta}]$. Then:</p>
+
+$$\begin{aligned}
+\MSE(\hat{\theta}) &= \E[(\hat{\theta} - \theta)^2] \\
+&= \E[(\hat{\theta} - \mu + \mu - \theta)^2] \\
+&= \E[(\hat{\theta} - \mu)^2] + 2\E[(\hat{\theta} - \mu)(\mu - \theta)] + (\mu - \theta)^2 \\
+&= \Var(\hat{\theta}) + 2(\mu - \theta)\underbrace{\E[\hat{\theta} - \mu]}_{=0} + \Bias(\hat{\theta})^2 \\
+&= \Var(\hat{\theta}) + \Bias(\hat{\theta})^2
+\end{aligned}$$
+<p>∎</p>
+</div>
+
+<h2>Prediction Error Decomposition</h2>
+
+<p>For prediction at a new point $\mathbf{x}_0$ with true value $y_0 = \mathbf{x}_0^\top\boldsymbol{\theta} + \varepsilon_0$:</p>
+
+<div class="thm"><span class="label">Theorem (Prediction MSE Decomposition)</span>
+$$\E[(y_0 - \hat{y}_0)^2] = \sigma^2 + \Bias(\hat{y}_0)^2 + \Var(\hat{y}_0)$$
+<p>where $\hat{y}_0 = \mathbf{x}_0^\top\hat{\boldsymbol{\theta}}$.</p>
+</div>
+
+<div class="proof"><span class="label">Proof.</span>
+<p>Let $f_0 = \mathbf{x}_0^\top\boldsymbol{\theta}$ (true signal) and $\hat{f}_0 = \hat{y}_0$ (prediction). Note $y_0 = f_0 + \varepsilon_0$ with $\varepsilon_0$ independent of $\hat{f}_0$.</p>
+
+$$\begin{aligned}
+\E[(y_0 - \hat{f}_0)^2] &= \E[(f_0 + \varepsilon_0 - \hat{f}_0)^2] \\
+&= \E[(f_0 - \hat{f}_0)^2] + \E[\varepsilon_0^2] + 2\E[(f_0 - \hat{f}_0)\varepsilon_0] \\
+&= \E[(f_0 - \hat{f}_0)^2] + \sigma^2 + 0 \\
+&= \MSE(\hat{f}_0) + \sigma^2 \\
+&= \Bias(\hat{f}_0)^2 + \Var(\hat{f}_0) + \sigma^2
+\end{aligned}$$
+<p>∎</p>
+</div>
+
+<p>The three terms are:</p>
+
+<ul>
+<li>$\sigma^2$: <strong>Irreducible error</strong> — noise in the data</li>
+<li>$\Bias(\hat{f}_0)^2$: <strong>Bias squared</strong> — systematic error from model misspecification</li>
+<li>$\Var(\hat{f}_0)$: <strong>Variance</strong> — sensitivity to training data</li>
+</ul>
+
+<h2>The Tradeoff in Practice</h2>
+
+<p><strong>High bias (underfitting):</strong> Model is too simple. Cannot capture the true relationship. Example: fitting a line to quadratic data.</p>
+
+<p><strong>High variance (overfitting):</strong> Model is too complex. Fits noise in the training data, performs poorly on new data. Example: high-degree polynomial with few data points.</p>
+
+<div class="figure"><img src="../img/lr-bias-variance.png" alt="U-shaped curve showing the bias-variance tradeoff: bias squared decreases with model complexity while variance increases, with total error minimized at an intermediate complexity"><p class="figure-caption">Bias-Variance Tradeoff. As model complexity increases, bias decreases but variance increases. The total error (dashed) is minimized at an intermediate complexity. The dotted line shows the irreducible error $\sigma^2$.</p></div>
+
+<p>The optimal model complexity minimizes total error — balancing bias and variance.</p>
+
+<h2>Detecting Overfitting and Underfitting</h2>
+
+<h3>Training Error vs Test Error</h3>
+
+<p><strong>Overfitting signature:</strong> Low training error, high test error. The gap between them indicates overfitting.</p>
+
+<p><strong>Underfitting signature:</strong> Both training and test error are high. The model cannot fit even the training data well.</p>
+
+<h3>Cross-Validation</h3>
+
+<p>$k$-fold cross-validation estimates out-of-sample error:</p>
+
+<ol>
+<li>Split data into $k$ folds</li>
+<li>For each fold $i$: train on all data except fold $i$, evaluate on fold $i$</li>
+<li>Average the $k$ test errors</li>
+</ol>
+
+<p>The CV estimate:</p>
+
+$$\text{CV}_k = \frac{1}{k}\sum_{i=1}^{k} \text{MSE}_i$$
+
+<p>Leave-one-out CV ($k = n$) has low bias but high variance. $k = 5$ or $k = 10$ is typical.</p>
+
+<h3>Learning Curves</h3>
+
+<p>Plot training and test error as a function of training set size $n$:</p>
+
+<ul>
+<li><strong>High bias:</strong> Both curves plateau at high error</li>
+<li><strong>High variance:</strong> Large gap between curves; test error decreases slowly with $n$</li>
+</ul>
+
+<h2>Ridge Regression (Tikhonov / $L_2$ Regularization)</h2>
+
+<p>Regularization introduces bias to reduce variance, often improving out-of-sample prediction. The key insight: a biased estimator can have lower MSE than an unbiased one if the variance reduction outweighs the bias introduced.</p>
+
+<h3>Motivation</h3>
+
+<p>When $\mathbf{X}^\top\mathbf{X}$ is nearly singular (multicollinearity) or $d > n$, OLS has high variance. Ridge regression stabilizes the solution by adding a penalty on $\|\boldsymbol{\theta}\|_2^2$.</p>
+
+<h3>The Ridge Objective</h3>
+
+<div class="def"><span class="label">Definition (Ridge Regression)</span>
+<p>The ridge estimator minimizes:</p>
+$$\hat{\boldsymbol{\theta}}_{\text{ridge}} = \arg\min_{\boldsymbol{\theta}} \left\{ \|\mathbf{y} - \mathbf{X}\boldsymbol{\theta}\|_2^2 + \lambda\|\boldsymbol{\theta}\|_2^2 \right\}$$
+<p>where $\lambda > 0$ is the regularization parameter.</p>
+</div>
+
+<h3>Closed-Form Solution</h3>
+
+<div class="thm"><span class="label">Theorem</span>
+<p>The ridge estimator is:</p>
+$$\boxed{\hat{\boldsymbol{\theta}}_{\text{ridge}} = (\mathbf{X}^\top\mathbf{X} + \lambda\mathbf{I})^{-1}\mathbf{X}^\top\mathbf{y}}$$
+</div>
+
+<div class="proof"><span class="label">Proof.</span>
+<p>The objective is $L(\boldsymbol{\theta}) = (\mathbf{y} - \mathbf{X}\boldsymbol{\theta})^\top(\mathbf{y} - \mathbf{X}\boldsymbol{\theta}) + \lambda\boldsymbol{\theta}^\top\boldsymbol{\theta}$.</p>
+
+<p>Expanding:</p>
+
+$$L(\boldsymbol{\theta}) = \mathbf{y}^\top\mathbf{y} - 2\boldsymbol{\theta}^\top\mathbf{X}^\top\mathbf{y} + \boldsymbol{\theta}^\top\mathbf{X}^\top\mathbf{X}\boldsymbol{\theta} + \lambda\boldsymbol{\theta}^\top\boldsymbol{\theta}$$
+
+<p>Taking the gradient:</p>
+
+$$\nabla L = -2\mathbf{X}^\top\mathbf{y} + 2\mathbf{X}^\top\mathbf{X}\boldsymbol{\theta} + 2\lambda\boldsymbol{\theta} = 2\left[(\mathbf{X}^\top\mathbf{X} + \lambda\mathbf{I})\boldsymbol{\theta} - \mathbf{X}^\top\mathbf{y}\right]$$
+
+<p>Setting to zero:</p>
+
+$$(\mathbf{X}^\top\mathbf{X} + \lambda\mathbf{I})\hat{\boldsymbol{\theta}}_{\text{ridge}} = \mathbf{X}^\top\mathbf{y}$$
+
+<p>Since $\mathbf{X}^\top\mathbf{X} + \lambda\mathbf{I}$ is always invertible for $\lambda > 0$ (eigenvalues are shifted by $\lambda$):</p>
+
+$$\hat{\boldsymbol{\theta}}_{\text{ridge}} = (\mathbf{X}^\top\mathbf{X} + \lambda\mathbf{I})^{-1}\mathbf{X}^\top\mathbf{y}$$
+<p>∎</p>
+</div>
+
+<h3>Bayesian Interpretation</h3>
+
+<p>Ridge regression is the posterior mode under:</p>
+
+<ul>
+<li>Prior: $\boldsymbol{\theta} \sim \mathcal{N}(\mathbf{0}, \tau^2\mathbf{I})$</li>
+<li>Likelihood: $\mathbf{y} | \boldsymbol{\theta} \sim \mathcal{N}(\mathbf{X}\boldsymbol{\theta}, \sigma^2\mathbf{I})$</li>
+</ul>
+
+<p>with $\lambda = \sigma^2/\tau^2$. A larger $\lambda$ corresponds to a stronger prior belief that $\boldsymbol{\theta}$ is near zero.</p>
+
+<h3>Bias and Variance of Ridge</h3>
+
+<div class="thm"><span class="label">Theorem</span>
+<p>The ridge estimator has:</p>
+
+$$\begin{aligned}
+\E[\hat{\boldsymbol{\theta}}_{\text{ridge}}] &= (\mathbf{X}^\top\mathbf{X} + \lambda\mathbf{I})^{-1}\mathbf{X}^\top\mathbf{X}\boldsymbol{\theta} = \mathbf{W}\boldsymbol{\theta} \neq \boldsymbol{\theta} \\
+\Var(\hat{\boldsymbol{\theta}}_{\text{ridge}}) &= \sigma^2 \mathbf{W}(\mathbf{X}^\top\mathbf{X})^{-1}\mathbf{W}^\top
+\end{aligned}$$
+
+<p>where $\mathbf{W} = (\mathbf{X}^\top\mathbf{X} + \lambda\mathbf{I})^{-1}\mathbf{X}^\top\mathbf{X}$.</p>
+</div>
+
+<p>Key insight: $\mathbf{W} \neq \mathbf{I}$, so ridge is <em>biased</em>. But $\Var(\hat{\boldsymbol{\theta}}_{\text{ridge}}) < \Var(\hat{\boldsymbol{\theta}}_{\text{OLS}})$ for $\lambda > 0$, which can yield lower MSE.</p>
+
+<h3>SVD Interpretation</h3>
+
+<p>Let $\mathbf{X} = \mathbf{U}\mathbf{D}\mathbf{V}^\top$ be the SVD with singular values $d_1, \ldots, d_p$. Then:</p>
+
+$$\hat{\boldsymbol{\theta}}_{\text{ridge}} = \sum_{j=1}^{p} \frac{d_j^2}{d_j^2 + \lambda} \frac{\mathbf{u}_j^\top\mathbf{y}}{d_j}\mathbf{v}_j$$
+
+<p>Compare to OLS:</p>
+
+$$\hat{\boldsymbol{\theta}}_{\text{OLS}} = \sum_{j=1}^{p} \frac{\mathbf{u}_j^\top\mathbf{y}}{d_j}\mathbf{v}_j$$
+
+<p>Ridge shrinks coefficients corresponding to small singular values (high-variance directions) more aggressively via the factor $\frac{d_j^2}{d_j^2 + \lambda} < 1$.</p>
+
+<h2>Lasso ($L_1$ Regularization)</h2>
+
+<h3>The Lasso Objective</h3>
+
+<div class="def"><span class="label">Definition (Lasso)</span>
+<p>The Lasso estimator minimizes:</p>
+$$\hat{\boldsymbol{\theta}}_{\text{lasso}} = \arg\min_{\boldsymbol{\theta}} \left\{ \frac{1}{2n}\|\mathbf{y} - \mathbf{X}\boldsymbol{\theta}\|_2^2 + \lambda\|\boldsymbol{\theta}\|_1 \right\}$$
+<p>where $\|\boldsymbol{\theta}\|_1 = \sum_{j=1}^{d}|\theta_j|$.</p>
+</div>
+
+<h3>No Closed-Form Solution</h3>
+
+<p>Unlike ridge, Lasso has no closed-form solution due to the non-differentiability of $|\cdot|$ at zero. However, we can solve it via:</p>
+
+<ul>
+<li>Coordinate descent</li>
+<li>LARS (Least Angle Regression)</li>
+<li>Proximal gradient methods</li>
+</ul>
+
+<h3>Univariate Case: Soft Thresholding</h3>
+
+<p>For the simple problem $\min_\theta \frac{1}{2}(y - \theta)^2 + \lambda|\theta|$, the solution is the <em>soft-thresholding operator</em>:</p>
+
+$$\hat{\theta} = S_\lambda(y) = \text{sign}(y)(|y| - \lambda)_+ = \begin{cases}
+y - \lambda & \text{if } y > \lambda \\
+0 & \text{if } |y| \leq \lambda \\
+y + \lambda & \text{if } y < -\lambda
+\end{cases}$$
+
+<div class="proof"><span class="label">Proof.</span>
+<p>The subgradient of $|\theta|$ at $\theta$ is:</p>
+
+$$\partial|\theta| = \begin{cases}
+\{1\} & \text{if } \theta > 0 \\
+[-1, 1] & \text{if } \theta = 0 \\
+\{-1\} & \text{if } \theta < 0
+\end{cases}$$
+
+<p>Setting $0 \in \partial\left[\frac{1}{2}(y-\theta)^2 + \lambda|\theta|\right]$:</p>
+
+$$0 = -(y - \theta) + \lambda \cdot \partial|\theta|$$
+
+<p><em>Case 1:</em> $\hat{\theta} > 0$. Then $y - \hat{\theta} = \lambda$, so $\hat{\theta} = y - \lambda$. Valid when $y > \lambda$.</p>
+
+<p><em>Case 2:</em> $\hat{\theta} < 0$. Then $y - \hat{\theta} = -\lambda$, so $\hat{\theta} = y + \lambda$. Valid when $y < -\lambda$.</p>
+
+<p><em>Case 3:</em> $\hat{\theta} = 0$. Need $y - 0 \in \lambda[-1, 1]$, i.e., $|y| \leq \lambda$.</p>
+<p>∎</p>
+</div>
+
+<h3>Sparsity: Why Lasso Yields Exact Zeros</h3>
+
+<p>The $L_1$ penalty has corners at zero, creating a non-smooth optimization landscape. Geometrically, the constraint region $\{\boldsymbol{\theta} : \|\boldsymbol{\theta}\|_1 \leq t\}$ is a diamond (cross-polytope) with vertices on the axes. The OLS solution's level curves are ellipses. Their first contact point often occurs at a vertex, setting some $\theta_j = 0$ exactly.</p>
+
+<p>In contrast, the $L_2$ constraint region is a sphere with no corners, so first contact typically occurs at a point with all $\theta_j \neq 0$.</p>
+
+<h3>Lasso as Variable Selection</h3>
+
+<p>Lasso performs <em>automatic variable selection</em>: irrelevant features are driven to exactly zero. This is useful when $d$ is large and we believe only a few features matter (sparsity assumption).</p>
+
+<h2>Elastic Net</h2>
+
+<p>Elastic Net combines $L_1$ and $L_2$ penalties:</p>
+
+$$\hat{\boldsymbol{\theta}}_{\text{EN}} = \arg\min_{\boldsymbol{\theta}} \left\{ \|\mathbf{y} - \mathbf{X}\boldsymbol{\theta}\|_2^2 + \lambda_1\|\boldsymbol{\theta}\|_1 + \lambda_2\|\boldsymbol{\theta}\|_2^2 \right\}$$
+
+<p>Benefits:</p>
+
+<ul>
+<li>Sparsity from $L_1$ (variable selection)</li>
+<li>Grouping effect from $L_2$ (correlated features selected together)</li>
+<li>Stability when $d > n$ (ridge component ensures unique solution)</li>
+</ul>
+
+<h2>Tikhonov Regularization: General Form</h2>
+
+<p>Ridge regression is a special case of <strong>Tikhonov regularization</strong>:</p>
+
+$$\hat{\boldsymbol{\theta}} = \arg\min_{\boldsymbol{\theta}} \left\{ \|\mathbf{y} - \mathbf{X}\boldsymbol{\theta}\|_2^2 + \|\boldsymbol{\Gamma}\boldsymbol{\theta}\|_2^2 \right\}$$
+
+<p>where $\boldsymbol{\Gamma} \in \mathbb{R}^{k \times d}$ is the <em>Tikhonov matrix</em>.</p>
+
+<p><strong>Special cases:</strong></p>
+
+<ul>
+<li>$\boldsymbol{\Gamma} = \sqrt{\lambda}\mathbf{I}$: Standard ridge regression</li>
+<li>$\boldsymbol{\Gamma} = \sqrt{\lambda}\mathbf{D}_1$: First-order differences (penalizes non-smoothness)</li>
+<li>$\boldsymbol{\Gamma} = \sqrt{\lambda}\mathbf{D}_2$: Second-order differences (penalizes curvature)</li>
+</ul>
+
+<div class="thm"><span class="label">Theorem</span>
+<p>The Tikhonov solution is:</p>
+$$\hat{\boldsymbol{\theta}} = (\mathbf{X}^\top\mathbf{X} + \boldsymbol{\Gamma}^\top\boldsymbol{\Gamma})^{-1}\mathbf{X}^\top\mathbf{y}$$
+</div>
+
+<h2>Choosing the Regularization Parameter</h2>
+
+<h3>Cross-Validation</h3>
+
+<p>Select $\lambda$ minimizing CV error:</p>
+
+$$\lambda^* = \arg\min_\lambda \text{CV}(\lambda)$$
+
+<p>Typically use a grid of $\lambda$ values on a log scale.</p>
+
+<h3>Information Criteria</h3>
+
+<p>For ridge/Lasso, we can use generalized degrees of freedom. For ridge:</p>
+
+$$\text{df}(\lambda) = \tr\left(\mathbf{X}(\mathbf{X}^\top\mathbf{X} + \lambda\mathbf{I})^{-1}\mathbf{X}^\top\right) = \sum_{j=1}^{p}\frac{d_j^2}{d_j^2 + \lambda}$$
+
+<p>Then use AIC or BIC (see Section 17).</p>
+
+<h2>Coefficient of Determination ($R^2$)</h2>
+
+<h3>Definition</h3>
+
+<p>The <strong>coefficient of determination</strong> measures the proportion of variance explained:</p>
+
+<div class="def"><span class="label">Definition</span>
+$$R^2 = 1 - \frac{\text{RSS}}{\text{TSS}} = 1 - \frac{\sum_{i=1}^{n}(y_i - \hat{y}_i)^2}{\sum_{i=1}^{n}(y_i - \bar{y})^2}$$
+<p>where TSS = Total Sum of Squares $= \sum(y_i - \bar{y})^2$.</p>
+</div>
+
+<h3>Interpretation</h3>
+
+<ul>
+<li>$R^2 = 1$: Perfect fit (RSS $= 0$)</li>
+<li>$R^2 = 0$: Model no better than predicting $\bar{y}$</li>
+<li>$R^2 \in [0, 1]$ for models with an intercept</li>
+</ul>
+
+<h3>Alternative Formula</h3>
+
+<p>For OLS with intercept:</p>
+
+$$R^2 = \frac{\text{ESS}}{\text{TSS}} = \frac{\sum_{i=1}^{n}(\hat{y}_i - \bar{y})^2}{\sum_{i=1}^{n}(y_i - \bar{y})^2}$$
+
+<p>where ESS = Explained Sum of Squares. The identity TSS = ESS + RSS holds for OLS with intercept.</p>
+
+<h3>$R^2$ as Squared Correlation</h3>
+
+<div class="thm"><span class="label">Theorem</span>
+<p>For OLS with intercept:</p>
+$$R^2 = \text{Corr}(y, \hat{y})^2$$
+</div>
+
+<h2>The Problem: $R^2$ Always Increases with More Features</h2>
+
+<div class="thm"><span class="label">Theorem</span>
+<p>Adding a feature never decreases $R^2$, even if the feature is pure noise.</p>
+</div>
+
+<div class="proof"><span class="label">Proof.</span>
+<p>Let $R^2_k$ be the $R^2$ with $k$ features. The model with $k+1$ features includes all models with $k$ features (by setting the new coefficient to zero). Since OLS minimizes RSS, $\text{RSS}_{k+1} \leq \text{RSS}_k$, so:</p>
+
+$$R^2_{k+1} = 1 - \frac{\text{RSS}_{k+1}}{\text{TSS}} \geq 1 - \frac{\text{RSS}_k}{\text{TSS}} = R^2_k$$
+<p>∎</p>
+</div>
+
+<p>This makes $R^2$ unsuitable for model comparison — it favors overly complex models.</p>
+
+<h2>Adjusted $R^2$</h2>
+
+<div class="def"><span class="label">Definition (Adjusted $R^2$)</span>
+$$\bar{R}^2 = 1 - \frac{\text{RSS}/(n-d)}{\text{TSS}/(n-1)} = 1 - \frac{n-1}{n-d}(1 - R^2)$$
+</div>
+
+<p>Adjusted $R^2$ penalizes for the number of parameters $d$. Adding a useless feature increases $d$ without proportionally decreasing RSS, so $\bar{R}^2$ may decrease.</p>
+
+<h2>In-Sample vs Out-of-Sample $R^2$</h2>
+
+<h3>In-Sample (Training) $R^2$</h3>
+
+<p>The $R^2$ computed on training data is <em>optimistically biased</em> — the model was fit to this data.</p>
+
+<h3>Out-of-Sample (Test) $R^2$</h3>
+
+<p>On new data $(x_i^*, y_i^*)_{i=1}^{m}$:</p>
+
+$$R^2_{\text{test}} = 1 - \frac{\sum_{i=1}^{m}(y_i^* - \hat{y}_i^*)^2}{\sum_{i=1}^{m}(y_i^* - \bar{y}^*)^2}$$
+
+<p>This can be <em>negative</em> if the model performs worse than predicting the test mean.</p>
+
+<h3>Behavior with Model Complexity</h3>
+
+<div class="figure"><img src="../img/lr-insample-vs-outsample.png" alt="Plot showing training R-squared monotonically increasing with number of features while test R-squared peaks and then decreases, eventually becoming negative"><p class="figure-caption">In-Sample vs Out-of-Sample $R^2$. Training $R^2$ always increases with more features, while test $R^2$ peaks at the optimal complexity and then decreases — potentially becoming negative when the model overfits severely.</p></div>
+
+<h2>Information Criteria</h2>
+
+<p>Information criteria balance fit (likelihood) against complexity (number of parameters).</p>
+
+<h3>Akaike Information Criterion (AIC)</h3>
+
+<div class="def"><span class="label">Definition (AIC)</span>
+$$\text{AIC} = -2\log L(\hat{\boldsymbol{\theta}}) + 2d$$
+<p>where $L(\hat{\boldsymbol{\theta}})$ is the maximized likelihood and $d$ is the number of parameters.</p>
+</div>
+
+<p>For linear regression with normal errors:</p>
+
+$$\text{AIC} = n\log\left(\frac{\text{RSS}}{n}\right) + 2d + \text{const}$$
+
+<p>Lower AIC is better. Select the model minimizing AIC.</p>
+
+<h3>Bayesian Information Criterion (BIC)</h3>
+
+<div class="def"><span class="label">Definition (BIC)</span>
+$$\text{BIC} = -2\log L(\hat{\boldsymbol{\theta}}) + d\log n$$
+</div>
+
+<p>BIC penalizes complexity more heavily than AIC when $n > e^2 \approx 7.4$. BIC is consistent (selects the true model as $n \to \infty$), while AIC tends to overfit.</p>
+
+<h3>Comparison</h3>
+
+<table>
+<tr><th>Criterion</th><th>Penalty</th><th>Property</th></tr>
+<tr><td>AIC</td><td>$2d$</td><td>Efficient (minimizes prediction error)</td></tr>
+<tr><td>BIC</td><td>$d\log n$</td><td>Consistent (finds true model)</td></tr>
+</table>
+
+<h2>Mallows' $C_p$ and SURE</h2>
+
+<h3>Mallows' $C_p$</h3>
+
+<div class="def"><span class="label">Definition (Mallows' $C_p$)</span>
+$$C_p = \frac{\text{RSS}}{\hat{\sigma}^2} - n + 2d$$
+<p>where $\hat{\sigma}^2$ is estimated from the full model.</p>
+</div>
+
+<p>For a correctly specified model, $\E[C_p] \approx d$. Select models where $C_p \approx d$.</p>
+
+<h3>Stein's Unbiased Risk Estimate (SURE)</h3>
+
+<p>SURE provides an unbiased estimate of the true prediction risk without a test set.</p>
+
+<div class="thm"><span class="label">Theorem (SURE)</span>
+<p>For the model $\mathbf{y} = \boldsymbol{\mu} + \boldsymbol{\varepsilon}$ with $\boldsymbol{\varepsilon} \sim \mathcal{N}(\mathbf{0}, \sigma^2\mathbf{I})$, and estimator $\hat{\boldsymbol{\mu}} = g(\mathbf{y})$ with $g$ weakly differentiable:</p>
+$$\text{SURE} = -n\sigma^2 + \|\mathbf{y} - \hat{\boldsymbol{\mu}}\|^2 + 2\sigma^2 \sum_{i=1}^{n}\frac{\partial \hat{\mu}_i}{\partial y_i}$$
+<p>satisfies $\E[\text{SURE}] = \E[\|\hat{\boldsymbol{\mu}} - \boldsymbol{\mu}\|^2]$.</p>
+</div>
+
+<p>For linear estimators $\hat{\boldsymbol{\mu}} = \mathbf{H}\mathbf{y}$, the divergence term is $\tr(\mathbf{H})$, the degrees of freedom.</p>
+
+<h2>Feature Selection Methods</h2>
+
+<h3>Best Subset Selection</h3>
+
+<p>Enumerate all $2^d$ subsets, select the one minimizing CV error or information criterion. Computationally infeasible for $d > 20$.</p>
+
+<h3>Forward Stepwise Selection</h3>
+
+<ol>
+<li>Start with intercept only</li>
+<li>Add the feature that most improves the criterion (CV, AIC, etc.)</li>
+<li>Repeat until no improvement</li>
+</ol>
+
+<p>Greedy, $O(d^2)$ model fits.</p>
+
+<h3>Backward Stepwise Selection</h3>
+
+<ol>
+<li>Start with all features</li>
+<li>Remove the feature whose removal least hurts the criterion</li>
+<li>Repeat until no improvement</li>
+</ol>
+
+<p>Requires $n > d$.</p>
+
+<h3>Regularization Path</h3>
+
+<p>For Lasso, vary $\lambda$ from large (all zeros) to small (OLS). The sequence of models entered gives a natural ordering of feature importance.</p>
+
+<h2>Kernel Methods</h2>
+
+<h3>The Kernel Trick</h3>
+
+<p>Many learning algorithms depend on data only through inner products $\mathbf{x}_i^\top\mathbf{x}_j$. The <em>kernel trick</em> replaces these with $k(\mathbf{x}_i, \mathbf{x}_j)$ for a kernel function $k$, implicitly mapping to a high-dimensional feature space.</p>
+
+<div class="def"><span class="label">Definition (Kernel)</span>
+<p>A function $k: \mathcal{X} \times \mathcal{X} \to \mathbb{R}$ is a <strong>kernel</strong> if it is symmetric and positive semi-definite: for any $\{x_1, \ldots, x_n\} \subset \mathcal{X}$, the matrix $\mathbf{K}$ with $K_{ij} = k(x_i, x_j)$ is positive semi-definite.</p>
+</div>
+
+<p>By Mercer's theorem, such $k$ corresponds to an inner product in some feature space: $k(\mathbf{x}, \mathbf{x}') = \langle\phi(\mathbf{x}), \phi(\mathbf{x}')\rangle$ for some $\phi: \mathcal{X} \to \mathcal{H}$.</p>
+
+<h3>Common Kernels</h3>
+
+<ul>
+<li><strong>Linear</strong>: $k(\mathbf{x}, \mathbf{x}') = \mathbf{x}^\top\mathbf{x}'$</li>
+<li><strong>Polynomial</strong>: $k(\mathbf{x}, \mathbf{x}') = (1 + \mathbf{x}^\top\mathbf{x}')^p$</li>
+<li><strong>RBF/Gaussian</strong>: $k(\mathbf{x}, \mathbf{x}') = \exp\left(-\frac{\|\mathbf{x} - \mathbf{x}'\|^2}{2\sigma^2}\right)$</li>
+</ul>
+
+<h3>Kernel Ridge Regression</h3>
+
+<p>Ridge regression in feature space:</p>
+
+$$\min_{\boldsymbol{\beta}} \|\boldsymbol{\Phi}\boldsymbol{\beta} - \mathbf{y}\|^2 + \lambda\|\boldsymbol{\beta}\|^2$$
+
+<p>where $\boldsymbol{\Phi} \in \mathbb{R}^{n \times p}$ has rows $\phi(\mathbf{x}_i)^\top$. The solution can be written:</p>
+
+$$\boldsymbol{\beta} = \boldsymbol{\Phi}^\top\boldsymbol{\alpha}$$
+
+<p>for some $\boldsymbol{\alpha} \in \mathbb{R}^n$. Substituting:</p>
+
+$$\boldsymbol{\alpha} = (\mathbf{K} + \lambda\mathbf{I})^{-1}\mathbf{y}$$
+
+<p>where $\mathbf{K} = \boldsymbol{\Phi}\boldsymbol{\Phi}^\top$ is the kernel matrix with $K_{ij} = k(\mathbf{x}_i, \mathbf{x}_j)$.</p>
+
+<p>Prediction at new point $\mathbf{x}$:</p>
+
+$$\hat{y} = \sum_{i=1}^{n}\alpha_i k(\mathbf{x}_i, \mathbf{x}) = \mathbf{k}(\mathbf{x})^\top(\mathbf{K} + \lambda\mathbf{I})^{-1}\mathbf{y}$$
+
+<p>where $\mathbf{k}(\mathbf{x}) = (k(\mathbf{x}_1, \mathbf{x}), \ldots, k(\mathbf{x}_n, \mathbf{x}))^\top$.</p>
+
+<h3>Computational Considerations</h3>
+
+<p>Kernel methods scale as $O(n^3)$ (matrix inversion) and $O(n^2)$ storage, limiting applicability to $n \lesssim 10^4$. Approximations include:</p>
+
+<ul>
+<li>Random Fourier features (approximate RBF kernel)</li>
+<li>Nyström approximation (low-rank $\mathbf{K}$)</li>
+</ul>
+
+<h2>Gaussian Process Regression</h2>
+
+<p>Kernel ridge regression has a Bayesian interpretation as Gaussian Process (GP) regression.</p>
+
+<div class="def"><span class="label">Definition (Gaussian Process)</span>
+<p>A <strong>Gaussian Process</strong> is a collection of random variables, any finite subset of which is jointly Gaussian. A GP is specified by:</p>
+<ul>
+<li>Mean function: $m(\mathbf{x}) = \E[f(\mathbf{x})]$</li>
+<li>Covariance function: $k(\mathbf{x}, \mathbf{x}') = \Cov(f(\mathbf{x}), f(\mathbf{x}'))$</li>
+</ul>
+</div>
+
+<p>We write $f \sim \mathcal{GP}(m, k)$.</p>
+
+<h3>GP Regression</h3>
+
+<p>Assume $y_i = f(\mathbf{x}_i) + \varepsilon_i$ with $\varepsilon_i \sim \mathcal{N}(0, \sigma^2)$ and prior $f \sim \mathcal{GP}(0, k)$.</p>
+
+<p>The posterior predictive distribution at $\mathbf{x}_*$ is:</p>
+
+$$\begin{aligned}
+f_* | \mathbf{X}, \mathbf{y}, \mathbf{x}_* &\sim \mathcal{N}(\bar{f}_*, \text{var}(f_*))
+\end{aligned}$$
+
+<p>with:</p>
+
+$$\begin{aligned}
+\bar{f}_* &= \mathbf{k}_*^\top(\mathbf{K} + \sigma^2\mathbf{I})^{-1}\mathbf{y} \\
+\text{var}(f_*) &= k(\mathbf{x}_*, \mathbf{x}_*) - \mathbf{k}_*^\top(\mathbf{K} + \sigma^2\mathbf{I})^{-1}\mathbf{k}_*
+\end{aligned}$$
+
+<p>The mean prediction matches kernel ridge regression with $\lambda = \sigma^2$. GPs additionally provide uncertainty quantification.</p>
+
+<h2>Multiple Linear Regression: Practical Considerations</h2>
+
+<h3>Multicollinearity</h3>
+
+<p>When predictors are highly correlated, $\mathbf{X}^\top\mathbf{X}$ is nearly singular:</p>
+
+<ul>
+<li>OLS coefficients have high variance</li>
+<li>Coefficients are unstable (sensitive to small data changes)</li>
+<li>Individual $t$-tests may be non-significant even when joint $F$-test is significant</li>
+</ul>
+
+<p><strong>Detection:</strong> Variance Inflation Factor (VIF):</p>
+
+$$\text{VIF}_j = \frac{1}{1 - R_j^2}$$
+
+<p>where $R_j^2$ is the $R^2$ from regressing $x_j$ on all other predictors. VIF $> 10$ suggests problematic collinearity.</p>
+
+<p><strong>Solutions:</strong></p>
+
+<ul>
+<li>Remove redundant features</li>
+<li>Principal Component Regression (PCR)</li>
+<li>Ridge regression (stabilizes via regularization)</li>
+</ul>
+
+<h3>Principal Component Regression (PCR)</h3>
+
+<ol>
+<li>Compute PCA of $\mathbf{X}$: $\mathbf{X} = \mathbf{U}\mathbf{D}\mathbf{V}^\top$</li>
+<li>Keep top $k$ principal components: $\mathbf{Z} = \mathbf{X}\mathbf{V}_k = \mathbf{U}_k\mathbf{D}_k$</li>
+<li>Regress $\mathbf{y}$ on $\mathbf{Z}$: $\hat{\boldsymbol{\gamma}} = (\mathbf{Z}^\top\mathbf{Z})^{-1}\mathbf{Z}^\top\mathbf{y}$</li>
+<li>Transform back: $\hat{\boldsymbol{\theta}}_{\text{PCR}} = \mathbf{V}_k\hat{\boldsymbol{\gamma}}$</li>
+</ol>
+
+<p>PCR discards high-variance directions (small singular values), acting as implicit regularization. Unlike ridge, PCR is a hard threshold (keep or discard) rather than soft shrinkage.</p>
+
+<h3>Partial Least Squares (PLS)</h3>
+
+<p>Like PCR, but constructs components that maximize covariance with $\mathbf{y}$, not just variance in $\mathbf{X}$. Useful when the high-variance directions in $\mathbf{X}$ are not predictive of $\mathbf{y}$.</p>
+
+<h2>Heteroskedasticity and Robust Standard Errors</h2>
+
+<p>When $\Var(\varepsilon_i) = \sigma_i^2$ varies (heteroskedasticity), OLS remains unbiased but:</p>
+
+<ul>
+<li>OLS is no longer BLUE (GLS is)</li>
+<li>Standard errors are incorrect $\Rightarrow$ invalid inference</li>
+</ul>
+
+<h3>Detection</h3>
+
+<ul>
+<li><strong>Breusch-Pagan test</strong>: Regress $\hat{\varepsilon}_i^2$ on $\mathbf{x}_i$; significant $\Rightarrow$ heteroskedasticity</li>
+<li><strong>White test</strong>: Regress $\hat{\varepsilon}_i^2$ on $\mathbf{x}_i$, $\mathbf{x}_i^2$, and cross-products</li>
+</ul>
+
+<h3>Heteroskedasticity-Robust Standard Errors</h3>
+
+<p>The <strong>sandwich estimator</strong> (White, Huber-White):</p>
+
+$$\widehat{\Var}(\hat{\boldsymbol{\theta}}) = (\mathbf{X}^\top\mathbf{X})^{-1}\left(\sum_{i=1}^{n}\hat{\varepsilon}_i^2\mathbf{x}_i\mathbf{x}_i^\top\right)(\mathbf{X}^\top\mathbf{X})^{-1}$$
+
+<p>This is consistent for $\Var(\hat{\boldsymbol{\theta}})$ under heteroskedasticity.</p>
+
+<h3>Generalized Least Squares (GLS)</h3>
+
+<p>If $\Var(\boldsymbol{\varepsilon}) = \sigma^2\boldsymbol{\Omega}$ with known $\boldsymbol{\Omega}$:</p>
+
+$$\hat{\boldsymbol{\theta}}_{\text{GLS}} = (\mathbf{X}^\top\boldsymbol{\Omega}^{-1}\mathbf{X})^{-1}\mathbf{X}^\top\boldsymbol{\Omega}^{-1}\mathbf{y}$$
+
+<p>GLS is BLUE under heteroskedasticity/autocorrelation. Feasible GLS (FGLS) estimates $\boldsymbol{\Omega}$ from the data.</p>
+
+<h2>Quantile Regression</h2>
+
+<p>OLS estimates the conditional mean $\E[y|\mathbf{x}]$. <strong>Quantile regression</strong> estimates conditional quantiles.</p>
+
+<div class="def"><span class="label">Definition (Quantile Regression)</span>
+<p>The $\tau$-th conditional quantile ($\tau \in (0,1)$) is estimated by:</p>
+$$\hat{\boldsymbol{\theta}}_\tau = \arg\min_{\boldsymbol{\theta}} \sum_{i=1}^{n}\rho_\tau(y_i - \mathbf{x}_i^\top\boldsymbol{\theta})$$
+<p>where $\rho_\tau(u) = u(\tau - \mathbf{1}_{u < 0})$ is the check function.</p>
+</div>
+
+<p>For $\tau = 0.5$, this is median regression (minimizes absolute deviations). Quantile regression is robust to outliers and provides a richer picture of the conditional distribution.</p>
+
+<h2>Summary of Methods</h2>
+
+<table>
+<tr><th>Method</th><th>Penalty</th><th>Sparsity</th><th>Closed Form</th><th>When to Use</th></tr>
+<tr><td>OLS</td><td>None</td><td>No</td><td>Yes</td><td>Baseline, $n \gg d$</td></tr>
+<tr><td>Ridge</td><td>$\lambda\|\boldsymbol{\theta}\|_2^2$</td><td>No</td><td>Yes</td><td>Multicollinearity, $d$ large</td></tr>
+<tr><td>Lasso</td><td>$\lambda\|\boldsymbol{\theta}\|_1$</td><td>Yes</td><td>No</td><td>Feature selection</td></tr>
+<tr><td>Elastic Net</td><td>$\lambda_1\|\cdot\|_1 + \lambda_2\|\cdot\|_2^2$</td><td>Yes</td><td>No</td><td>Groups of correlated features</td></tr>
+<tr><td>PCR</td><td>Implicit</td><td>No</td><td>Yes</td><td>High-dim, variance reduction</td></tr>
+<tr><td>Kernel Ridge</td><td>$\lambda\|\boldsymbol{\beta}\|^2$ in $\mathcal{H}$</td><td>No</td><td>Yes</td><td>Nonlinear relationships</td></tr>
+</table>
+
+</div>
+<script src="../js/theme.js"></script>
+<script src="../js/sidebar.js?v=2"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false},{left:'$',right:'$',display:false}],macros:{'\\R':'\\mathbb{R}','\\E':'\\mathbb{E}','\\Var':'\\text{Var}','\\Cov':'\\text{Cov}','\\Bias':'\\text{Bias}','\\MSE':'\\text{MSE}','\\tr':'\\text{tr}','\\rank':'\\text{rank}','\\N':'\\mathbb{N}','\\Z':'\\mathbb{Z}'},throwOnError:false});"></script>
+</body>
+</html>

@@ -1,3 +1,15 @@
+# /// script
+# requires-python = ">=3.11"
+# dependencies = [
+#     "marimo",
+#     "matplotlib",
+#     "numpy",
+#     "pandas",
+#     "seaborn",
+#     "scikit-learn",
+#     "Pillow",
+# ]
+# ///
 """
 Neural Networks on Coriander vs Parsley Images
 

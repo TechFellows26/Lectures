@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LebNet TechFellows</title>
+<link rel="stylesheet" href="css/style.css">
+<script>if(localStorage.getItem('lebnet-theme')==='light')document.documentElement.classList.add('theme-light');</script>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="index.html" class="navbar-brand"><img src="img/lebnet-logo-light.png" alt="LebNet" class="navbar-logo logo-dark"><img src="img/lebnet-logo.png" alt="LebNet" class="navbar-logo logo-light"></a>
+  <ul class="navbar-links">
+    <li><a href="index.html" class="active">Notes</a></li>
+    <li><a href="notebooks.html">Notebooks</a></li>
+    <li><a href="ethics.html">Ethics</a></li>
+  </ul>
+  <div class="navbar-right">
+    <a href="https://github.com/TechFellows26/Lectures" target="_blank" rel="noopener" class="navbar-icon" title="GitHub Repository"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .3a12 12 0 0 0-3.8 23.38c.6.1.82-.26.82-.58v-2.02c-3.34.73-4.04-1.61-4.04-1.61a3.18 3.18 0 0 0-1.33-1.76c-1.09-.74.08-.73.08-.73a2.52 2.52 0 0 1 1.84 1.24 2.56 2.56 0 0 0 3.5 1 2.56 2.56 0 0 1 .76-1.61c-2.67-.3-5.47-1.33-5.47-5.93a4.64 4.64 0 0 1 1.24-3.22 4.3 4.3 0 0 1 .12-3.18s1-.33 3.3 1.23a11.38 11.38 0 0 1 6 0c2.28-1.56 3.29-1.23 3.29-1.23a4.3 4.3 0 0 1 .12 3.18 4.64 4.64 0 0 1 1.23 3.22c0 4.61-2.8 5.63-5.48 5.92a2.86 2.86 0 0 1 .82 2.23v3.29c0 .32.21.7.82.58A12 12 0 0 0 12 .3"/></svg></a>
+    <a href="https://lebnet.us/TechFellows" target="_blank" rel="noopener" class="navbar-icon" title="LebNet TechFellows"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></a>
+    <button class="theme-toggle" title="Toggle theme" aria-label="Toggle theme">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M12 2 A10 10 0 0 0 12 22 Z" style="fill:var(--bg)"/><path d="M12 2 A10 10 0 0 1 12 22 Z" style="fill:var(--fg)"/></svg>
+    </button>
+  </div>
+</nav>
+
+<canvas id="dots-bg"></canvas>
+<main class="landing">
+  <div class="landing-header">
+    <h1 class="site-title">LebNet TechFellows</h1>
+    <p class="site-tagline">Machine learning, from first principles.</p>
+  </div>
+
+  <section class="materials-section">
+    <h2 class="section-label">Course Materials</h2>
+
+    <table class="materials-table">
+      <thead>
+        <tr>
+          <th class="col-num">#</th>
+          <th class="col-topic">Topic</th>
+          <th class="col-group" colspan="3">Notes</th>
+          <th class="col-group" colspan="2">Slides</th>
+          <th class="col-group" colspan="2">Notebooks</th>
+          <th class="col-group" colspan="2">Ethics</th>
+        </tr>
+        <tr class="sub-header">
+          <th></th>
+          <th></th>
+          <th class="col-link">Read</th>
+          <th class="col-link">PDF</th>
+          <th class="col-link">TeX</th>
+          <th class="col-link">PDF</th>
+          <th class="col-link">TeX</th>
+          <th class="col-link">Theory</th>
+          <th class="col-link">Applied</th>
+          <th class="col-link">Read</th>
+          <th class="col-link">DOCX</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="num">1</td>
+          <td class="topic">Linear Regression</td>
+          <td><a href="notes/linear-regression.html">Read</a></td>
+          <td><a href="downloads/notes/linear-regression.pdf" download>PDF</a></td>
+          <td><a href="downloads/notes/linear-regression.tex" download>TeX</a></td>
+          <td><a href="downloads/slides/linear-regression.pdf" download>PDF</a></td>
+          <td><a href="downloads/slides/linear-regression.tex" download>TeX</a></td>
+          <td><a href="notebooks/LinearRegressionTheory.html" target="_blank">Theory</a></td>
+          <td><a href="notebooks/LinearRegression.html" target="_blank">Applied</a></td>
+          <td><a href="notes/ethics-linear-regression.html">Read</a></td>
+          <td><a href="downloads/ethics/ethics_linear_regression.docx" download>DOCX</a></td>
+        </tr>
+        <tr>
+          <td class="num">2</td>
+          <td class="topic">Logistic Regression</td>
+          <td><a href="notes/logistic-regression.html">Read</a></td>
+          <td><a href="downloads/notes/logistic-regression.pdf" download>PDF</a></td>
+          <td><a href="downloads/notes/logistic-regression.tex" download>TeX</a></td>
+          <td><a href="downloads/slides/logistic-regression.pdf" download>PDF</a></td>
+          <td><a href="downloads/slides/logistic-regression.tex" download>TeX</a></td>
+          <td><a href="notebooks/LogisticRegressionTheory.html" target="_blank">Theory</a></td>
+          <td><a href="notebooks/LogisticRegression.html" target="_blank">Applied</a></td>
+          <td><a href="notes/ethics-logistic-regression.html">Read</a></td>
+          <td><a href="downloads/ethics/ethics_logistic_regression.docx" download>DOCX</a></td>
+        </tr>
+        <tr>
+          <td class="num">3</td>
+          <td class="topic">Neural Networks &amp; Backpropagation</td>
+          <td><a href="notes/neural-networks.html">Read</a></td>
+          <td><a href="downloads/notes/neural-networks.pdf" download>PDF</a></td>
+          <td><a href="downloads/notes/neural-networks.tex" download>TeX</a></td>
+          <td><a href="downloads/slides/neural-networks.pdf" download>PDF</a></td>
+          <td><a href="downloads/slides/neural-networks.tex" download>TeX</a></td>
+          <td><a href="notebooks/NeuralNetworksTheory.html" target="_blank">Theory</a></td>
+          <td><a href="notebooks/NeuralNetworks.html" target="_blank">Applied</a></td>
+          <td><a href="notes/ethics-neural-networks.html">Read</a></td>
+          <td><a href="downloads/ethics/ethics_neural_networks.docx" download>DOCX</a></td>
+        </tr>
+        <tr>
+          <td class="num">4</td>
+          <td class="topic">Training Neural Networks</td>
+          <td><a href="notes/nn-training.html">Read</a></td>
+          <td><a href="downloads/notes/nn-training.pdf" download>PDF</a></td>
+          <td><a href="downloads/notes/nn-training.tex" download>TeX</a></td>
+          <td><a href="downloads/slides/nn-training.pdf" download>PDF</a></td>
+          <td><a href="downloads/slides/nn-training.tex" download>TeX</a></td>
+          <td><a href="notebooks/NNTrainingTheory.html" target="_blank">Theory</a></td>
+          <td><span class="muted-cell">&mdash;</span></td>
+          <td><span class="muted-cell">&mdash;</span></td>
+          <td><span class="muted-cell">&mdash;</span></td>
+        </tr>
+        <tr>
+          <td class="num">5</td>
+          <td class="topic">The Transformer</td>
+          <td><a href="notes/transformer.html">Read</a></td>
+          <td><a href="downloads/notes/transformer.pdf" download>PDF</a></td>
+          <td><a href="downloads/notes/transformer.tex" download>TeX</a></td>
+          <td><a href="downloads/slides/transformer.pdf" download>PDF</a></td>
+          <td><a href="downloads/slides/transformer.tex" download>TeX</a></td>
+          <td><a href="notebooks/TransformerTheory.html" target="_blank">Theory</a></td>
+          <td><span class="muted-cell">&mdash;</span></td>
+          <td><span class="muted-cell">&mdash;</span></td>
+          <td><span class="muted-cell">&mdash;</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+</main>
+
+
+<script src="js/theme.js"></script>
+<script src="js/dots.js"></script>
+</body>
+</html>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ethics: Linear Regression - LebNet</title>
+<link rel="stylesheet" href="../css/style.css">
+<script>if(localStorage.getItem('lebnet-theme')==='light')document.documentElement.classList.add('theme-light');</script>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="../index.html" class="navbar-brand"><img src="../img/lebnet-logo-light.png" alt="LebNet" class="navbar-logo logo-dark"><img src="../img/lebnet-logo.png" alt="LebNet" class="navbar-logo logo-light"></a>
+  <ul class="navbar-links">
+    <li><a href="../index.html" class="active">Notes</a></li>
+    <li><a href="../notebooks.html">Notebooks</a></li>
+    <li><a href="../ethics.html">Ethics</a></li>
+  </ul>
+  <div class="navbar-right">
+    <a href="https://github.com/TechFellows26/Lectures" target="_blank" rel="noopener" class="navbar-icon" title="GitHub Repository"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .3a12 12 0 0 0-3.8 23.38c.6.1.82-.26.82-.58v-2.02c-3.34.73-4.04-1.61-4.04-1.61a3.18 3.18 0 0 0-1.33-1.76c-1.09-.74.08-.73.08-.73a2.52 2.52 0 0 1 1.84 1.24 2.56 2.56 0 0 0 3.5 1 2.56 2.56 0 0 1 .76-1.61c-2.67-.3-5.47-1.33-5.47-5.93a4.64 4.64 0 0 1 1.24-3.22 4.3 4.3 0 0 1 .12-3.18s1-.33 3.3 1.23a11.38 11.38 0 0 1 6 0c2.28-1.56 3.29-1.23 3.29-1.23a4.3 4.3 0 0 1 .12 3.18 4.64 4.64 0 0 1 1.23 3.22c0 4.61-2.8 5.63-5.48 5.92a2.86 2.86 0 0 1 .82 2.23v3.29c0 .32.21.7.82.58A12 12 0 0 0 12 .3"/></svg></a>
+    <a href="https://lebnet.us/TechFellows" target="_blank" rel="noopener" class="navbar-icon" title="LebNet TechFellows"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></a>
+    <button class="theme-toggle" title="Toggle theme" aria-label="Toggle theme">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M12 2 A10 10 0 0 0 12 22 Z" style="fill:var(--bg)"/><path d="M12 2 A10 10 0 0 1 12 22 Z" style="fill:var(--fg)"/></svg>
+    </button>
+  </div>
+</nav>
+
+<button class="sidebar-toggle" aria-label="Toggle sidebar">&#9776;</button>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-title">On this page</div>
+  <ul class="sidebar-nav"></ul>
+</aside>
+
+<div class="paper">
+<h1>Ethics: Linear Regression</h1>
+<p class="subtitle">LebNet Tech Fellows &mdash; Ethics &amp; Statistical Pitfalls</p>
+
+<h2>Section 1: Realistic Expectations</h2>
+<h3>Linear Regression – Overfitting to Noise</h3>
+<div class="def"><span class="label">Question</span><p>A real estate company builds a linear regression model with 50 features to predict home prices on a dataset of 60 homes. Describe one problem with this approach and its potential impact on business decisions.</p></div>
+<div class="rem"><span class="label">Answer</span><p>With nearly as many features as data points, the model will overfit - capturing noise rather than real patterns. It might find that, say, proximity to a specific coffee shop is a strong predictor, purely by coincidence. If the company uses this to guide investment decisions, they could buy properties near coffee shops expecting high returns based on a spurious correlation. The model would perform terribly on new data.</p></div>
+<h3>Linear Regression – Violated Assumptions</h3>
+<div class="def"><span class="label">Question</span><p>A healthcare researcher uses linear regression to predict patient recovery time and finds a significant negative coefficient for “age.” They conclude that older patients recover faster. What likely went wrong?</p></div>
+<div class="rem"><span class="label">Answer</span><p>There’s likely a confounding variable - older patients admitted for the specific procedure in question may be pre-screened more carefully and are healthier on average (survivorship bias). The researcher failed to account for selection bias in the data. This highlights the danger of interpreting regression coefficients as causal effects rather than associations.</p></div>
+<h3>Logistic Regression – Threshold Selection</h3>
+<div class="def"><span class="label">Question</span><p>A logistic regression model for diagnosing a rare disease achieves 98% accuracy. A hospital administrator wants to deploy it immediately. What concern should be raised?</p></div>
+<div class="rem"><span class="label">Answer</span><p>If the disease affects 2% of patients, a model that simply predicts “no disease” for everyone also gets 98% accuracy. The default 0.5 classification threshold is likely inappropriate for rare conditions. The hospital should examine precision, recall, and the confusion matrix. Deploying it as-is could mean almost no actual cases are caught, giving doctors and patients false confidence.</p></div>
+<h2>Section 2: P-Hacking &amp; Statistical Misuse</h2>
+<h3>Feature Fishing</h3>
+<div class="def"><span class="label">Question</span><p>A marketing analyst runs linear regressions testing 100 different features against sales. They find 5 features with p &lt; 0.05 and report these as significant drivers of sales. What is the problem?</p></div>
+<div class="rem"><span class="label">Answer</span><p>At a significance level of 0.05, you’d expect roughly 5 out of 100 tests to appear significant purely by chance. This is textbook p-hacking through multiple comparisons. Without correction (Bonferroni, false discovery rate, etc.), those 5 “significant” features are likely noise. The company could waste resources optimizing for variables that have no real effect on sales.</p></div>
+<h3>Selective Reporting</h3>
+<div class="def"><span class="label">Question</span><p>A researcher fits multiple regression models with different combinations of control variables. They only report the one specification where their variable of interest is significant (p = 0.04). Describe the ethical and statistical issue.</p></div>
+<div class="rem"><span class="label">Answer</span><p>This is “specification searching” or the “garden of forking paths.” By trying many model configurations and only reporting the one that works, the researcher has dramatically inflated the false positive rate. The reported p-value of 0.04 is meaningless because it doesn’t account for all the models that were tried and discarded. Ethically, this misrepresents the strength of the evidence and could lead to policy or business decisions based on a false finding.</p></div>
+<h3>Optional Stopping</h3>
+<div class="def"><span class="label">Question</span><p>A data scientist collecting survey responses checks their logistic regression p-value after every 10 new responses and stops data collection the moment p &lt; 0.05. What’s wrong with this approach?</p></div>
+<div class="rem"><span class="label">Answer</span><p>This is optional stopping, a form of p-hacking. Repeatedly testing an accumulating dataset dramatically increases the chance of hitting significance by random fluctuation. The true false positive rate is far higher than 5%. Proper approaches include pre-registering a fixed sample size, or using sequential analysis methods that account for repeated looks at the data.</p></div>
+<h2>Section 3: Minority Underrepresentation &amp; Bias</h2>
+<h3>Linear Regression – Underrepresentation Bias</h3>
+<div class="def"><span class="label">Question</span><p>A linear regression model is trained to predict income based on education, experience, and location. The training data contains 90% observations from the majority demographic group. Describe how this can lead to biased predictions for minority groups.</p></div>
+<div class="rem"><span class="label">Answer</span><p>The model’s coefficients are optimized to minimize error across the whole dataset, which means they primarily reflect patterns in the majority group. For minority groups, the relationship between features and income may be different - for example, returns on education may be lower due to systemic discrimination in hiring. But with so few minority data points, the model can’t learn those distinct patterns. It ends up applying majority-group relationships to everyone, which can overpredict income for minorities and mask real disparities. If this model is used for credit decisions or housing assessments, it systematically disadvantages the people it understands least.</p></div>
+<h3>Logistic Regression – Confidence Disparity</h3>
+<div class="def"><span class="label">Question</span><p>A logistic regression model predicts whether a patient will respond to a medication. Clinical trial data is overwhelmingly from white male participants. What issue arises when applying the model to other populations?</p></div>
+<div class="rem"><span class="label">Answer</span><p>The model’s predictions for underrepresented groups (women, Black patients, elderly patients) will have much wider confidence intervals - meaning the model is far less certain about its predictions for these groups, but this uncertainty is often invisible to the end user who just sees a binary yes/no prediction. Worse, the model may miss important biological differences in drug metabolism, side effects, or efficacy across groups. Doctors relying on the model could prescribe ineffective or even harmful treatments to the very populations that were excluded from the data.</p></div>
+<h3>Subgroup Invisibility</h3>
+<div class="def"><span class="label">Question</span><p>A researcher finds that a logistic regression model for predicting loan default is “fair” overall, with similar accuracy across racial groups. However, the model was never tested on Native American applicants specifically because the sample had only 15 such applicants. What’s the concern?</p></div>
+<div class="rem"><span class="label">Answer</span><p>“Overall fairness” can hide severe problems in small subgroups. With only 15 observations, any subgroup analysis would be underpowered - you simply can’t detect bias statistically, even if it’s large. This doesn’t mean the model is fair for that group; it means you have no evidence either way. Deploying the model and claiming fairness is misleading. The small sample also means the model likely never learned patterns specific to that group, so its predictions could be systematically wrong. This is a common blind spot: groups with the least data get the least scrutiny and often the worst outcomes.</p></div>
+
+</div>
+<script src="../js/theme.js"></script>
+<script src="../js/sidebar.js?v=2"></script>
+</body>
+</html>

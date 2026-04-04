@@ -44,6 +44,10 @@ ENV/
 *~
 .DS_Store
 
+# Generated figures
+notes/detailed-notes/gen_figures.py
+notes/detailed-notes/img/
+
 # LaTeX
 *.aux
 *.log

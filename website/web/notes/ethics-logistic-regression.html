@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ethics: Logistic Regression - LebNet</title>
+<link rel="stylesheet" href="../css/style.css">
+<script>if(localStorage.getItem('lebnet-theme')==='light')document.documentElement.classList.add('theme-light');</script>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="../index.html" class="navbar-brand"><img src="../img/lebnet-logo-light.png" alt="LebNet" class="navbar-logo logo-dark"><img src="../img/lebnet-logo.png" alt="LebNet" class="navbar-logo logo-light"></a>
+  <ul class="navbar-links">
+    <li><a href="../index.html" class="active">Notes</a></li>
+    <li><a href="../notebooks.html">Notebooks</a></li>
+    <li><a href="../ethics.html">Ethics</a></li>
+  </ul>
+  <div class="navbar-right">
+    <a href="https://github.com/TechFellows26/Lectures" target="_blank" rel="noopener" class="navbar-icon" title="GitHub Repository"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .3a12 12 0 0 0-3.8 23.38c.6.1.82-.26.82-.58v-2.02c-3.34.73-4.04-1.61-4.04-1.61a3.18 3.18 0 0 0-1.33-1.76c-1.09-.74.08-.73.08-.73a2.52 2.52 0 0 1 1.84 1.24 2.56 2.56 0 0 0 3.5 1 2.56 2.56 0 0 1 .76-1.61c-2.67-.3-5.47-1.33-5.47-5.93a4.64 4.64 0 0 1 1.24-3.22 4.3 4.3 0 0 1 .12-3.18s1-.33 3.3 1.23a11.38 11.38 0 0 1 6 0c2.28-1.56 3.29-1.23 3.29-1.23a4.3 4.3 0 0 1 .12 3.18 4.64 4.64 0 0 1 1.23 3.22c0 4.61-2.8 5.63-5.48 5.92a2.86 2.86 0 0 1 .82 2.23v3.29c0 .32.21.7.82.58A12 12 0 0 0 12 .3"/></svg></a>
+    <a href="https://lebnet.us/TechFellows" target="_blank" rel="noopener" class="navbar-icon" title="LebNet TechFellows"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></a>
+    <button class="theme-toggle" title="Toggle theme" aria-label="Toggle theme">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M12 2 A10 10 0 0 0 12 22 Z" style="fill:var(--bg)"/><path d="M12 2 A10 10 0 0 1 12 22 Z" style="fill:var(--fg)"/></svg>
+    </button>
+  </div>
+</nav>
+
+<button class="sidebar-toggle" aria-label="Toggle sidebar">&#9776;</button>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-title">On this page</div>
+  <ul class="sidebar-nav"></ul>
+</aside>
+
+<div class="paper">
+<h1>Ethics: Logistic Regression</h1>
+<p class="subtitle">LebNet Tech Fellows &mdash; Ethics &amp; Statistical Pitfalls</p>
+
+<h2>Section 1: Model Design &amp; Evaluation Pitfalls</h2>
+<h3>Class Imbalance &amp; Misleading Accuracy</h3>
+<div class="def"><span class="label">Question</span><p>A hospital builds a logistic regression model to predict sepsis in ICU patients. Sepsis occurs in about 5% of cases. The model achieves 95% accuracy on the test set, and the project lead declares it ready for deployment. What should the team investigate before deploying?</p></div>
+<div class="rem"><span class="label">Answer</span><p>A model that predicts “no sepsis” for every patient would also achieve 95% accuracy, so accuracy alone is meaningless here. The team needs to examine the confusion matrix, especially recall (sensitivity) - what fraction of actual sepsis cases does the model catch? For a life-threatening condition, missing true positives is far more dangerous than generating false alarms. They should also examine precision, the F1 score, and the area under the ROC curve. The classification threshold should be tuned to prioritize recall: lowering it from the default 0.5 would catch more true cases at the cost of more false positives, which is an acceptable tradeoff when lives are at stake.</p></div>
+<h3>Overfitting with Too Many Features</h3>
+<div class="def"><span class="label">Question</span><p>A fintech startup uses logistic regression to predict loan default. They engineer 200 features from a dataset of 300 borrowers, including obscure ones like “day of week the application was submitted.” The model achieves 99% training accuracy. What is likely happening?</p></div>
+<div class="rem"><span class="label">Answer</span><p>With 200 features and only 300 observations, the model is almost certainly overfitting. It has enough degrees of freedom to memorize the training data, including noise and coincidences. A feature like “day of week” might appear predictive in-sample purely by chance. On new borrowers, this model will likely perform poorly. The startup should use regularization (L1/L2 penalties), reduce dimensionality, and validate on a held-out test set. Deploying an overfit model could lead to approving high-risk loans or rejecting creditworthy applicants.</p></div>
+<h3>Ignoring Non-Linear Relationships</h3>
+<div class="def"><span class="label">Question</span><p>A logistic regression model predicts diabetes risk using age as a feature. The model shows age has a small, non-significant coefficient. A product manager concludes age doesn’t matter for diabetes risk. What might be wrong?</p></div>
+<div class="rem"><span class="label">Answer</span><p>Logistic regression assumes a linear relationship between features and the log-odds of the outcome. But diabetes risk often has a U-shaped or threshold relationship with age - risk may be low in young adults, rise sharply after 45, and plateau in older age. A single linear coefficient can’t capture this pattern and may average out to near zero. The team should explore adding polynomial terms, binning age into categories, or using spline transformations. Blindly trusting the linear assumption could lead to a model that dramatically underestimates risk for middle-aged patients</p></div>
+<h2>Section 2: P-Hacking &amp; Statistical Misuse</h2>
+<h3>Threshold Shopping</h3>
+<div class="def"><span class="label">Question</span><p>A researcher builds a logistic regression model to test whether a new drug reduces infection rates. With the default 0.5 threshold, the result is not significant (p = 0.12). They try thresholds of 0.3, 0.4, 0.6, and 0.7, and find that at 0.35 the model shows a significant association (p = 0.03). They report only the 0.35 result. What is the problem?</p></div>
+<div class="rem"><span class="label">Answer</span><p>This is a form of p-hacking through threshold optimization. By trying multiple classification thresholds and reporting only the one that yields significance, the researcher has dramatically inflated the false positive rate. The reported p-value of 0.03 doesn’t account for the multiple comparisons made. If the threshold was chosen post hoc to maximize significance, it’s no longer a valid hypothesis test. The researcher should either pre-register their threshold or use threshold-independent metrics like AUC-ROC. Publishing only the favorable result misrepresents the strength of the evidence.</p></div>
+<h3>Selective Subgroup Analysis</h3>
+<div class="def"><span class="label">Question</span><p>A pharmaceutical company tests a logistic regression model to determine if their treatment reduces disease progression. The overall result is not significant. They then test across 20 demographic subgroups and find the treatment is significant for left-handed men over 60. They market the drug for this subgroup. What’s wrong?</p></div>
+<div class="rem"><span class="label">Answer</span><p>Testing 20 subgroups at α = 0.05 means you’d expect about 1 significant result by chance alone. This is classic multiple comparisons abuse. Finding significance in a post hoc subgroup doesn’t provide real evidence of efficacy - it’s likely a statistical artifact. Proper practice requires pre-specifying subgroups, applying corrections like Bonferroni (testing at 0.05/20 = 0.0025), and replicating the finding in an independent study. Marketing a drug based on a spurious subgroup finding is both scientifically unsound and potentially harmful to patients.</p></div>
+<h3>Outcome Switching</h3>
+<div class="def"><span class="label">Question</span><p>A researcher sets out to predict whether a dietary intervention reduces heart attacks using logistic regression. When heart attack prediction isn’t significant, they switch to predicting “any cardiovascular event” (a broader, more common outcome) and get a significant result. They report only the second analysis. What’s the issue?</p></div>
+<div class="rem"><span class="label">Answer</span><p>This is outcome switching - changing the dependent variable after seeing the results. The broader outcome (“any cardiovascular event”) has a higher base rate, making it easier to find significance. By not disclosing that the original hypothesis failed, the researcher hides the fact that multiple outcomes were tested. The significant result may be a false positive inflated by the implicit multiple testing. Pre-registration of outcomes is the standard safeguard against this. Outcome switching misleads clinicians who might recommend the intervention based on a finding that doesn’t hold for the outcome that actually matters.</p></div>
+<h2>Section 3: Fairness, Bias &amp; Social Impact</h2>
+<h3>Proxy Discrimination</h3>
+<div class="def"><span class="label">Question</span><p>A bank uses logistic regression to approve or deny loans. Race is excluded as a feature, but the model includes zip code, which is highly correlated with race due to residential segregation. The bank claims the model is race-blind. What is the problem?</p></div>
+<div class="rem"><span class="label">Answer</span><p>Zip code acts as a proxy variable for race. Because of historical and ongoing residential segregation, including zip code effectively reintroduces racial information into the model. The model can learn to discriminate along racial lines without ever “seeing” race directly. This is proxy discrimination. Simply removing protected attributes is not sufficient for fairness - the bank needs to audit model outcomes across racial groups and consider whether proxy features should be removed or adjusted. Lending decisions driven by proxy discrimination can violate fair lending laws and perpetuate housing inequality.</p></div>
+<h3>Training Data Reflects Historical Bias</h3>
+<div class="def"><span class="label">Question</span><p>A company builds a logistic regression model to predict which job applicants will be “successful” (defined as promoted within 2 years), trained on 10 years of historical hiring data. The model systematically scores women lower. The team argues the model is just reflecting the data objectively. What’s the issue?</p></div>
+<div class="rem"><span class="label">Answer</span><p>The historical data encodes past discrimination. If women were promoted less frequently due to biased managers, glass ceilings, or unequal opportunities, the model learns that being female predicts lower “success.” Training on biased labels doesn’t produce an objective model - it produces a model that automates historical bias at scale. The definition of “success” itself is tainted. The company needs to critically examine whether the target variable reflects merit or systemic inequality, consider bias-aware training techniques, and audit outcomes across protected groups before deployment.</p></div>
+<h3>Calibration Disparity Across Groups</h3>
+<div class="def"><span class="label">Question</span><p>A logistic regression model predicts recidivism risk for criminal sentencing. The model is calibrated overall - when it says 70% risk, about 70% of defendants do reoffend. But an audit reveals the model is poorly calibrated for Black defendants: when it says 70% risk for Black defendants, only 50% actually reoffend. What are the implications?</p></div>
+<div class="rem"><span class="label">Answer</span><p>This calibration disparity means Black defendants are systematically assigned higher risk scores than warranted. A judge relying on the model would impose harsher sentences on Black defendants who are actually lower-risk than the model suggests. This happens because the model optimizes overall calibration, which is dominated by the majority group. The model may also be picking up on features correlated with race (arrest history, neighborhood) that reflect policing patterns rather than actual criminal behavior. This is a concrete mechanism by which algorithmic tools can perpetuate racial disparities in the criminal justice system.</p></div>
+
+</div>
+
+
+<script src="../js/theme.js"></script>
+<script src="../js/sidebar.js?v=2"></script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+\documentclass[tikz,border=10pt]{standalone}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\definecolor{mantis}{RGB}{0, 105, 62}
+\begin{document}
+\begin{tikzpicture}[>=stealth]
+    \node[draw, rounded corners, fill=yellow!30, minimum width=2cm, minimum height=0.7cm] (h) at (0,0) {$\mathbf{h}_N \in \mathbb{R}^d$};
+    \node[draw, rounded corners, fill=orange!20, minimum width=2cm, minimum height=0.7cm] (linear) at (3.5,0) {$\times\,\mathbf{E}^\top$};
+    \node[draw, rounded corners, fill=purple!15, minimum width=1.6cm, minimum height=0.7cm] (sm) at (6.5,0) {softmax};
+    \node[draw, rounded corners, fill=green!20, minimum width=2.4cm, minimum height=0.7cm] (p) at (9.8,0) {$\mathbf{p} \in [0,1]^V$};
+    \draw[->, thick] (h) -- (linear);
+    \draw[->, thick] (linear) -- (sm) node[midway, above, font=\footnotesize] {logits $\in \mathbb{R}^V$};
+    \draw[->, thick] (sm) -- (p);
+    \node[font=\footnotesize\itshape] at (3.5,-0.8) {weight-tied with embedding};
+\end{tikzpicture}
+\end{document}

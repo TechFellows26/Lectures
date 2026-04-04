@@ -1,0 +1,27 @@
+\documentclass[tikz,border=10pt]{standalone}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\definecolor{mantis}{RGB}{0, 105, 62}
+\begin{document}
+\begin{tikzpicture}[>=stealth]
+    \node[draw, rounded corners, fill=yellow!30, minimum width=1.8cm, minimum height=0.7cm] (x) at (0,0) {$\mathbf{x}_i$};
+    \node[draw, rounded corners, fill=red!15, minimum width=1.6cm, minimum height=0.7cm] (q) at (3,1) {$\mathbf{q}_i$};
+    \node[draw, rounded corners, fill=green!15, minimum width=1.6cm, minimum height=0.7cm] (k) at (3,0) {$\mathbf{k}_i$};
+    \node[draw, rounded corners, fill=blue!15, minimum width=1.6cm, minimum height=0.7cm] (v) at (3,-1) {$\mathbf{v}_i$};
+    \draw[->, thick] (x) -- (q) node[midway, above, font=\footnotesize, sloped] {$\mathbf{W}^Q$};
+    \draw[->, thick] (x) -- (k) node[midway, above, font=\footnotesize] {$\mathbf{W}^K$};
+    \draw[->, thick] (x) -- (v) node[midway, below, font=\footnotesize, sloped] {$\mathbf{W}^V$};
+    \node[draw, rounded corners, fill=orange!20, minimum width=1.8cm, minimum height=0.7cm] (score) at (6,0.5) {$\frac{\mathbf{q} \cdot \mathbf{k}}{\sqrt{d_k}}$};
+    \draw[->, thick] (q) -- (score);
+    \draw[->, thick] (k) -- (score);
+    \node[draw, rounded corners, fill=purple!15, minimum width=1.4cm, minimum height=0.7cm] (sm) at (8.5,0.5) {softmax};
+    \draw[->, thick] (score) -- (sm);
+    \node[draw, rounded corners, fill=yellow!30, minimum width=1.4cm, minimum height=0.7cm] (out) at (10.8,0.5) {$\mathbf{a}_i$};
+    \draw[->, thick] (sm) -- (out);
+    \draw[->, thick, dashed] (v) -- (6,-1) -- (10.8,-1) -- (out);
+    \node[font=\footnotesize] at (8,-1.3) {$\sum \alpha_{ij}\mathbf{v}_j$};
+    \node[font=\footnotesize\itshape, red!60!black] at (3,1.6) {query};
+    \node[font=\footnotesize\itshape, green!50!black] at (3,0.6) {key};
+    \node[font=\footnotesize\itshape, blue!60!black] at (3,-1.6) {value};
+\end{tikzpicture}
+\end{document}

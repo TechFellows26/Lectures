@@ -1,3 +1,12 @@
+# /// script
+# requires-python = ">=3.11"
+# dependencies = [
+#     "marimo",
+#     "matplotlib",
+#     "numpy",
+#     "scikit-learn",
+# ]
+# ///
 """
 Linear Regression — companion notebook to linear-regression.tex
 

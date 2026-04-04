@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Transformer - LebNet</title>
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.css">
+<script>if(localStorage.getItem('lebnet-theme')==='light')document.documentElement.classList.add('theme-light');</script>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="../index.html" class="navbar-brand"><img src="../img/lebnet-logo-light.png" alt="LebNet" class="navbar-logo logo-dark"><img src="../img/lebnet-logo.png" alt="LebNet" class="navbar-logo logo-light"></a>
+  <ul class="navbar-links">
+    <li><a href="../index.html" class="active">Notes</a></li>
+    <li><a href="../notebooks.html">Notebooks</a></li>
+    <li><a href="../ethics.html">Ethics</a></li>
+  </ul>
+  <div class="navbar-right">
+    <a href="https://github.com/TechFellows26/Lectures" target="_blank" rel="noopener" class="navbar-icon" title="GitHub Repository"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .3a12 12 0 0 0-3.8 23.38c.6.1.82-.26.82-.58v-2.02c-3.34.73-4.04-1.61-4.04-1.61a3.18 3.18 0 0 0-1.33-1.76c-1.09-.74.08-.73.08-.73a2.52 2.52 0 0 1 1.84 1.24 2.56 2.56 0 0 0 3.5 1 2.56 2.56 0 0 1 .76-1.61c-2.67-.3-5.47-1.33-5.47-5.93a4.64 4.64 0 0 1 1.24-3.22 4.3 4.3 0 0 1 .12-3.18s1-.33 3.3 1.23a11.38 11.38 0 0 1 6 0c2.28-1.56 3.29-1.23 3.29-1.23a4.3 4.3 0 0 1 .12 3.18 4.64 4.64 0 0 1 1.23 3.22c0 4.61-2.8 5.63-5.48 5.92a2.86 2.86 0 0 1 .82 2.23v3.29c0 .32.21.7.82.58A12 12 0 0 0 12 .3"/></svg></a>
+    <a href="https://lebnet.us/TechFellows" target="_blank" rel="noopener" class="navbar-icon" title="LebNet TechFellows"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></a>
+    <button class="theme-toggle" title="Toggle theme" aria-label="Toggle theme">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M12 2 A10 10 0 0 0 12 22 Z" style="fill:var(--bg)"/><path d="M12 2 A10 10 0 0 1 12 22 Z" style="fill:var(--fg)"/></svg>
+    </button>
+  </div>
+</nav>
+
+<button class="sidebar-toggle" aria-label="Toggle sidebar">&#9776;</button>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-title">On this page</div>
+  <ul class="sidebar-nav"></ul>
+</aside>
+
+<div class="paper">
+<h1>The Transformer</h1>
+<p class="subtitle">LebNet Tech Fellows &mdash; Detailed Notes</p>
+
+<h2>1. Problem Setup</h2>
+
+<p>In previous chapters we built models that predict a continuous output $y \in \R$ from an input $\mathbf{x}$. Now consider the case where the input is a <strong>sequence of discrete tokens</strong> $w_1, w_2, \ldots, w_T$, each drawn from a finite vocabulary $\mathcal{V} = \{1, 2, \ldots, V\}$, and the goal is to predict the next token $w_{T+1} \in \mathcal{V}$.</p>
+
+<p>By the chain rule of probability, the joint distribution of any sequence factorizes as:</p>
+
+$$p(w_1, w_2, \ldots, w_T) = \prod_{t=1}^{T} p(w_t \mid w_1, \ldots, w_{t-1})$$
+
+<p>So modelling sequences reduces entirely to modelling the conditional $p(w_t \mid w_{1:t-1})$. This is called <strong>language modelling</strong>. We seek a parametric function $f_\Theta : \mathcal{V}^{*} \to [0,1]^V$ such that:</p>
+
+$$p(w_t \mid w_1, \ldots, w_{t-1}) \approx f_\Theta(w_1, \ldots, w_{t-1})_{\,w_t}$$
+
+<p>where $f_\Theta(\cdot)_{w_t}$ denotes the $w_t$-th component of the output vector.</p>
+
+<p><strong>Problem.</strong> The vocabulary $\mathcal{V}$ of a typical model contains $V \approx 50{,}000$ tokens. A sequence of length $T$ lives in a space of size $V^T$; we cannot enumerate all possible contexts. The classical $N$-gram model approximates $p(w_t \mid w_{1:t-1})$ by $p(w_t \mid w_{t-N+1:t-1})$, but this destroys dependencies beyond the window of $N$ tokens.</p>
+
+<p>The <strong>transformer</strong> is the architecture we use for $f_\Theta$. It maps a variable-length sequence of token indices to a probability distribution over $\mathcal{V}$, and it can attend to the <em>entire</em> preceding context. We derive it below, following the original architecture (Vaswani et al., 2017) component by component.</p>
+
+<h3>Roadmap</h3>
+
+<p>An input passes through the following stages:</p>
+
+<table>
+<thead>
+<tr><th>Stage</th><th>Component</th><th>Section</th></tr>
+</thead>
+<tbody>
+<tr><td>1</td><td>Token embedding</td><td>&sect;2</td></tr>
+<tr><td>2</td><td>Positional encoding (added to embedding)</td><td>&sect;3</td></tr>
+<tr><td>3</td><td>Masked multi-head attention</td><td>&sect;4&ndash;6</td></tr>
+<tr><td>4</td><td>Add &amp; LayerNorm</td><td>&sect;7</td></tr>
+<tr><td>5</td><td>Feed-forward network</td><td>&sect;8</td></tr>
+<tr><td>6</td><td>Add &amp; LayerNorm</td><td>&sect;7</td></tr>
+<tr><td>7</td><td>Repeat stages 3&ndash;6 $\times\, L$</td><td>&sect;9</td></tr>
+<tr><td>8</td><td>Final LayerNorm $\to$ Linear $\to$ Softmax</td><td>&sect;10</td></tr>
+</tbody>
+</table>
+
+<h2>2. Input Embedding</h2>
+
+<p>The input to the model is an integer $w_t \in \{1, \ldots, V\}$. Integers are discrete; we cannot differentiate with respect to them. We need a continuous representation.</p>
+
+<div class="def"><span class="label">Definition (Embedding Matrix)</span>
+<p>Let $\mathbf{E} \in \R^{V \times d}$ be the <strong>embedding matrix</strong>, where $d$ is the <strong>model dimension</strong>. The embedding of token $w_t$ is the $w_t$-th row of $\mathbf{E}$:</p>
+$$\mathbf{e}_t := \mathbf{E}[w_t] \in \R^{1 \times d}$$
+</div>
+
+<p>An equivalent viewpoint: represent the token as a one-hot vector $\mathbf{o}_t \in \R^{1 \times V}$ with a single 1 at position $w_t$ and zeros elsewhere. Then:</p>
+
+$$\mathbf{e}_t = \mathbf{o}_t \, \mathbf{E}$$
+
+<p>Since $\mathbf{o}_t$ has exactly one nonzero entry, this matrix multiply reduces to a row lookup. The matrix $\mathbf{E}$ is a <strong>learned parameter</strong>: it is updated during training via backpropagation. Tokens that play similar roles in context get pushed to have similar embeddings.</p>
+
+<p>For a full sequence of $N$ tokens, we stack the embeddings into a matrix:</p>
+
+$$\mathbf{X}_{\text{emb}} = \begin{pmatrix} \mathbf{E}[w_1] \\ \vdots \\ \mathbf{E}[w_N] \end{pmatrix} \in \R^{N \times d}$$
+
+<div class="figure"><img src="../img/transformer-embedding.png" alt="Embedding lookup diagram: one-hot vector multiplied by embedding matrix E to produce continuous embedding vector"><p class="figure-caption">Token embedding as a row lookup in the learned embedding matrix $\mathbf{E}$.</p></div>
+
+<h2>3. Positional Encoding</h2>
+
+<p>The embedding $\mathbf{E}[w_t]$ depends only on the token identity, not on its position $t$ in the sequence. But position matters: &ldquo;dog bites man&rdquo; and &ldquo;man bites dog&rdquo; contain the same tokens. We need to inject positional information.</p>
+
+<p>The simplest approach: define a matrix $\mathbf{P} \in \R^{N_{\max} \times d}$ where row $t$ is the positional encoding of position $t$. We <strong>add</strong> it to the token embedding:</p>
+
+$$\mathbf{x}_t = \mathbf{E}[w_t] + \mathbf{P}[t] \in \R^{1 \times d}$$
+
+<p>The matrix $\mathbf{P}$ can be learned (like $\mathbf{E}$), or it can be fixed. Vaswani et al. (2017) used a deterministic sinusoidal encoding:</p>
+
+$$\begin{aligned}
+\mathbf{P}[t,\, 2k] &= \sin\!\left(\frac{t}{10000^{2k/d}}\right) \\[6pt]
+\mathbf{P}[t,\, 2k+1] &= \cos\!\left(\frac{t}{10000^{2k/d}}\right)
+\end{aligned}$$
+
+<p>for $k = 0, 1, \ldots, d/2 - 1$. Each pair of dimensions oscillates at a different frequency, giving each position a unique signature.</p>
+
+<div class="rem"><span class="label">Remark.</span>
+<p>The positional encoding is <strong>added</strong>, not concatenated. Both $\mathbf{E}[w_t]$ and $\mathbf{P}[t]$ have shape $[1 \times d]$, so the sum $\mathbf{x}_t$ also has shape $[1 \times d]$. This preserves the model dimension throughout the architecture.</p>
+</div>
+
+<p>For the full sequence:</p>
+
+$$\mathbf{X} = \mathbf{X}_{\text{emb}} + \mathbf{P}_{1:N} \in \R^{N \times d}$$
+
+<p>This is the input to the first transformer block.</p>
+
+<div class="figure"><img src="../img/transformer-positional.png" alt="Positional encoding diagram: token embedding and positional vector are added element-wise to form the input vector"><p class="figure-caption">Token embedding $\mathbf{E}[w_t]$ and positional encoding $\mathbf{P}[t]$ are added to form the input $\mathbf{x}_t$.</p></div>
+
+<h2>4. Attention: Motivation</h2>
+
+<p>The next block is <strong>Masked Multi-Head Attention</strong>. This is the core of the transformer. Before deriving the full mechanism, we motivate it.</p>
+
+<p>Consider the sentence: &ldquo;The chicken didn&rsquo;t cross the road because <strong>it</strong> was too tired.&rdquo; The word &ldquo;it&rdquo; refers to &ldquo;chicken&rdquo;. In &ldquo;&hellip; because <strong>it</strong> was too wide&rdquo;, it refers to &ldquo;road&rdquo;. To compute a useful representation of &ldquo;it&rdquo;, we need to look at the other tokens and determine which ones are relevant.</p>
+
+<p><strong>Goal.</strong> Given a token at position $i$ with representation $\mathbf{x}_i \in \R^{1 \times d}$, compute a new representation $\mathbf{a}_i \in \R^{1 \times d}$ that incorporates information from all preceding positions $j \leq i$.</p>
+
+<p>The simplest version: take a weighted sum of the representations of all preceding tokens, where the weights reflect how relevant each token is to position $i$:</p>
+
+$$\mathbf{a}_i = \sum_{j \leq i} \alpha_{ij} \, \mathbf{x}_j, \qquad \alpha_{ij} \geq 0, \qquad \sum_{j \leq i} \alpha_{ij} = 1$$
+
+<p>The constraint $j \leq i$ is the <strong>causal mask</strong>: token $i$ cannot look at future tokens, since at generation time those tokens have not been produced yet.</p>
+
+<p>How should we compute $\alpha_{ij}$? A natural choice is to use the dot product as a similarity measure, then normalize with a softmax:</p>
+
+$$\alpha_{ij} = \frac{\exp(\mathbf{x}_i \cdot \mathbf{x}_j)}{\sum_{k \leq i} \exp(\mathbf{x}_i \cdot \mathbf{x}_k)}$$
+
+<p><strong>Problem.</strong> In this formulation, each $\mathbf{x}_i$ plays three roles simultaneously: the &ldquo;query&rdquo; (what am I looking for?), the &ldquo;key&rdquo; (what do I contain?), and the &ldquo;value&rdquo; (what information do I provide?). Conflating three distinct functions into one vector limits expressiveness.</p>
+
+<h2>5. Queries, Keys, and Values</h2>
+
+<p>To separate the three roles, we introduce three learned linear projections.</p>
+
+<div class="def"><span class="label">Definition (Query, Key, Value)</span>
+<p>Given input $\mathbf{x}_i \in \R^{1 \times d}$, define:</p>
+$$\begin{aligned}
+\mathbf{q}_i &= \mathbf{x}_i \, \mathbf{W}^Q \in \R^{1 \times d_k} \\[4pt]
+\mathbf{k}_i &= \mathbf{x}_i \, \mathbf{W}^K \in \R^{1 \times d_k} \\[4pt]
+\mathbf{v}_i &= \mathbf{x}_i \, \mathbf{W}^V \in \R^{1 \times d_v}
+\end{aligned}$$
+<p>where $\mathbf{W}^Q \in \R^{d \times d_k}$, $\mathbf{W}^K \in \R^{d \times d_k}$, $\mathbf{W}^V \in \R^{d \times d_v}$ are learned weight matrices.</p>
+</div>
+
+<p>The <strong>query</strong> $\mathbf{q}_i$ asks &ldquo;what am I looking for?&rdquo;. The <strong>key</strong> $\mathbf{k}_j$ answers &ldquo;what do I contain?&rdquo;. The <strong>value</strong> $\mathbf{v}_j$ is &ldquo;what information do I provide if selected?&rdquo;. Attention scores are computed between queries and keys; values are what gets summed.</p>
+
+<div class="figure"><img src="../img/transformer-qkv.png" alt="QKV projection diagram: input x is projected into query, key, and value vectors, scores are computed and passed through softmax to produce attention output"><p class="figure-caption">Query, Key, Value projections and scaled dot-product attention.</p></div>
+
+<h3>Scaled Dot-Product Attention</h3>
+
+<p>The score between positions $i$ and $j$ is:</p>
+
+$$\text{score}(\mathbf{x}_i, \mathbf{x}_j) = \frac{\mathbf{q}_i \cdot \mathbf{k}_j}{\sqrt{d_k}}$$
+
+<div class="prop"><span class="label">Proposition (Scaling preserves unit variance)</span>
+<p>If the entries of $\mathbf{q}$ and $\mathbf{k}$ are i.i.d. with mean $0$ and variance $1$, then:</p>
+$$\E[\mathbf{q}_i \cdot \mathbf{k}_j] = 0, \qquad \Var(\mathbf{q}_i \cdot \mathbf{k}_j) = d_k$$
+</div>
+
+<div class="proof"><span class="label">Proof.</span>
+<p>The dot product $\mathbf{q}_i \cdot \mathbf{k}_j = \sum_{m=1}^{d_k} q_{im} k_{jm}$ is a sum of $d_k$ independent terms. By independence, $\E[q_{im} k_{jm}] = \E[q_{im}]\E[k_{jm}] = 0$. For the variance:</p>
+$$\Var(q_{im} k_{jm}) = \E[q_{im}^2 k_{jm}^2] - (\E[q_{im} k_{jm}])^2 = \E[q_{im}^2]\E[k_{jm}^2] - 0 = 1$$
+<p>Summing $d_k$ such terms gives $\Var(\mathbf{q}_i \cdot \mathbf{k}_j) = d_k$. ∎</p>
+</div>
+
+<p>So the standard deviation of the raw dot product grows as $\sqrt{d_k}$. For large $d_k$, the dot products become large in magnitude, pushing the softmax into saturation (outputs near 0 or 1) where gradients vanish. Dividing by $\sqrt{d_k}$ normalizes the variance back to 1.</p>
+
+<h3>Putting It Together</h3>
+
+<p>The attention weight from position $i$ to position $j$ is:</p>
+
+$$\alpha_{ij} = \frac{\exp\!\big(\mathbf{q}_i \cdot \mathbf{k}_j / \sqrt{d_k}\big)}{\sum_{m \leq i} \exp\!\big(\mathbf{q}_i \cdot \mathbf{k}_m / \sqrt{d_k}\big)} \qquad \forall\, j \leq i$$
+
+<p>The attention output is the weighted sum of values:</p>
+
+$$\text{head}_i = \sum_{j \leq i} \alpha_{ij} \, \mathbf{v}_j \in \R^{1 \times d_v}$$
+
+<p>Finally, we apply an output projection $\mathbf{W}^O \in \R^{d_v \times d}$ to map back to the model dimension:</p>
+
+$$\mathbf{a}_i = \text{head}_i \; \mathbf{W}^O \in \R^{1 \times d}$$
+
+<h3>Shape Summary</h3>
+
+<table>
+<thead>
+<tr><th>Object</th><th>Shape</th></tr>
+</thead>
+<tbody>
+<tr><td>Input $\mathbf{x}_i$</td><td>$[1 \times d]$</td></tr>
+<tr><td>$\mathbf{W}^Q, \mathbf{W}^K$</td><td>$[d \times d_k]$</td></tr>
+<tr><td>$\mathbf{W}^V$</td><td>$[d \times d_v]$</td></tr>
+<tr><td>$\mathbf{q}_i, \mathbf{k}_j$</td><td>$[1 \times d_k]$</td></tr>
+<tr><td>$\mathbf{v}_j$</td><td>$[1 \times d_v]$</td></tr>
+<tr><td>$\mathbf{q}_i \cdot \mathbf{k}_j$</td><td>scalar</td></tr>
+<tr><td>$\alpha_{ij}$</td><td>scalar</td></tr>
+<tr><td>$\text{head}_i$</td><td>$[1 \times d_v]$</td></tr>
+<tr><td>$\mathbf{W}^O$</td><td>$[d_v \times d]$</td></tr>
+<tr><td>$\mathbf{a}_i$</td><td>$[1 \times d]$</td></tr>
+</tbody>
+</table>
+
+<p>The input and output both have dimension $d$. This is by design: it means attention blocks can be stacked.</p>
+
+<h3>Parallelization via Matrices</h3>
+
+<p>The computation above describes a single output $\mathbf{a}_i$. For all $N$ positions simultaneously, we pack the embeddings into $\mathbf{X} \in \R^{N \times d}$ and compute:</p>
+
+$$\mathbf{Q} = \mathbf{X}\mathbf{W}^Q, \quad \mathbf{K} = \mathbf{X}\mathbf{W}^K, \quad \mathbf{V} = \mathbf{X}\mathbf{W}^V$$
+
+<p>All $N^2$ pairwise scores are computed in one matrix multiply:</p>
+
+$$\mathbf{S} = \frac{\mathbf{Q}\mathbf{K}^\top}{\sqrt{d_k}} \in \R^{N \times N}$$
+
+<p>The entry $S_{ij}$ is the score from position $i$ to position $j$.</p>
+
+<h3>The Causal Mask</h3>
+
+<p>The matrix $\mathbf{S}$ contains scores for all pairs $(i,j)$, including $j > i$ (future tokens). To enforce causality, we add a mask matrix $\mathbf{M} \in \R^{N \times N}$:</p>
+
+$$M_{ij} = \begin{cases} 0 & \text{if } j \leq i \\ -\infty & \text{if } j > i \end{cases}$$
+
+<p>Since $e^{-\infty} = 0$, the softmax zeroes out all future positions. The full masked attention is:</p>
+
+$$\text{Attention}(\mathbf{Q}, \mathbf{K}, \mathbf{V}) = \text{softmax}\!\left(\frac{\mathbf{Q}\mathbf{K}^\top}{\sqrt{d_k}} + \mathbf{M}\right) \mathbf{V} \in \R^{N \times d_v}$$
+
+<p>The resulting weight matrix is lower-triangular: position $i$ attends only to positions $1, \ldots, i$.</p>
+
+<div class="figure"><img src="../img/transformer-causal-mask.png" alt="Causal mask diagram: score matrix before and after applying the mask, showing the lower-triangular structure with negative infinity in the upper triangle"><p class="figure-caption">The causal mask sets upper-triangular entries to $-\infty$, producing a lower-triangular attention pattern.</p></div>
+
+<p><strong>Computational cost.</strong> The product $\mathbf{Q}\mathbf{K}^\top$ costs $O(N^2 d_k)$. Attention is therefore <strong>quadratic</strong> in the sequence length $N$.</p>
+
+<h2>6. Multi-Head Attention</h2>
+
+<p>A single set of projections $(\mathbf{W}^Q, \mathbf{W}^K, \mathbf{W}^V)$ can learn one type of attention pattern. But tokens relate to each other in many ways: syntactic agreement, coreference, semantic similarity. To capture multiple types of relationships simultaneously, we use <strong>multiple heads</strong>.</p>
+
+<div class="def"><span class="label">Definition (Multi-Head Attention)</span>
+<p>Given $A$ attention heads, each head $c \in \{1, \ldots, A\}$ has its own weight matrices $\mathbf{W}^{Qc}, \mathbf{W}^{Kc}, \mathbf{W}^{Vc}$. Each head computes:</p>
+$$\text{head}^c = \text{Attention}\!\left(\mathbf{X}\mathbf{W}^{Qc},\; \mathbf{X}\mathbf{W}^{Kc},\; \mathbf{X}\mathbf{W}^{Vc}\right) \in \R^{N \times d_v}$$
+<p>The heads are concatenated and projected:</p>
+$$\text{MultiHead}(\mathbf{X}) = \bigl[\text{head}^1 \;\|\; \text{head}^2 \;\|\; \cdots \;\|\; \text{head}^A\bigr] \, \mathbf{W}^O$$
+<p>where $\|$ denotes concatenation along the last axis and $\mathbf{W}^O \in \R^{Ad_v \times d}$.</p>
+</div>
+
+<p><strong>Shapes.</strong> Each head output is $[N \times d_v]$. Concatenating $A$ heads gives $[N \times Ad_v]$. Multiplying by $\mathbf{W}^O$ gives $[N \times d]$. It is standard to set $d_k = d_v = d/A$ so that $Ad_v = d$ and the total parameter count equals that of a single head with full dimension $d$.</p>
+
+<p>In the original transformer: $d = 512$, $A = 8$, $d_k = d_v = 64$.</p>
+
+<div class="figure"><img src="../img/transformer-multihead.png" alt="Multi-head attention diagram: input X is split into multiple heads, each computing independent attention, then concatenated and projected by W^O"><p class="figure-caption">Multi-head attention: $A$ independent heads are concatenated and projected back to dimension $d$.</p></div>
+
+<div class="rem"><span class="label">Remark.</span>
+<p>The multi-head mechanism divides the $d$-dimensional representation into $A$ subspaces of dimension $d/A$ each. Each head learns an independent attention pattern in its subspace. This is strictly more expressive than a single head, because a single head must average over all types of relationships.</p>
+</div>
+
+<h2>7. Add &amp; Norm</h2>
+
+<p>The next component (appearing after each sub-layer) is &ldquo;Add &amp; Norm&rdquo;. This combines two mechanisms: a <strong>residual connection</strong> and <strong>layer normalization</strong>.</p>
+
+<h3>Residual Connections</h3>
+
+<p>Given a sub-layer function $f$ (either attention or feedforward), the residual connection is:</p>
+
+$$\text{output} = f(\mathbf{x}) + \mathbf{x}$$
+
+<p>This creates a direct path for the input to flow through unchanged, while the sub-layer only needs to learn a <em>correction</em>. This addresses the vanishing gradient problem: the gradient of $\mathbf{x} + f(\mathbf{x})$ with respect to $\mathbf{x}$ is $\mathbf{I} + \frac{\partial f}{\partial \mathbf{x}}$, which is always at least the identity.</p>
+
+<div class="figure"><img src="../img/transformer-residual.png" alt="Residual connection diagram: input x passes through sub-layer f and is added back to the original input via a skip connection"><p class="figure-caption">Residual (skip) connection: the input bypasses the sub-layer and is added to its output.</p></div>
+
+<h3>Layer Normalization</h3>
+
+<p>Given a vector $\mathbf{x} \in \R^d$, layer normalization (Ba et al., 2016) normalizes it to zero mean and unit variance, then applies a learned affine transformation.</p>
+
+<p><strong>Step 1.</strong> Compute the mean and standard deviation over the $d$ components of $\mathbf{x}$:</p>
+
+$$\begin{aligned}
+\mu &= \frac{1}{d} \sum_{i=1}^{d} x_i \\[6pt]
+\sigma &= \sqrt{\frac{1}{d} \sum_{i=1}^{d} (x_i - \mu)^2}
+\end{aligned}$$
+
+<p><strong>Step 2.</strong> Normalize and apply learned parameters $\gamma, \beta \in \R^d$:</p>
+
+$$\text{LayerNorm}(\mathbf{x}) = \gamma \odot \frac{\mathbf{x} - \mu}{\sigma + \epsilon} + \beta$$
+
+<p>where $\odot$ is element-wise multiplication and $\epsilon > 0$ is a small constant for numerical stability. The parameters $\gamma$ (gain) and $\beta$ (offset) are learned during training.</p>
+
+<div class="rem"><span class="label">Remark.</span>
+<p>Layer normalization is applied to a <strong>single token&rsquo;s vector</strong>, not across the batch or across positions. It is the $z$-score from statistics, applied dimension-wise to one embedding.</p>
+</div>
+
+<h3>Order of Operations</h3>
+
+<p>In the original transformer (Vaswani et al., 2017), the order is sub-layer $\to$ add $\to$ norm (&ldquo;post-norm&rdquo;). Most modern implementations use the &ldquo;pre-norm&rdquo; variant: norm $\to$ sub-layer $\to$ add. We write the pre-norm version, since it is now standard:</p>
+
+$$\begin{aligned}
+\mathbf{z} &= \text{LayerNorm}(\mathbf{x}) \\
+\mathbf{x}' &= f(\mathbf{z}) + \mathbf{x}
+\end{aligned}$$
+
+<h2>8. Feed-Forward Network</h2>
+
+<p>After the first Add &amp; Norm, the diagram shows a <strong>Feed Forward</strong> block. This is a standard two-layer fully connected network, applied independently and identically to each token position:</p>
+
+$$\text{FFN}(\mathbf{x}) = \text{ReLU}(\mathbf{x}\,\mathbf{W}_1 + \mathbf{b}_1)\,\mathbf{W}_2 + \mathbf{b}_2$$
+
+<p>where $\mathbf{W}_1 \in \R^{d \times d_{\text{ff}}}$, $\mathbf{W}_2 \in \R^{d_{\text{ff}} \times d}$, and $\text{ReLU}(z) = \max(0, z)$.</p>
+
+<p>The hidden dimension $d_{\text{ff}}$ is typically $4d$. In the original transformer, $d = 512$ and $d_{\text{ff}} = 2048$.</p>
+
+<div class="figure"><img src="../img/transformer-ffn.png" alt="Feed-forward network diagram: input x is expanded by W1, passed through ReLU, then compressed back by W2"><p class="figure-caption">The position-wise feed-forward network: expand to $d_{\text{ff}}$, apply ReLU, compress back to $d$.</p></div>
+
+<p><strong>Key point.</strong> The FFN processes each position independently: it sees only the $d$-dimensional vector at one position, with no interaction between positions. The attention layer is the only component that mixes information across positions.</p>
+
+<p>After the FFN, there is another Add &amp; Norm (the second one in each block).</p>
+
+<h2>9. Stacking: $L$ Blocks</h2>
+
+<p>The block (Masked Multi-Head Attention $\to$ Add &amp; Norm $\to$ Feed Forward $\to$ Add &amp; Norm) is repeated $L$ times. In pre-norm convention, one block computes:</p>
+
+$$\begin{aligned}
+\mathbf{O} &= \mathbf{X} + \text{MultiHead}\!\left(\text{LayerNorm}(\mathbf{X})\right) \\[4pt]
+\mathbf{H} &= \mathbf{O} + \text{FFN}\!\left(\text{LayerNorm}(\mathbf{O})\right)
+\end{aligned}$$
+
+<p>The output $\mathbf{H} \in \R^{N \times d}$ has the same shape as the input $\mathbf{X} \in \R^{N \times d}$. This is what makes stacking possible: the output of block $\ell$ is the input to block $\ell + 1$.</p>
+
+<div class="figure"><img src="../img/transformer-block.png" alt="Full transformer block diagram: input flows through Masked MHA, Add and Norm, Feed Forward, Add and Norm, with residual connections, repeated L times"><p class="figure-caption">One transformer block with residual connections, repeated $L$ times.</p></div>
+
+<p>Typical depth: $L = 12$ for small models (GPT-2), $L = 96$ for large models (GPT-3), $L = 126$ for Llama 3.1 405B.</p>
+
+<p>At the very top of the final block there is one additional LayerNorm applied to $\mathbf{X}^{(L)}$ before passing to the output stage.</p>
+
+<h2>10. Linear + Softmax (The Output Head)</h2>
+
+<p>The output of the last transformer block, after the final LayerNorm, is a matrix $\mathbf{H} \in \R^{N \times d}$. We take the row corresponding to the last token, $\mathbf{h}_N \in \R^{1 \times d}$, and map it to a probability distribution over the vocabulary $\mathcal{V}$.</p>
+
+<h3>The Linear Layer (Unembedding)</h3>
+
+<p>We need to go from $\R^d \to \R^V$. A natural choice: reuse the embedding matrix $\mathbf{E} \in \R^{V \times d}$ from &sect;2, transposed. This is called <strong>weight tying</strong>.</p>
+
+<p>The <strong>logit</strong> (unnormalized score) for each token $k \in \mathcal{V}$ is:</p>
+
+$$u_k = \mathbf{h}_N \cdot \mathbf{E}[k]$$
+
+<p>In matrix form:</p>
+
+$$\mathbf{u} = \mathbf{h}_N \, \mathbf{E}^\top \in \R^{1 \times V}$$
+
+<p>The score for token $k$ is the dot product between the contextual representation $\mathbf{h}_N$ and the embedding of token $k$. Tokens whose embeddings are &ldquo;close&rdquo; to $\mathbf{h}_N$ receive high scores.</p>
+
+<div class="figure"><img src="../img/transformer-output.png" alt="Output head diagram: hidden state h_N is multiplied by transposed embedding matrix, then passed through softmax to produce probability distribution over vocabulary"><p class="figure-caption">The output head: weight-tied linear projection followed by softmax.</p></div>
+
+<div class="rem"><span class="label">Remark.</span>
+<p>Weight tying means $\mathbf{E}$ must simultaneously be a good input representation (mapping tokens to $\R^d$) and a good output projection (mapping $\R^d$ back to token scores). This halves the number of vocabulary-related parameters and serves as a regularizer.</p>
+</div>
+
+<h3>Softmax</h3>
+
+<p>The logits $\mathbf{u} \in \R^{1 \times V}$ are real-valued and unnormalized. We convert them to a probability distribution using the softmax function:</p>
+
+$$p(w_{N+1} = k \mid w_{1:N}) = \frac{\exp(u_k)}{\sum_{j=1}^{V} \exp(u_j)}$$
+
+<p>This satisfies $p_k > 0$ for all $k$ and $\sum_k p_k = 1$.</p>
+
+<p><strong>Numerical stability.</strong> In practice we compute $\text{softmax}(\mathbf{u} - \max_k u_k)$. Subtracting the maximum does not change the output (the constant cancels in numerator and denominator) but prevents overflow in the exponential.</p>
+
+<h2>11. Training</h2>
+
+<p>The model is trained by <strong>maximum likelihood</strong>, which is equivalent to minimizing the <strong>cross-entropy loss</strong>.</p>
+
+<p>At position $t$, the model outputs a distribution $\hat{p}(\cdot \mid w_{1:t})$ over $\mathcal{V}$. The true next token is $w_{t+1}$, which defines a one-hot distribution. The cross-entropy between them is:</p>
+
+$$\mathcal{L}_t = -\log \hat{p}(w_{t+1} \mid w_{1:t})$$
+
+<p>For a sequence of $T$ tokens, we average:</p>
+
+$$\mathcal{L} = -\frac{1}{T} \sum_{t=1}^{T} \log \hat{p}(w_{t+1} \mid w_{1:t})$$
+
+<p>This is minimized via gradient descent (typically Adam) with backpropagation through all $L$ transformer blocks.</p>
+
+<p><strong>Key advantage over RNNs.</strong> Thanks to the causal mask, the loss at every position $t$ can be computed <strong>in parallel</strong> during training. The entire sequence is processed in a single forward pass. This is why transformers are faster to train than recurrent models, despite having quadratic attention cost.</p>
+
+<h2>12. Generation (Inference)</h2>
+
+<p>Given a trained model and a prompt $w_{1:N}$, we generate text by repeated next-token prediction:</p>
+
+<ol>
+<li>Set $t \gets N$.</li>
+<li><strong>Repeat:</strong>
+<ol type="a">
+<li>Compute $\mathbf{h}_t^{(L)} = f_\Theta(w_{1:t})$ (forward pass)</li>
+<li>$\mathbf{u} \gets \mathbf{h}_t^{(L)} \, \mathbf{E}^\top$ (logits)</li>
+<li>$\mathbf{p} \gets \text{softmax}(\mathbf{u})$ (probabilities)</li>
+<li>$w_{t+1} \sim \text{Sample}(\mathbf{p})$ (choose next token)</li>
+<li>$t \gets t + 1$</li>
+</ol>
+</li>
+<li><strong>Until</strong> end-of-sequence token or max length.</li>
+<li><strong>Return</strong> $w_{N+1:t}$.</li>
+</ol>
+
+<p>The sampling strategy in step 2(d) controls the quality/diversity tradeoff:</p>
+
+<p><strong>Greedy decoding:</strong> Always take $w_{t+1} = \arg\max_k p_k$. Deterministic, but repetitive.</p>
+
+<p><strong>Top-$k$ sampling:</strong> Zero out all but the $k$ most probable tokens, renormalize, and sample. When $k = 1$, this reduces to greedy decoding.</p>
+
+<p><strong>Top-$p$ (nucleus) sampling:</strong> Retain the smallest set $\mathcal{S}$ such that $\sum_{w \in \mathcal{S}} p(w) \geq p$, renormalize, and sample. This adapts the number of candidates to the shape of the distribution.</p>
+
+<h2>13. Parameter Count and Scaling</h2>
+
+<div class="prop"><span class="label">Proposition (Parameter count per block)</span>
+<p>The number of non-embedding parameters per transformer block is $12\,d^2$ (assuming $d_{\text{ff}} = 4d$ and $d_k = d_v = d/A$).</p>
+</div>
+
+<div class="proof"><span class="label">Proof.</span>
+<p>The attention sub-layer has four weight matrices:</p>
+$$\underbrace{\mathbf{W}^Q, \mathbf{W}^K, \mathbf{W}^V}_{\text{each } d \times d_k \text{ per head}} \text{ and } \mathbf{W}^O$$
+<p>With $A$ heads and $d_k = d/A$, each of $\mathbf{W}^Q, \mathbf{W}^K, \mathbf{W}^V$ contributes $A \cdot d \cdot (d/A) = d^2$ parameters, and $\mathbf{W}^O \in \R^{d \times d}$ contributes $d^2$. Total for attention: $4d^2$.</p>
+<p>The FFN has $\mathbf{W}_1 \in \R^{d \times 4d}$ and $\mathbf{W}_2 \in \R^{4d \times d}$, contributing $4d^2 + 4d^2 = 8d^2$.</p>
+<p>Total per block: $4d^2 + 8d^2 = 12d^2$. ∎</p>
+</div>
+
+<p>For $L$ blocks, the total non-embedding parameter count is:</p>
+
+$$N_{\text{params}} \approx 12\, L\, d^2$$
+
+<p><strong>Example.</strong> GPT-3: $L = 96$, $d = 12{,}288$. Then $12 \times 96 \times 12{,}288^2 \approx 175$ billion parameters.</p>
+
+<p>Kaplan et al. (2020) showed that the loss follows a <strong>power law</strong> in model size $N$, dataset size $D$, and compute $C$:</p>
+
+$$\begin{aligned}
+\mathcal{L}(N) &\propto N^{-\alpha_N} \\[4pt]
+\mathcal{L}(D) &\propto D^{-\alpha_D} \\[4pt]
+\mathcal{L}(C) &\propto C^{-\alpha_C}
+\end{aligned}$$
+
+<p>These <strong>scaling laws</strong> allow us to predict the performance of larger models from small-scale experiments.</p>
+
+<h2>14. Summary: Complete Forward Pass</h2>
+
+<p>Collecting everything, the forward pass of a decoder-only transformer language model is:</p>
+
+<ol>
+<li><em>Embed + Position</em> (&sect;2&ndash;3):
+$$\mathbf{x}_t = \mathbf{E}[w_t] + \mathbf{P}[t], \qquad \mathbf{X}^{(0)} = [\mathbf{x}_1; \ldots; \mathbf{x}_N] \in \R^{N \times d}$$
+</li>
+<li><em>Transformer Blocks</em> (&sect;4&ndash;9), for $\ell = 1, \ldots, L$:
+$$\begin{aligned}
+\mathbf{O}^{(\ell)} &= \mathbf{X}^{(\ell-1)} + \text{MHA}\!\left(\text{LN}\!\left(\mathbf{X}^{(\ell-1)}\right)\right) \\[4pt]
+\mathbf{X}^{(\ell)} &= \mathbf{O}^{(\ell)} + \text{FFN}\!\left(\text{LN}\!\left(\mathbf{O}^{(\ell)}\right)\right)
+\end{aligned}$$
+</li>
+<li><em>Final LayerNorm</em>: $\mathbf{H} = \text{LayerNorm}(\mathbf{X}^{(L)})$</li>
+<li><em>Output Head</em> (&sect;10):
+$$\mathbf{u} = \mathbf{H}[N]\; \mathbf{E}^\top \in \R^{1 \times V}, \qquad \mathbf{p} = \text{softmax}(\mathbf{u})$$
+</li>
+</ol>
+
+</div>
+<script src="../js/theme.js"></script>
+<script src="../js/sidebar.js?v=2"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false},{left:'$',right:'$',display:false}],macros:{'\\R':'\\mathbb{R}','\\E':'\\mathbb{E}','\\Var':'\\text{Var}','\\Cov':'\\text{Cov}','\\Bias':'\\text{Bias}','\\MSE':'\\text{MSE}','\\tr':'\\text{tr}','\\rank':'\\text{rank}','\\N':'\\mathbb{N}','\\Z':'\\mathbb{Z}'},throwOnError:false});"></script>
+</body>
+</html>

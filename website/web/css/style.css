@@ -748,7 +748,6 @@ th {
 }
 
 .katex { font-size: 1.05em; }
-svg foreignObject .katex { font-size: 1em; }
 
 
 /* =========================================

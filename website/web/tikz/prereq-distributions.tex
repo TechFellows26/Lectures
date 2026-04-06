@@ -1,0 +1,159 @@
+\documentclass[tikz,border=10pt]{standalone}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepackage{amsmath,amssymb,bm}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric}
+\definecolor{darkbg}{HTML}{1a1a1a}
+\definecolor{lightfg}{HTML}{e8e6e3}
+\definecolor{accent}{HTML}{7cb87c}
+\definecolor{accent2}{HTML}{6aa0b0}
+\definecolor{mutedcol}{HTML}{9a9a9a}
+\definecolor{bordercol}{HTML}{3d3d3d}
+\definecolor{redcol}{HTML}{cc3333}
+\definecolor{bluecol}{HTML}{4466cc}
+\pagecolor{darkbg}
+\color{lightfg}
+
+\definecolor{greenfill}{HTML}{1f2a1f}
+\definecolor{bluefill}{HTML}{1a2230}
+
+\begin{document}
+\begin{tikzpicture}[
+    >=Stealth,
+    every node/.style={font=\small},
+    distnode/.style={
+      rounded rectangle,
+      minimum width=2.8cm,
+      minimum height=1.2cm,
+      align=center,
+      inner sep=5pt,
+      line width=0.8pt,
+      text=lightfg,
+    },
+    discrete/.style={
+      distnode,
+      draw=accent,
+      fill=greenfill,
+    },
+    continuous/.style={
+      distnode,
+      draw=bluecol,
+      fill=bluefill,
+    },
+    edgelabel/.style={
+      font=\scriptsize,
+      fill=darkbg,
+      inner sep=2pt,
+      text=mutedcol,
+    },
+    arrstyle/.style={
+      -{Stealth[length=4pt]},
+      line width=0.8pt,
+    },
+  ]
+
+  % Row 1 — Discrete
+  \node[discrete] (bern)
+    at (0, 0)
+    {\textbf{\textcolor{accent}{Bernoulli}}($\pi$)\\[-1pt]
+     {\scriptsize\textcolor{mutedcol}{single trial}}};
+
+  \node[discrete] (binom)
+    at (4.5, 0)
+    {\textbf{\textcolor{accent}{Binomial}}($n,\pi$)\\[-1pt]
+     {\scriptsize\textcolor{mutedcol}{count of successes}}};
+
+  \node[continuous] (unif)
+    at (9, 0)
+    {\textbf{\textcolor{bluecol}{Uniform}}($a,b$)\\[-1pt]
+     {\scriptsize\textcolor{mutedcol}{equal probability}}};
+
+  % Row 2 — Continuous
+  \node[continuous] (expo)
+    at (0, -3)
+    {\textbf{\textcolor{bluecol}{Exponential}}($\lambda$)\\[-1pt]
+     {\scriptsize\textcolor{mutedcol}{waiting time}}};
+
+  \node[continuous] (norm)
+    at (4.5, -3)
+    {\textbf{\textcolor{bluecol}{Normal}}($\mu,\sigma^2$)\\[-1pt]
+     {\scriptsize\textcolor{mutedcol}{bell curve}}};
+
+  \node[continuous] (mvn)
+    at (9, -3)
+    {\textbf{\textcolor{bluecol}{MVN}}($\bm{\mu},\bm{\Sigma}$)\\[-1pt]
+     {\scriptsize\textcolor{mutedcol}{$d$-dimensional}}};
+
+  % Row 3
+  \node[continuous] (chi)
+    at (2.25, -6)
+    {\textbf{\textcolor{bluecol}{$\chi^2$}}($k$)\\[-1pt]
+     {\scriptsize\textcolor{mutedcol}{sum of squared normals}}};
+
+  \node[discrete] (pois)
+    at (6.75, -6)
+    {\textbf{\textcolor{accent}{Poisson}}($\lambda$)\\[-1pt]
+     {\scriptsize\textcolor{mutedcol}{event count}}};
+
+  % --- Arrows ---
+
+  % Bernoulli -> Binomial
+  \draw[arrstyle, mutedcol]
+    (bern) -- (binom)
+    node[edgelabel, midway, above] {sum of $n$ i.i.d.};
+
+  % Binomial -> Normal (CLT)
+  \draw[arrstyle, redcol]
+    (binom) -- (norm)
+    node[edgelabel, midway, left=1pt, text=redcol] {CLT ($n\!\to\!\infty$)};
+
+  % Uniform -> Normal (CLT)
+  \draw[arrstyle, redcol]
+    (unif) -- (norm)
+    node[edgelabel, midway, right=1pt, text=redcol] {CLT};
+
+  % Normal -> MVN
+  \draw[arrstyle, bluecol]
+    (norm) -- (mvn)
+    node[edgelabel, midway, above, text=bluecol] {$d$ components};
+
+  % Bernoulli -> Normal (logistic, curved dashed)
+  \draw[arrstyle, bluecol, dashed, bend right=30]
+    (bern) to
+    node[edgelabel, midway, left=3pt, text=bluecol] {logistic}
+    (norm);
+
+  % Normal -> chi^2
+  \draw[arrstyle, mutedcol]
+    (norm) -- (chi)
+    node[edgelabel, midway, left=1pt] {sum $Z_i^2$};
+
+  % Exponential -> chi^2
+  \draw[arrstyle, mutedcol]
+    (expo) -- (chi)
+    node[edgelabel, midway, below=1pt] {inter-arrival};
+
+  % chi^2 -> Poisson
+  \draw[arrstyle, mutedcol]
+    (chi) -- (pois)
+    node[edgelabel, midway, above] {waiting vs.\ counting};
+
+  % --- Legend ---
+  \node[anchor=west] at (-0.5, -7.8) {
+    \begin{tikzpicture}[baseline=-0.5ex]
+      \fill[greenfill, draw=accent, line width=0.6pt, rounded corners=2pt]
+        (0,0) rectangle (0.3,0.3);
+      \node[right, font=\scriptsize, text=mutedcol] at (0.4,0.15) {discrete};
+
+      \fill[bluefill, draw=bluecol, line width=0.6pt, rounded corners=2pt]
+        (2,0) rectangle (2.3,0.3);
+      \node[right, font=\scriptsize, text=mutedcol] at (2.4,0.15) {continuous};
+
+      \draw[redcol, -{Stealth[length=3pt]}, line width=0.7pt]
+        (4.5,0.15) -- (5,0.15);
+      \node[right, font=\scriptsize, text=mutedcol] at (5.1,0.15) {limiting theorem};
+    \end{tikzpicture}
+  };
+
+\end{tikzpicture}
+\end{document}

@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prerequisites - LebNet</title>
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.css">
+<script>if(localStorage.getItem('lebnet-theme')==='light')document.documentElement.classList.add('theme-light');</script>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="../index.html" class="navbar-brand"><img src="../img/lebnet-logo-light.png" alt="LebNet" class="navbar-logo logo-dark"><img src="../img/lebnet-logo.png" alt="LebNet" class="navbar-logo logo-light"></a>
+  <ul class="navbar-links">
+    <li><a href="../index.html" class="active">Notes</a></li>
+    <li><a href="../notebooks.html">Notebooks</a></li>
+    <li><a href="../ethics.html">Ethics</a></li>
+  </ul>
+  <div class="navbar-right">
+    <a href="https://github.com/TechFellows26/Lectures" target="_blank" rel="noopener" class="navbar-icon" title="GitHub Repository"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .3a12 12 0 0 0-3.8 23.38c.6.1.82-.26.82-.58v-2.02c-3.34.73-4.04-1.61-4.04-1.61a3.18 3.18 0 0 0-1.33-1.76c-1.09-.74.08-.73.08-.73a2.52 2.52 0 0 1 1.84 1.24 2.56 2.56 0 0 0 3.5 1 2.56 2.56 0 0 1 .76-1.61c-2.67-.3-5.47-1.33-5.47-5.93a4.64 4.64 0 0 1 1.24-3.22 4.3 4.3 0 0 1 .12-3.18s1-.33 3.3 1.23a11.38 11.38 0 0 1 6 0c2.28-1.56 3.29-1.23 3.29-1.23a4.3 4.3 0 0 1 .12 3.18 4.64 4.64 0 0 1 1.23 3.22c0 4.61-2.8 5.63-5.48 5.92a2.86 2.86 0 0 1 .82 2.23v3.29c0 .32.21.7.82.58A12 12 0 0 0 12 .3"/></svg></a>
+    <a href="https://lebnet.us/TechFellows" target="_blank" rel="noopener" class="navbar-icon" title="LebNet TechFellows"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></a>
+    <button class="theme-toggle" title="Toggle theme" aria-label="Toggle theme">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M12 2 A10 10 0 0 0 12 22 Z" style="fill:var(--bg)"/><path d="M12 2 A10 10 0 0 1 12 22 Z" style="fill:var(--fg)"/></svg>
+    </button>
+  </div>
+</nav>
+
+<button class="sidebar-toggle" aria-label="Toggle sidebar">&#9776;</button>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-title">On this page</div>
+  <ul class="sidebar-nav"></ul>
+</aside>
+
+<div class="paper">
+<h1>Prerequisites</h1>
+<p class="subtitle">LebNet Tech Fellows &mdash; Background Notes</p>
+
+<p>These notes collect the mathematical background assumed throughout the course. Nothing here is derived during lectures; if any section feels genuinely unfamiliar rather than rusty, treat it as a reading assignment before the corresponding lecture.</p>
+
+<h2>Calculus</h2>
+
+<h3>The Derivative</h3>
+
+<p>A function $f : \mathbb{R} \to \mathbb{R}$ assigns to each input $x$ an output $f(x)$. The derivative $f'(x)$ is the instantaneous rate of change of $f$ at $x$. To make this precise, fix a point $x$ and consider a nearby point $x + h$: the ratio
+$$\frac{f(x+h) - f(x)}{h}$$
+is the average rate of change over the interval $[x, x+h]$, geometrically the slope of the <strong>secant line</strong> through $(x, f(x))$ and $(x+h, f(x+h))$. The derivative is the limit of this slope as $h$ shrinks to zero:
+$$f'(x) = \lim_{h \to 0} \frac{f(x+h) - f(x)}{h}$$</p>
+
+<p>As $h \to 0$, the secant line rotates into the <strong>tangent line</strong> at $x$; the derivative is the slope of that tangent. The left panel shows the secant through two distinct points $(x, f(x))$ and $(x+h, f(x+h))$; the right panel shows the tangent as those two points merge ($h \to 0$).</p>
+
+<div class="figure">
+<svg viewBox="0 0 560 200" style="width:100%;max-width:560px;display:block;margin:0 auto">
+  <defs>
+    <marker id="arr" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#888"/>
+    </marker>
+  </defs>
+  <!-- Left panel: secant -->
+  <g transform="translate(20,10)">
+    <text x="125" y="14" text-anchor="middle" font-size="11" font-weight="bold" fill="#00693e">Secant: two points</text>
+    <!-- axes -->
+    <line x1="30" y1="170" x2="240" y2="170" stroke="#888" stroke-width="1" marker-end="url(#arr)"/>
+    <line x1="30" y1="170" x2="30" y2="10" stroke="#888" stroke-width="1" marker-end="url(#arr)"/>
+    <text x="245" y="173" font-size="10" fill="#888">x</text>
+    <text x="25" y="8" font-size="10" fill="#888">f</text>
+    <!-- f(x)=x^2 scaled: x in [0,2.5] -> [30,230], y in [0,6.25] -> [170,20] -->
+    <path d="M30,170 Q95,140 130,100 Q165,60 230,20" fill="none" stroke="#00693e" stroke-width="2"/>
+    <!-- secant through (1,1) and (2,4): slope=3 -->
+    <line x1="50" y1="158" x2="210" y2="30" stroke="#aaa" stroke-width="1.5" stroke-dasharray="4,3"/>
+    <!-- points -->
+    <circle cx="110" cy="144" r="4" fill="#00693e"/>
+    <circle cx="190" cy="90" r="4" fill="#4466cc"/>
+    <text x="112" y="155" font-size="9" fill="#00693e">$(x,\,f(x))$</text>
+    <text x="192" y="85" font-size="9" fill="#4466cc">$(x{+}h,\,f(x{+}h))$</text>
+    <!-- brace for h -->
+    <line x1="110" y1="178" x2="190" y2="178" stroke="#aaa" stroke-width="1" marker-end="url(#arr)"/>
+    <line x1="190" y1="178" x2="110" y2="178" stroke="#aaa" stroke-width="1" marker-end="url(#arr)"/>
+    <text x="150" y="190" text-anchor="middle" font-size="10" fill="#888">$h$</text>
+    <text x="155" y="120" font-size="9" fill="#666">slope $= \frac{f(x{+}h)-f(x)}{h}$</text>
+  </g>
+  <!-- Right panel: tangent -->
+  <g transform="translate(300,10)">
+    <text x="115" y="14" text-anchor="middle" font-size="11" font-weight="bold" fill="#00693e">Tangent: $h \to 0$</text>
+    <!-- axes -->
+    <line x1="30" y1="170" x2="230" y2="170" stroke="#888" stroke-width="1" marker-end="url(#arr)"/>
+    <line x1="30" y1="170" x2="30" y2="10" stroke="#888" stroke-width="1" marker-end="url(#arr)"/>
+    <text x="235" y="173" font-size="10" fill="#888">x</text>
+    <text x="25" y="8" font-size="10" fill="#888">f</text>
+    <!-- f(x)=x^2 -->
+    <path d="M30,170 Q95,140 130,100 Q165,60 225,22" fill="none" stroke="#00693e" stroke-width="2"/>
+    <!-- tangent at x=1: slope=2 -->
+    <line x1="40" y1="158" x2="200" y2="50" stroke="#cc3333" stroke-width="2" stroke-dasharray="5,3"/>
+    <!-- point -->
+    <circle cx="110" cy="144" r="4" fill="#00693e"/>
+    <text x="112" y="155" font-size="9" fill="#00693e">$(x,\,f(x))$</text>
+    <text x="170" y="55" font-size="9" fill="#cc3333">slope $= f'(x)$</text>
+  </g>
+</svg>
+<p class="figure-caption">Left: secant line through two points separated by $h$. Right: as $h \to 0$, the secant converges to the tangent — the derivative.</p>
+</div>
+
+<p><strong>Standard rules.</strong> For differentiable $f, g$ and constant $c$:</p>
+<ul>
+<li>$(f + g)' = f' + g'$; &nbsp; $(fg)' = f'g + fg'$; &nbsp; $(f/g)' = (f'g - fg')/g^2$</li>
+<li><strong>Chain rule</strong>: $(f \circ g)'(x) = f'(g(x)) \cdot g'(x)$</li>
+<li>$(x^n)' = nx^{n-1}$; &nbsp; $(e^x)' = e^x$; &nbsp; $(\ln x)' = 1/x$</li>
+</ul>
+
+<p>The chain rule is the single most important differentiation rule in the course: backpropagation in neural networks is nothing more than the chain rule applied to a composition of many functions.</p>
+
+<h3>The Integral</h3>
+
+<p>Given a function $f$, the integral $\int_a^b f(x)\,dx$ is the signed area between $f$ and the $x$-axis on $[a, b]$: the total quantity $f$ accumulates over the interval. To compute it, partition $[a, b]$ into $n$ subintervals of width $\Delta x = (b - a)/n$, approximate the area in each slice by a rectangle of height $f(x_i^*)$ and width $\Delta x$, and sum:
+$$S_n = \sum_{i=1}^{n} f(x_i^*)\,\Delta x$$</p>
+
+<p>As $n$ grows, $\Delta x$ shrinks, the rectangles trace $f$ more faithfully, and the error vanishes. The three panels below show this convergence for $n = 3$, $8$, $30$.</p>
+
+<div class="figure">
+<svg viewBox="0 0 540 160" style="width:100%;max-width:540px;display:block;margin:0 auto">
+  <defs>
+    <marker id="arr2" markerWidth="5" markerHeight="5" refX="3" refY="2.5" orient="auto">
+      <path d="M0,0 L5,2.5 L0,5 Z" fill="#888"/>
+    </marker>
+  </defs>
+  <!-- n=3 -->
+  <g transform="translate(10,10)">
+    <text x="82" y="12" text-anchor="middle" font-size="10" font-weight="bold" fill="#00693e">$n=3$</text>
+    <line x1="20" y1="130" x2="165" y2="130" stroke="#888" stroke-width="1" marker-end="url(#arr2)"/>
+    <line x1="20" y1="130" x2="20" y2="5" stroke="#888" stroke-width="1" marker-end="url(#arr2)"/>
+    <text x="18" y="133" font-size="8" fill="#888">$a$</text><text x="148" y="133" font-size="8" fill="#888">$b$</text>
+    <!-- 3 rectangles: dx=43 -->
+    <rect x="20" y="110" width="43" height="20" fill="rgba(0,105,62,0.15)" stroke="rgba(0,105,62,0.5)" stroke-width="0.8"/>
+    <rect x="63" y="68" width="43" height="62" fill="rgba(0,105,62,0.25)" stroke="rgba(0,105,62,0.6)" stroke-width="0.8"/>
+    <rect x="106" y="48" width="43" height="82" fill="rgba(0,105,62,0.15)" stroke="rgba(0,105,62,0.5)" stroke-width="0.8"/>
+    <!-- curve -->
+    <path d="M20,125 Q63,100 106,65 Q128,48 155,30" fill="none" stroke="#00693e" stroke-width="1.8"/>
+    <!-- annotations -->
+    <line x1="63" y1="135" x2="106" y2="135" stroke="#4466cc" stroke-width="1" marker-end="url(#arr2)"/>
+    <line x1="106" y1="135" x2="63" y2="135" stroke="#4466cc" stroke-width="1" marker-end="url(#arr2)"/>
+    <text x="84" y="146" text-anchor="middle" font-size="8" fill="#4466cc">$\Delta x$</text>
+    <line x1="112" y1="68" x2="112" y2="130" stroke="#cc3333" stroke-width="1" marker-end="url(#arr2)"/>
+    <text x="114" y="100" font-size="8" fill="#cc3333">$f(x_i)$</text>
+    <circle cx="63" cy="68" r="2.5" fill="#00693e"/>
+    <text x="42" y="64" font-size="7" fill="#00693e">$(x_i,f(x_i))$</text>
+  </g>
+  <!-- n=8 -->
+  <g transform="translate(195,10)">
+    <text x="82" y="12" text-anchor="middle" font-size="10" font-weight="bold" fill="#00693e">$n=8$</text>
+    <line x1="20" y1="130" x2="165" y2="130" stroke="#888" stroke-width="1" marker-end="url(#arr2)"/>
+    <line x1="20" y1="130" x2="20" y2="5" stroke="#888" stroke-width="1" marker-end="url(#arr2)"/>
+    <text x="18" y="133" font-size="8" fill="#888">$a$</text><text x="148" y="133" font-size="8" fill="#888">$b$</text>
+    <!-- 8 rects: dx=16 -->
+    <rect x="20" y="122" width="16" height="8"  fill="rgba(0,105,62,0.15)" stroke="rgba(0,105,62,0.5)" stroke-width="0.6"/>
+    <rect x="36" y="107" width="16" height="23" fill="rgba(0,105,62,0.15)" stroke="rgba(0,105,62,0.5)" stroke-width="0.6"/>
+    <rect x="52" y="97"  width="16" height="33" fill="rgba(0,105,62,0.15)" stroke="rgba(0,105,62,0.5)" stroke-width="0.6"/>
+    <rect x="68" y="89"  width="16" height="41" fill="rgba(0,105,62,0.15)" stroke="rgba(0,105,62,0.5)" stroke-width="0.6"/>
+    <rect x="84" y="83"  width="16" height="47" fill="rgba(0,105,62,0.15)" stroke="rgba(0,105,62,0.5)" stroke-width="0.6"/>
+    <rect x="100" y="77" width="16" height="53" fill="rgba(0,105,62,0.15)" stroke="rgba(0,105,62,0.5)" stroke-width="0.6"/>
+    <rect x="116" y="72" width="16" height="58" fill="rgba(0,105,62,0.15)" stroke="rgba(0,105,62,0.5)" stroke-width="0.6"/>
+    <rect x="132" y="68" width="16" height="62" fill="rgba(0,105,62,0.15)" stroke="rgba(0,105,62,0.5)" stroke-width="0.6"/>
+    <path d="M20,125 Q63,100 106,65 Q128,48 148,34" fill="none" stroke="#00693e" stroke-width="1.8"/>
+  </g>
+  <!-- n=30 -->
+  <g transform="translate(380,10)">
+    <text x="82" y="12" text-anchor="middle" font-size="10" font-weight="bold" fill="#00693e">$n=30$</text>
+    <line x1="20" y1="130" x2="165" y2="130" stroke="#888" stroke-width="1" marker-end="url(#arr2)"/>
+    <line x1="20" y1="130" x2="20" y2="5" stroke="#888" stroke-width="1" marker-end="url(#arr2)"/>
+    <text x="18" y="133" font-size="8" fill="#888">$a$</text><text x="148" y="133" font-size="8" fill="#888">$b$</text>
+    <!-- approximated with many thin rects -->
+    <rect x="20"  y="127" width="4.3" height="3"  fill="rgba(0,105,62,0.2)" stroke="rgba(0,105,62,0.4)" stroke-width="0.3"/>
+    <rect x="24.3" y="123" width="4.3" height="7" fill="rgba(0,105,62,0.2)" stroke="rgba(0,105,62,0.4)" stroke-width="0.3"/>
+    <rect x="28.6" y="119" width="4.3" height="11" fill="rgba(0,105,62,0.2)" stroke="rgba(0,105,62,0.4)" stroke-width="0.3"/>
+    <rect x="32.9" y="116" width="4.3" height="14" fill="rgba(0,105,62,0.2)" stroke="rgba(0,105,62,0.4)" stroke-width="0.3"/>
+    <rect x="37.2" y="113" width="4.3" height="17" fill="rgba(0,105,62,0.2)" stroke="rgba(0,105,62,0.4)" stroke-width="0.3"/>
+    <rect x="41.5" y="110" width="4.3" height="20" fill="rgba(0,105,62,0.2)" stroke="rgba(0,105,62,0.4)" stroke-width="0.3"/>
+    <rect x="45.8" y="108" width="4.3" height="22" fill="rgba(0,105,62,0.2)" stroke="rgba(0,105,62,0.4)" stroke-width="0.3"/>
+    <rect x="50.1" y="105" width="4.3" height="25" fill="rgba(0,105,62,0.2)" stroke="rgba(0,105,62,0.4)" stroke-width="0.3"/>
+    <rect x="54.4" y="103" width="4.3" height="27" fill="rgba(0,105,62,0.2)" stroke="rgba(0,105,62,0.4)" stroke-width="0.3"/>
+    <rect x="58.7" y="101" width="4.3" height="29" fill="rgba(0,105,62,0.2)" stroke="rgba(0,105,62,0.4)" stroke-width="0.3"/>
+    <rect x="63"   y="99"  width="4.3" height="31" fill="rgba(0,105,62,0.2)" stroke="rgba(0,105,62,0.4)" stroke-width="0.3"/>
+    <rect x="67.3" y="97"  width="4.3" height="33" fill="rgba(0,105,62,0.2)" stroke="rgba(0,105,62,0.4)" stroke-width="0.3"/>
+    <rect x="71.6" y="95"  width="4.3" height="35" fill="rgba(0,105,62,0.2)" stroke="rgba(0,105,62,0.4)" stroke-width="0.3"/>
+    <rect x="75.9" y="93"  width="4.3" height="37" fill="rgba(0,105,62,0.2)" stroke="rgba(0,105,62,0.4)" stroke-width="0.3"/>
+    <rect x="80.2" y="92"  width="4.3" height="38" fill="rgba(0,105,62,0.2)" stroke="rgba(0,105,62,0.4)" stroke-width="0.3"/>
+    <rect x="84.5" y="90"  width="4.3" height="40" fill="rgba(0,105,62,0.2)" stroke="rgba(0,105,62,0.4)" stroke-width="0.3"/>
+    <rect x="88.8" y="89"  width="4.3" height="41" fill="rgba(0,105,62,0.2)" stroke="rgba(0,105,62,0.4)" stroke-width="0.3"/>
+    <rect x="93.1" y="87"  width="4.3" height="43" fill="rgba(0,105,62,0.2)" stroke="rgba(0,105,62,0.4)" stroke-width="0.3"/>
+    <rect x="97.4" y="86"  width="4.3" height="44" fill="rgba(0,105,62,0.2)" stroke="rgba(0,105,62,0.4)" stroke-width="0.3"/>
+    <rect x="101.7" y="84" width="4.3" height="46" fill="rgba(0,105,62,0.2)" stroke="rgba(0,105,62,0.4)" stroke-width="0.3"/>
+    <rect x="106"   y="83" width="4.3" height="47" fill="rgba(0,105,62,0.2)" stroke="rgba(0,105,62,0.4)" stroke-width="0.3"/>
+    <rect x="110.3" y="82" width="4.3" height="48" fill="rgba(0,105,62,0.2)" stroke="rgba(0,105,62,0.4)" stroke-width="0.3"/>
+    <rect x="114.6" y="81" width="4.3" height="49" fill="rgba(0,105,62,0.2)" stroke="rgba(0,105,62,0.4)" stroke-width="0.3"/>
+    <rect x="118.9" y="79" width="4.3" height="51" fill="rgba(0,105,62,0.2)" stroke="rgba(0,105,62,0.4)" stroke-width="0.3"/>
+    <rect x="123.2" y="78" width="4.3" height="52" fill="rgba(0,105,62,0.2)" stroke="rgba(0,105,62,0.4)" stroke-width="0.3"/>
+    <rect x="127.5" y="77" width="4.3" height="53" fill="rgba(0,105,62,0.2)" stroke="rgba(0,105,62,0.4)" stroke-width="0.3"/>
+    <rect x="131.8" y="76" width="4.3" height="54" fill="rgba(0,105,62,0.2)" stroke="rgba(0,105,62,0.4)" stroke-width="0.3"/>
+    <rect x="136.1" y="75" width="4.3" height="55" fill="rgba(0,105,62,0.2)" stroke="rgba(0,105,62,0.4)" stroke-width="0.3"/>
+    <rect x="140.4" y="74" width="4.3" height="56" fill="rgba(0,105,62,0.2)" stroke="rgba(0,105,62,0.4)" stroke-width="0.3"/>
+    <rect x="144.7" y="73" width="4.3" height="57" fill="rgba(0,105,62,0.2)" stroke="rgba(0,105,62,0.4)" stroke-width="0.3"/>
+    <path d="M20,125 Q63,100 106,65 Q128,48 148,34" fill="none" stroke="#00693e" stroke-width="1.8"/>
+  </g>
+</svg>
+<p class="figure-caption">Riemann sums for increasing $n$. Each rectangle has width $\Delta x$ and height $f(x_i)$; their total area converges to $\int_a^b f(x)\,dx$.</p>
+</div>
+
+$$\underbrace{\sum_{i=1}^{n} f(x_i)\,\Delta x}_{\text{finite sum of rectangles}} \;\xrightarrow[{\Delta x \to 0}]{n \to \infty}\; \underbrace{\int_a^b f(x)\,dx}_{\text{exact area}}$$
+
+<p>The <strong>Fundamental Theorem of Calculus</strong> connects differentiation and integration: if $F'(x) = f(x)$, then $\int_a^b f(x)\,dx = F(b) - F(a)$. They are inverse operations; this duality appears throughout the course, most directly in the relationship between the probability density function and the cumulative distribution function.</p>
+
+<h3>Partial Derivatives and the Gradient</h3>
+
+<p>For $f : \mathbb{R}^d \to \mathbb{R}$, the partial derivative $\frac{\partial f}{\partial x_j}$ measures the rate of change of $f$ along the $j$-th coordinate axis while all other coordinates are held fixed. The <strong>gradient</strong>
+$$\nabla f(\mathbf{x}) = \begin{bmatrix} \frac{\partial f}{\partial x_1} \\ \vdots \\ \frac{\partial f}{\partial x_d} \end{bmatrix} \in \mathbb{R}^d$$
+collects all $d$ partial derivatives into a single vector. Geometrically, $\nabla f(\mathbf{x})$ points in the direction of steepest ascent of $f$ at $\mathbf{x}$, and its magnitude $\|\nabla f\|$ is the rate of increase in that direction. The left panel below shows a 3D surface $f(x_1, x_2) = x_1^2 + 2x_2^2$ sliced at $x_2 = 1$: the partial derivative $\partial f / \partial x_1$ is the slope of the curve in that slice (the tangent line). The right panel extracts the 1D slice.</p>
+
+<div class="figure"><img src="../img/prereq-partial-derivative.png" alt="3D surface f(x1,x2)=x1^2+2x2^2 sliced at x2=1 showing partial derivative as slope of tangent line in the slice"><p class="figure-caption">Left: the 3D surface sliced along $x_2 = 1$ (red curve). Right: the 1D slice with slope = $\partial f/\partial x_1 = 2x_1$ at $x_1 = 1$.</p></div>
+
+<p>On a contour plot (curves of constant $f$), the gradient at each point is perpendicular to the level curve passing through that point. The figure below shows gradient arrows on the contour plot of $f(x_1, x_2) = x_1^2 + 2x_2^2$, cutting across contour lines at right angles.</p>
+
+<div class="figure"><img src="../img/prereq-gradient.png" alt="Contour plot of f(x1,x2)=x1^2+2x2^2 with gradient arrows perpendicular to level curves"><p class="figure-caption">Gradient field on a contour plot: each arrow is perpendicular to the level curve through that point, pointing toward steepest ascent.</p></div>
+
+<p>Gradient descent exploits this directly: stepping in the direction $-\nabla f$ decreases $f$ as rapidly as possible per unit step.</p>
+
+<h3>Critical Points, the Hessian, and Convexity</h3>
+
+<p>A necessary condition for $\mathbf{x}^*$ to be a local minimum of a differentiable $f : \mathbb{R}^d \to \mathbb{R}$ is $\nabla f(\mathbf{x}^*) = \mathbf{0}$ (the first-order condition). This is necessary but not sufficient: saddle points also satisfy it. To classify critical points, we examine the <strong>Hessian</strong>, the $d \times d$ matrix of second partial derivatives:
+$$\mathbf{H}_f(\mathbf{x}) = \left[\frac{\partial^2 f}{\partial x_i \partial x_j}\right]_{i,j}$$</p>
+
+<p>At a critical point $\nabla f(\mathbf{x}^*) = \mathbf{0}$: if $\mathbf{H}_f(\mathbf{x}^*)$ is positive definite (all eigenvalues positive), then $\mathbf{x}^*$ is a local minimum; if negative definite, a local maximum; otherwise, a saddle point.</p>
+
+<div class="def"><span class="label">Definition — Convexity</span>A function $f$ is <strong>convex</strong> if $\mathbf{H}_f(\mathbf{x}) \succeq 0$ everywhere (equivalently, if $f(t\mathbf{a} + (1-t)\mathbf{b}) \leq t\,f(\mathbf{a}) + (1-t)\,f(\mathbf{b})$ for all $\mathbf{a}, \mathbf{b}$ and $t \in [0,1]$). For convex functions, every local minimum is a global minimum, and the first-order condition $\nabla f(\mathbf{x}^*) = \mathbf{0}$ is both necessary and sufficient.</div>
+
+<p>Convexity is the reason linear regression has a unique, closed-form solution while neural network training does not: the squared-error loss is convex in the parameters of a linear model but non-convex in the parameters of a neural network.</p>
+
+<div class="figure"><img src="../img/prereq-hessian.png" alt="Two contour plots showing Hessian eigenvalue-curvature connection: positive definite (ellipses, unique min) vs indefinite (hyperbolae, saddle)"><p class="figure-caption">Left: $\mathbf{H} \succ 0$ (both $\lambda > 0$) — contours are ellipses, curvature is positive along every eigenvector direction, giving a bowl with a unique minimum. Right: indefinite $\mathbf{H}$ ($\lambda_1 > 0,\, \lambda_2 < 0$) — the positive-eigenvalue direction curves up, the negative-eigenvalue direction curves down, giving a saddle.</p></div>
+
+<h2>Linear Algebra</h2>
+
+<h3>Matrices as Linear Transformations</h3>
+
+<p>A matrix $\mathbf{A} \in \mathbb{R}^{m \times n}$ defines a linear function $f : \mathbb{R}^n \to \mathbb{R}^m$ by $f(\mathbf{x}) = \mathbf{A}\mathbf{x}$. What this function does is determined by the columns of $\mathbf{A}$: the $j$-th column is the image of the $j$-th standard basis vector $\mathbf{e}_j$:
+$$\mathbf{A}\mathbf{e}_j = \begin{bmatrix} a_{1j} \\ a_{2j} \\ \vdots \\ a_{mj}\end{bmatrix} = \text{($j$-th column of $\mathbf{A}$)}$$</p>
+
+<p>Any vector $\mathbf{x} \in \mathbb{R}^n$ decomposes as $\mathbf{x} = x_1\mathbf{e}_1 + \cdots + x_n\mathbf{e}_n$; by linearity,
+$$\mathbf{A}\mathbf{x} = x_1\,(\mathbf{A}\mathbf{e}_1) + x_2\,(\mathbf{A}\mathbf{e}_2) + \cdots + x_n\,(\mathbf{A}\mathbf{e}_n)$$
+The output is a linear combination of the columns of $\mathbf{A}$, weighted by the entries of $\mathbf{x}$. Once you know where each basis vector lands, you know where every vector lands.</p>
+
+<p>A concrete example: let $\mathbf{A} = \begin{bmatrix} 2 & -1 \\ 0 & 1\end{bmatrix}$ and $\mathbf{x} = \begin{bmatrix}1 \\ 2\end{bmatrix}$. The first column $\begin{bmatrix}2\\0\end{bmatrix}$ tells us $\mathbf{e}_1$ gets stretched horizontally by 2; the second column $\begin{bmatrix}-1\\1\end{bmatrix}$ tells us $\mathbf{e}_2$ gets sheared left. The output $\mathbf{A}\mathbf{x} = \begin{bmatrix}0\\2\end{bmatrix}$ is the weighted combination of these images.</p>
+
+<div class="figure">
+<svg viewBox="0 0 420 160" style="width:100%;max-width:420px;display:block;margin:0 auto">
+  <defs>
+    <marker id="a1" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="#00693e"/></marker>
+    <marker id="a2" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="#4466cc"/></marker>
+    <marker id="a3" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="#555"/></marker>
+  </defs>
+  <!-- Domain: unit square -->
+  <g transform="translate(20,20)">
+    <rect x="40" y="40" width="60" height="60" fill="rgba(0,105,62,0.12)" stroke="rgba(0,105,62,0.5)" stroke-width="1.5"/>
+    <line x1="40" y1="100" x2="100" y2="100" stroke="#00693e" stroke-width="2" marker-end="url(#a1)"/>
+    <line x1="40" y1="100" x2="40" y2="40" stroke="#4466cc" stroke-width="2" marker-end="url(#a2)"/>
+    <text x="70" y="115" text-anchor="middle" font-size="9" fill="#00693e">$\mathbf{e}_1$</text>
+    <text x="28" y="70" text-anchor="middle" font-size="9" fill="#4466cc">$\mathbf{e}_2$</text>
+    <text x="75" y="75" font-size="8" fill="#888">area$=1$</text>
+    <text x="70" y="135" text-anchor="middle" font-size="9" fill="#666">domain</text>
+  </g>
+  <!-- Arrow -->
+  <g transform="translate(155,20)">
+    <line x1="0" y1="70" x2="55" y2="70" stroke="#555" stroke-width="2" marker-end="url(#a3)"/>
+    <text x="27" y="63" text-anchor="middle" font-size="11" fill="#555">$\mathbf{A}$</text>
+  </g>
+  <!-- Image: parallelogram -->
+  <g transform="translate(230,20)">
+    <polygon points="40,100 160,100 130,40 10,40" fill="rgba(68,102,204,0.1)" stroke="rgba(68,102,204,0.4)" stroke-width="1.5"/>
+    <line x1="40" y1="100" x2="160" y2="100" stroke="#00693e" stroke-width="2" marker-end="url(#a1)"/>
+    <line x1="40" y1="100" x2="10" y2="40" stroke="#4466cc" stroke-width="2" marker-end="url(#a2)"/>
+    <text x="100" y="115" text-anchor="middle" font-size="8" fill="#00693e">$\mathbf{Ae}_1=\bigl[\begin{smallmatrix}2\\0\end{smallmatrix}\bigr]$</text>
+    <text x="-8" y="68" font-size="8" fill="#4466cc">$\mathbf{Ae}_2$</text>
+    <text x="85" y="78" font-size="8" fill="#888">area$=|\det\mathbf{A}|$</text>
+    <text x="85" y="135" text-anchor="middle" font-size="9" fill="#666">image</text>
+  </g>
+</svg>
+<p class="figure-caption">The unit square (spanned by $\mathbf{e}_1, \mathbf{e}_2$) maps to the parallelogram spanned by the columns of $\mathbf{A}$. Area scales by $|\det \mathbf{A}|$.</p>
+</div>
+
+<p>Geometrically, a linear transformation can scale, rotate, reflect, shear, and project, but it cannot bend, twist, or warp.</p>
+
+<h3>Types of Transformations</h3>
+
+<p><strong>Diagonal matrices</strong> scale each coordinate axis independently: $\begin{bmatrix}\alpha_1 & 0 \\ 0 & \alpha_2\end{bmatrix}$ sends $\mathbf{e}_1 \mapsto \alpha_1\mathbf{e}_1$ and $\mathbf{e}_2 \mapsto \alpha_2\mathbf{e}_2$. A negative $\alpha_j$ reflects across that axis.</p>
+
+<p><strong>Shear matrices</strong> have off-diagonal entries that make one coordinate's image depend on another. The matrix $\begin{bmatrix}1 & \beta \\ 0 & 1\end{bmatrix}$ leaves $\mathbf{e}_1$ fixed but pushes $\mathbf{e}_2$ sideways by $\beta$, tilting the unit square into a parallelogram.</p>
+
+<p><strong>Rotation matrices</strong> $\mathbf{R}_\theta = \begin{bmatrix}\cos\theta & -\sin\theta \\ \sin\theta & \cos\theta\end{bmatrix}$ rotate every vector by angle $\theta$ counterclockwise; they preserve all lengths and angles.</p>
+
+<p>Any $m \times n$ matrix can be decomposed (via the SVD) as a rotation, followed by a diagonal scaling, followed by another rotation. Every linear transformation reduces to rotations and axis-aligned stretches.</p>
+
+<h3>Composition and Non-Commutativity</h3>
+
+<p>Matrix multiplication corresponds to function composition: if $\mathbf{B}$ maps $\mathbb{R}^p \to \mathbb{R}^n$ and $\mathbf{A}$ maps $\mathbb{R}^n \to \mathbb{R}^m$, then $\mathbf{A}\mathbf{B}$ maps $\mathbb{R}^p \to \mathbb{R}^m$ by first applying $\mathbf{B}$, then $\mathbf{A}$.</p>
+
+<p>Matrix multiplication is generally not commutative: $\mathbf{A}\mathbf{B} \neq \mathbf{B}\mathbf{A}$. Applying a shear $\mathbf{S}$ then a rotation $\mathbf{R}$ ($\mathbf{RS}$) produces a different shape than rotating first then shearing ($\mathbf{SR}$), because each transformation acts relative to the axes as they exist after the previous one. Commutativity holds only in special cases (e.g., both matrices diagonal).</p>
+
+<h3>The Dot Product</h3>
+
+<p>The <strong>dot product</strong> of $\mathbf{x}, \mathbf{y} \in \mathbb{R}^d$ admits two equivalent definitions:
+$$\mathbf{x}^\top\mathbf{y} = \sum_{i=1}^{d} x_i y_i = \|\mathbf{x}\|\,\|\mathbf{y}\|\cos\theta$$
+where $\theta$ is the angle between the two vectors. Project $\mathbf{x}$ onto the line spanned by $\mathbf{y}$: the dot product equals this projection length times $\|\mathbf{y}\|$. Three cases:</p>
+
+<div class="figure">
+<svg viewBox="0 0 480 110" style="width:100%;max-width:480px;display:block;margin:0 auto">
+  <defs>
+    <marker id="bm" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="#00693e"/></marker>
+    <marker id="bm2" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="#4466cc"/></marker>
+    <marker id="bm3" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="#cc3333"/></marker>
+  </defs>
+  <!-- Acute -->
+  <g transform="translate(10,10)">
+    <text x="75" y="10" text-anchor="middle" font-size="9" fill="#00693e">acute: $\mathbf{x}^\top\mathbf{y} > 0$</text>
+    <line x1="20" y1="80" x2="130" y2="80" stroke="#00693e" stroke-width="2" marker-end="url(#bm)"/>
+    <line x1="20" y1="80" x2="80" y2="20" stroke="#4466cc" stroke-width="2" marker-end="url(#bm2)"/>
+    <line x1="80" y1="20" x2="80" y2="80" stroke="#888" stroke-width="1" stroke-dasharray="3,2"/>
+    <line x1="20" y1="92" x2="80" y2="92" stroke="#cc3333" stroke-width="1.5" marker-end="url(#bm3)"/>
+    <line x1="80" y1="92" x2="20" y2="92" stroke="#cc3333" stroke-width="1.5" marker-end="url(#bm3)"/>
+    <text x="50" y="102" text-anchor="middle" font-size="8" fill="#cc3333">proj</text>
+    <text x="135" y="83" font-size="9" fill="#00693e">$\mathbf{y}$</text>
+    <text x="83" y="18" font-size="9" fill="#4466cc">$\mathbf{x}$</text>
+  </g>
+  <!-- Right -->
+  <g transform="translate(170,10)">
+    <text x="75" y="10" text-anchor="middle" font-size="9" fill="#4466cc">right: $\mathbf{x}^\top\mathbf{y} = 0$</text>
+    <line x1="20" y1="80" x2="130" y2="80" stroke="#00693e" stroke-width="2" marker-end="url(#bm)"/>
+    <line x1="20" y1="80" x2="20" y2="20" stroke="#4466cc" stroke-width="2" marker-end="url(#bm2)"/>
+    <rect x="20" y="62" width="8" height="8" fill="none" stroke="#888" stroke-width="1"/>
+    <text x="135" y="83" font-size="9" fill="#00693e">$\mathbf{y}$</text>
+    <text x="5" y="18" font-size="9" fill="#4466cc">$\mathbf{x}$</text>
+  </g>
+  <!-- Obtuse -->
+  <g transform="translate(330,10)">
+    <text x="75" y="10" text-anchor="middle" font-size="9" fill="#cc3333">obtuse: $\mathbf{x}^\top\mathbf{y} &lt; 0$</text>
+    <line x1="60" y1="80" x2="160" y2="80" stroke="#00693e" stroke-width="2" marker-end="url(#bm)"/>
+    <line x1="60" y1="80" x2="10" y2="20" stroke="#4466cc" stroke-width="2" marker-end="url(#bm2)"/>
+    <line x1="10" y1="20" x2="10" y2="80" stroke="#888" stroke-width="1" stroke-dasharray="3,2"/>
+    <line x1="10" y1="92" x2="60" y2="92" stroke="#cc3333" stroke-width="1.5" marker-end="url(#bm3)"/>
+    <line x1="60" y1="92" x2="10" y2="92" stroke="#cc3333" stroke-width="1.5" marker-end="url(#bm3)"/>
+    <text x="30" y="102" text-anchor="middle" font-size="8" fill="#cc3333">proj $&lt;0$</text>
+    <text x="165" y="83" font-size="9" fill="#00693e">$\mathbf{y}$</text>
+    <text x="-2" y="18" font-size="9" fill="#4466cc">$\mathbf{x}$</text>
+  </g>
+</svg>
+<p class="figure-caption">The dot product's sign equals the sign of the projection of $\mathbf{x}$ onto $\mathbf{y}$: positive when the angle is acute, zero when orthogonal, negative when obtuse.</p>
+</div>
+
+<p>For a PSD matrix $\mathbf{A}$, the condition $\mathbf{v}^\top\mathbf{A}\mathbf{v} \geq 0$ means the angle between $\mathbf{v}$ and $\mathbf{A}\mathbf{v}$ is never obtuse.</p>
+
+<h3>Norms</h3>
+
+<p>A <strong>norm</strong> $\|\mathbf{x}\|$ assigns a notion of "size" to each vector. The <strong>Euclidean ($\ell_2$) norm</strong> $\|\mathbf{x}\|_2 = \sqrt{x_1^2 + \cdots + x_d^2}$ measures straight-line length. The <strong>$\ell_1$ norm</strong> $\|\mathbf{x}\|_1 = |x_1| + \cdots + |x_d|$ sums absolute values. The difference is visible in their unit balls — the set of all $\mathbf{x}$ with $\|\mathbf{x}\| \leq 1$:</p>
+
+<div class="figure">
+<svg viewBox="0 0 340 150" style="width:100%;max-width:340px;display:block;margin:0 auto">
+  <!-- L2: circle -->
+  <g transform="translate(20,10)">
+    <circle cx="75" cy="70" r="55" fill="rgba(0,105,62,0.1)" stroke="#00693e" stroke-width="2"/>
+    <line x1="10" y1="70" x2="145" y2="70" stroke="#888" stroke-width="0.8"/>
+    <line x1="75" y1="5" x2="75" y2="135" stroke="#888" stroke-width="0.8"/>
+    <text x="75" y="143" text-anchor="middle" font-size="10" fill="#00693e">$\ell_2$: circle</text>
+    <text x="148" y="73" font-size="9" fill="#888">$x_1$</text>
+    <text x="78" y="5" font-size="9" fill="#888">$x_2$</text>
+  </g>
+  <!-- L1: diamond -->
+  <g transform="translate(185,10)">
+    <polygon points="75,15 130,70 75,125 20,70" fill="rgba(68,102,204,0.1)" stroke="#4466cc" stroke-width="2"/>
+    <line x1="10" y1="70" x2="145" y2="70" stroke="#888" stroke-width="0.8"/>
+    <line x1="75" y1="5" x2="75" y2="135" stroke="#888" stroke-width="0.8"/>
+    <circle cx="130" cy="70" r="3.5" fill="#cc3333"/>
+    <circle cx="20"  cy="70" r="3.5" fill="#cc3333"/>
+    <circle cx="75"  cy="15" r="3.5" fill="#cc3333"/>
+    <circle cx="75"  cy="125" r="3.5" fill="#cc3333"/>
+    <text x="75" y="143" text-anchor="middle" font-size="10" fill="#4466cc">$\ell_1$: diamond</text>
+    <text x="148" y="73" font-size="9" fill="#888">$x_1$</text>
+    <text x="78" y="5" font-size="9" fill="#888">$x_2$</text>
+  </g>
+</svg>
+<p class="figure-caption">The $\ell_1$ ball has corners on the coordinate axes (red). Regularization constraints force the solution onto the boundary; $\ell_1$'s corners produce sparse solutions, $\ell_2$'s smooth boundary does not.</p>
+</div>
+
+<h3>Rank, Determinant, and Invertibility</h3>
+
+<p><strong>Rank and the null space.</strong> The <strong>rank</strong> of $\mathbf{A} \in \mathbb{R}^{m \times n}$ is the dimension of its image: the set of all outputs $\{\mathbf{A}\mathbf{x} : \mathbf{x} \in \mathbb{R}^n\}$. Equivalently, it counts how many columns of $\mathbf{A}$ are linearly independent. When $\text{rank}(\mathbf{A}) = r < n$, the transformation collapses an $n$-dimensional input space onto an $r$-dimensional subspace; some directions in the input are completely lost.</p>
+
+<p>The directions that are lost form the <strong>null space</strong> $\ker(\mathbf{A}) = \{\mathbf{x} : \mathbf{A}\mathbf{x} = \mathbf{0}\}$. Its dimension is $n - r$. A rank-deficient transformation sends multiple distinct inputs to the same output, so it cannot be inverted; the information along the null space is lost.</p>
+
+<p><strong>Determinant.</strong> The <strong>determinant</strong> of a transformation is the factor by which it scales areas (in 2D) or volumes (in higher dimensions). For $\mathbf{A} = \begin{bmatrix} a_1 & b_1 \\ a_2 & b_2 \end{bmatrix}$ with columns $\mathbf{a}$ and $\mathbf{b}$, the unit square maps to the parallelogram spanned by $\mathbf{a}$ and $\mathbf{b}$. Its area is base $\|\mathbf{a}\|$ times height $\|\mathbf{b}\|\sin\theta$:
+$$\text{area} = a_1 b_2 - a_2 b_1 = \det(\mathbf{A})$$</p>
+
+<div class="figure">
+<svg viewBox="0 0 440 130" style="width:100%;max-width:440px;display:block;margin:0 auto">
+  <defs>
+    <marker id="dm" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="#00693e"/></marker>
+    <marker id="dm2" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="#4466cc"/></marker>
+    <marker id="dm3" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="#555"/></marker>
+  </defs>
+  <!-- Unit square -->
+  <g transform="translate(10,10)">
+    <rect x="30" y="40" width="55" height="55" fill="rgba(0,105,62,0.12)" stroke="rgba(0,105,62,0.5)" stroke-width="1.5"/>
+    <line x1="30" y1="95" x2="85" y2="95" stroke="#00693e" stroke-width="2" marker-end="url(#dm)"/>
+    <line x1="30" y1="95" x2="30" y2="40" stroke="#4466cc" stroke-width="2" marker-end="url(#dm2)"/>
+    <text x="57" y="108" text-anchor="middle" font-size="9" fill="#00693e">$\mathbf{e}_1$</text>
+    <text x="18" y="68" font-size="9" fill="#4466cc">$\mathbf{e}_2$</text>
+    <text x="57" y="68" text-anchor="middle" font-size="9" fill="#888">area$=1$</text>
+    <text x="57" y="125" text-anchor="middle" font-size="9" fill="#666">unit square</text>
+  </g>
+  <!-- Arrow -->
+  <g transform="translate(120,10)">
+    <line x1="0" y1="60" x2="45" y2="60" stroke="#555" stroke-width="2" marker-end="url(#dm3)"/>
+    <text x="22" y="52" text-anchor="middle" font-size="11" fill="#555">$\mathbf{A}$</text>
+  </g>
+  <!-- Parallelogram -->
+  <g transform="translate(180,10)">
+    <polygon points="20,95 130,95 155,30 45,30" fill="rgba(68,102,204,0.1)" stroke="rgba(68,102,204,0.4)" stroke-width="1.5"/>
+    <line x1="20" y1="95" x2="130" y2="95" stroke="#00693e" stroke-width="2" marker-end="url(#dm)"/>
+    <line x1="20" y1="95" x2="45" y2="30" stroke="#4466cc" stroke-width="2" marker-end="url(#dm2)"/>
+    <line x1="45" y1="30" x2="46" y2="95" stroke="#cc3333" stroke-width="1.5" stroke-dasharray="4,2"/>
+    <text x="90" y="108" text-anchor="middle" font-size="9" fill="#00693e">$\mathbf{a}$</text>
+    <text x="22" y="58" font-size="9" fill="#4466cc">$\mathbf{b}$</text>
+    <text x="52" y="63" font-size="9" fill="#cc3333">$h$</text>
+    <text x="95" y="65" font-size="9" fill="#888">area$=|\det|$</text>
+    <text x="90" y="125" text-anchor="middle" font-size="9" fill="#666">parallelogram</text>
+  </g>
+  <!-- det=0 -->
+  <g transform="translate(350,10)">
+    <line x1="10" y1="95" x2="80" y2="35" stroke="#00693e" stroke-width="2" marker-end="url(#dm)"/>
+    <line x1="10" y1="95" x2="50" y2="62" stroke="#4466cc" stroke-width="2" marker-end="url(#dm2)"/>
+    <line x1="0" y1="103" x2="85" y2="25" stroke="#cc3333" stroke-width="1.5" stroke-dasharray="3,2"/>
+    <text x="83" y="32" font-size="9" fill="#00693e">$\mathbf{a}$</text>
+    <text x="53" y="58" font-size="9" fill="#4466cc">$\mathbf{b}$</text>
+    <text x="38" y="118" text-anchor="middle" font-size="9" fill="#cc3333">$\det=0$: $\mathbf{b}\parallel\mathbf{a}$</text>
+  </g>
+</svg>
+<p class="figure-caption">Left: unit square maps to a parallelogram; its area equals $|\det \mathbf{A}|$. Right: when $\det = 0$, the columns are parallel and the parallelogram collapses to a line.</p>
+</div>
+
+<p>When $\det(\mathbf{A}) > 0$, orientation is preserved; when $\det(\mathbf{A}) < 0$, orientation is flipped. The determinant is multiplicative: $\det(\mathbf{A}\mathbf{B}) = \det(\mathbf{A})\det(\mathbf{B})$, and equals the product of eigenvalues: $\det(\mathbf{A}) = \prod_j \lambda_j$.</p>
+
+<p><strong>Invertibility.</strong> A square matrix $\mathbf{A}$ is <strong>invertible</strong> if and only if $\det(\mathbf{A}) \neq 0$, equivalently $\text{rank}(\mathbf{A}) = d$, equivalently $\ker(\mathbf{A}) = \{\mathbf{0}\}$. The inverse $\mathbf{A}^{-1}$ satisfies $\mathbf{A}\mathbf{A}^{-1} = \mathbf{I}_d$. Key identity: $(\mathbf{A}\mathbf{B})^{-1} = \mathbf{B}^{-1}\mathbf{A}^{-1}$.</p>
+
+<p>In linear regression, $\mathbf{X}^\top\mathbf{X}$ must be invertible for a unique OLS solution, which requires $\text{rank}(\mathbf{X}) = d$ and hence $n \geq d$.</p>
+
+<h3>Orthogonal Matrices</h3>
+
+<p>A square matrix $\mathbf{Q} \in \mathbb{R}^{d \times d}$ is <strong>orthogonal</strong> if $\mathbf{Q}^\top\mathbf{Q} = \mathbf{Q}\mathbf{Q}^\top = \mathbf{I}$ (so $\mathbf{Q}^{-1} = \mathbf{Q}^\top$). The $(i,j)$ entry of $\mathbf{Q}^\top\mathbf{Q}$ is $\mathbf{q}_i^\top\mathbf{q}_j$, which must be $1$ when $i=j$ and $0$ otherwise: the columns are mutually orthogonal unit vectors. Three geometric properties follow from $\mathbf{Q}^\top\mathbf{Q} = \mathbf{I}$:</p>
+
+<ol>
+<li><strong>Lengths are preserved</strong>: $\|\mathbf{Q}\mathbf{v}\|^2 = \mathbf{v}^\top\mathbf{Q}^\top\mathbf{Q}\mathbf{v} = \|\mathbf{v}\|^2$.</li>
+<li><strong>Angles are preserved</strong>: $(\mathbf{Q}\mathbf{u})^\top(\mathbf{Q}\mathbf{v}) = \mathbf{u}^\top\mathbf{v}$.</li>
+<li><strong>Volumes are preserved</strong>: $\det(\mathbf{Q})^2 = 1$, so $\det(\mathbf{Q}) = \pm 1$ (pure rotation when $+1$, reflection included when $-1$).</li>
+</ol>
+
+<p>An orthogonal matrix can rotate and reflect but cannot stretch, compress, or shear. Orthogonal matrices appear in the eigendecomposition $\mathbf{A} = \mathbf{Q}\boldsymbol{\Lambda}\mathbf{Q}^\top$ of a symmetric matrix: rotate axes to align with eigenvectors, scale each axis by its eigenvalue, rotate back.</p>
+
+<h3>Positive Definiteness</h3>
+
+<p>A symmetric matrix $\mathbf{A} \in \mathbb{R}^{d \times d}$ is <strong>positive definite</strong> ($\mathbf{A} \succ 0$) if $\mathbf{v}^\top\mathbf{A}\mathbf{v} > 0$ for all $\mathbf{v} \neq \mathbf{0}$, and <strong>positive semi-definite</strong> ($\mathbf{A} \succeq 0$) if $\mathbf{v}^\top\mathbf{A}\mathbf{v} \geq 0$.</p>
+
+<p>The quantity $\mathbf{v}^\top(\mathbf{A}\mathbf{v})$ is the dot product of $\mathbf{v}$ with its image $\mathbf{A}\mathbf{v}$. The condition $\mathbf{v}^\top\mathbf{A}\mathbf{v} > 0$ says exactly that the angle between $\mathbf{v}$ and $\mathbf{A}\mathbf{v}$ is always acute: a positive definite matrix never sends a vector past $90°$ from where it started.</p>
+
+<p><strong>Eigenvalues.</strong> Since $\mathbf{A}\mathbf{v}_j = \lambda_j\mathbf{v}_j$, a negative eigenvalue reverses an eigenvector past $90°$, so positive definiteness requires all eigenvalues strictly positive. The determinant $\det(\mathbf{A}) = \prod_j\lambda_j \geq 0$ for PSD matrices.</p>
+
+<p><strong>Decomposition.</strong> A symmetric PSD matrix admits $\mathbf{A} = \mathbf{B}^\top\mathbf{B}$ (proved by $\mathbf{v}^\top\mathbf{B}^\top\mathbf{B}\mathbf{v} = \|\mathbf{B}\mathbf{v}\|^2 \geq 0$). The Cholesky factorization $\mathbf{A} = \mathbf{L}\mathbf{L}^\top$ is the computationally preferred variant.</p>
+
+<p><strong>Why PSD guarantees a unique minimum.</strong> For $f(\mathbf{x}) = \frac{1}{2}\mathbf{x}^\top\mathbf{A}\mathbf{x} - \mathbf{b}^\top\mathbf{x}$, perturbing the critical point $\mathbf{x}^*$ by $\mathbf{e} \neq \mathbf{0}$ gives:
+$$f(\mathbf{x}^* + \mathbf{e}) = f(\mathbf{x}^*) + \tfrac{1}{2}\,\mathbf{e}^\top\mathbf{A}\,\mathbf{e}$$
+When $\mathbf{A} \succ 0$, the term $\mathbf{e}^\top\mathbf{A}\mathbf{e} > 0$ for all $\mathbf{e} \neq \mathbf{0}$: every direction away from $\mathbf{x}^*$ increases the objective. When $\mathbf{A}$ is indefinite, some eigenvalues are negative, so there exist directions that decrease the objective: the critical point is a saddle.</p>
+
+<p><strong>The PSD cone.</strong> A $2 \times 2$ symmetric matrix $\begin{bmatrix}a & c \\ c & b\end{bmatrix}$ is described by three numbers $(a, b, c)$. The PSD conditions $a \geq 0$, $b \geq 0$, and $ab - c^2 \geq 0$ define a region in $\mathbb{R}^3$ that is literally a cone: at "height" $a = b = k$, the allowed off-diagonal values satisfy $|c| \leq k$, so the cross-section is an interval $[-k, k]$ widening linearly as $k$ grows. The set is closed under nonnegative linear combinations (convex cone): $\mathbf{v}^\top(\alpha\mathbf{A} + \beta\mathbf{B})\mathbf{v} = \alpha\,\mathbf{v}^\top\!\mathbf{A}\mathbf{v} + \beta\,\mathbf{v}^\top\!\mathbf{B}\mathbf{v} \geq 0$ for $\alpha, \beta \geq 0$ and $\mathbf{A}, \mathbf{B} \succeq 0$.</p>
+
+<p>The Hessian of the OLS objective is $\frac{2}{n}\mathbf{X}^\top\mathbf{X}$, which is PSD since $\mathbf{v}^\top\mathbf{X}^\top\mathbf{X}\mathbf{v} = \|\mathbf{X}\mathbf{v}\|^2 \geq 0$, and strictly PD when $\mathbf{X}$ has full column rank. The OLS loss surface is therefore a bowl with a unique global minimum.</p>
+
+<h3>Orthogonal Projection</h3>
+
+<p>Given a subspace $V \subset \mathbb{R}^n$ and a vector $\mathbf{y}$, the <strong>orthogonal projection</strong> of $\mathbf{y}$ onto $V$ is the unique point $\hat{\mathbf{y}} \in V$ closest to $\mathbf{y}$ in Euclidean distance. The residual $\mathbf{y} - \hat{\mathbf{y}}$ is perpendicular to every vector in $V$.</p>
+
+<div class="figure">
+<svg viewBox="0 0 320 130" style="width:100%;max-width:320px;display:block;margin:0 auto">
+  <defs>
+    <marker id="pm" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="#00693e"/></marker>
+    <marker id="pm2" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="#555"/></marker>
+    <marker id="pm3" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="#cc3333"/></marker>
+  </defs>
+  <rect x="10" y="78" width="300" height="5" fill="rgba(0,105,62,0.1)"/>
+  <line x1="10" y1="80" x2="310" y2="80" stroke="#00693e" stroke-width="2" marker-end="url(#pm)"/>
+  <line x1="40" y1="80" x2="200" y2="80" stroke="#00693e" stroke-width="2" marker-end="url(#pm)"/>
+  <line x1="40" y1="80" x2="200" y2="15" stroke="#555" stroke-width="2" marker-end="url(#pm2)"/>
+  <line x1="200" y1="80" x2="200" y2="15" stroke="#cc3333" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#pm3)"/>
+  <rect x="192" y="72" width="8" height="8" fill="none" stroke="#888" stroke-width="1"/>
+  <text x="215" y="50" font-size="10" fill="#cc3333">$\mathbf{y} - \hat{\mathbf{y}}$</text>
+  <text x="120" y="96" text-anchor="middle" font-size="10" fill="#00693e">$\hat{\mathbf{y}}$</text>
+  <text x="205" y="13" font-size="10" fill="#555">$\mathbf{y}$</text>
+  <text x="295" y="70" font-size="10" fill="#00693e">$V$</text>
+  <text x="160" y="118" text-anchor="middle" font-size="9" fill="#888">$\hat{\mathbf{y}} \in V$ minimizes $\|\mathbf{y} - \hat{\mathbf{y}}\|$</text>
+</svg>
+<p class="figure-caption">The shortest path from $\mathbf{y}$ to the subspace $V$ always hits $V$ at a right angle. Any other path adds a component along $V$ that only increases the distance.</p>
+</div>
+
+<p>OLS does exactly this. The fitted values $\hat{\mathbf{y}} = \mathbf{X}\hat{\boldsymbol{\theta}}$ are the orthogonal projection of the observed $\mathbf{y}$ onto the column space of $\mathbf{X}$; the normal equations $\mathbf{X}^\top(\mathbf{y} - \mathbf{X}\hat{\boldsymbol{\theta}}) = \mathbf{0}$ state that the residual is perpendicular to every column of $\mathbf{X}$.</p>
+
+<h2>Probability</h2>
+
+<h3>From Counting to Density</h3>
+
+<p>In a finite sample space $\Omega$ with equally likely outcomes, the probability of an event $A$ is the ratio $P(A) = |A|/|\Omega|$: count favorable outcomes and divide by the total.</p>
+
+<p>In the continuous case, this counting approach breaks down. If $X$ takes values in $\mathbb{R}$, then $P(X = x) = 0$ for every single $x$: uncountably many points must share a total probability of 1, and no individual point can carry positive mass. We replace counting with <em>density</em>. A <strong>probability density function</strong> (PDF) $f : \mathbb{R} \to [0, \infty)$ assigns to each point $x$ a probability per unit length, such that
+$$P(a \leq X \leq b) = \int_a^b f(x)\,dx$$</p>
+
+<p>The transition from discrete to continuous is precisely the transition from sums to integrals, from mass functions to density functions. The quantity $f(x)\,dx$ is the probability in an infinitesimal slice $[x, x + dx]$: chop the region into thin slices, assign each a probability proportional to the local density $f(x)$, and sum. Note that $f(x)$ itself is not a probability and can exceed 1; what must equal 1 is the total integral: $\int_{-\infty}^{\infty} f(x)\,dx = 1$.</p>
+
+<h3>CDF, PDF, and Calculus</h3>
+
+<p>The <strong>cumulative distribution function</strong> (CDF) $F(x) = P(X \leq x) = \int_{-\infty}^{x} f(t)\,dt$ accumulates density from the left. It is nondecreasing, with $F(-\infty) = 0$ and $F(\infty) = 1$. Differentiation inverts integration: $f(x) = F'(x)$. The PDF is the derivative of the CDF; the CDF is the integral of the PDF.</p>
+
+<h3>Expectation</h3>
+
+<p>The <strong>expectation</strong> of $X$ is its density-weighted average:
+$$\mathbb{E}[X] = \begin{cases} \sum_x x\, p(x) & \text{(discrete)} \\ \int_{-\infty}^{\infty} x\, f(x)\,dx & \text{(continuous)} \end{cases}$$
+<strong>Linearity of expectation</strong>: $\mathbb{E}[aX + bY] = a\mathbb{E}[X] + b\mathbb{E}[Y]$, regardless of whether $X$ and $Y$ are independent.</p>
+
+<h3>Variance, Covariance, and the Covariance Matrix</h3>
+
+<p>The <strong>variance</strong> $\text{Var}(X) = \mathbb{E}[(X - \mathbb{E}[X])^2] = \mathbb{E}[X^2] - (\mathbb{E}[X])^2$ measures dispersion around the mean. Properties:</p>
+<ul>
+<li>$\text{Var}(aX + b) = a^2\text{Var}(X)$</li>
+<li>$\text{Var}(X + Y) = \text{Var}(X) + \text{Var}(Y) + 2\text{Cov}(X, Y)$</li>
+<li>If $X, Y$ independent: $\text{Var}(X + Y) = \text{Var}(X) + \text{Var}(Y)$</li>
+</ul>
+
+<p>The <strong>covariance</strong> $\text{Cov}(X, Y) = \mathbb{E}[(X - \mathbb{E}[X])(Y - \mathbb{E}[Y])] = \mathbb{E}[XY] - \mathbb{E}[X]\mathbb{E}[Y]$ measures linear association. The <strong>correlation</strong> $\rho_{X,Y} = \text{Cov}(X, Y) / (\sigma_X\,\sigma_Y) \in [-1, 1]$ is the scale-free version. When $\rho = 0$, the scatter cloud is circular; as $|\rho| \to 1$, it elongates into a diagonal ellipse.</p>
+
+<p><strong>Correlation as cosine of angle.</strong> Center both variables: $\tilde{x}_i = x_i - \bar{x}$, $\tilde{y}_i = y_i - \bar{y}$. Treat $\tilde{\mathbf{x}}, \tilde{\mathbf{y}} \in \mathbb{R}^n$ as vectors. The sample correlation is
+$$r = \frac{\tilde{\mathbf{x}} \cdot \tilde{\mathbf{y}}}{\|\tilde{\mathbf{x}}\|\;\|\tilde{\mathbf{y}}\|} = \cos\theta$$
+where $\theta$ is the angle between the centered data vectors. Parallel vectors give $r = 1$; orthogonal vectors give $r = 0$; antiparallel give $r = -1$. The coefficient of determination $R^2 = \cos^2\theta$ is the fraction of variance explained.</p>
+
+<p>$\text{Cov}(X, Y) = 0$ does not imply independence. Independence implies zero covariance, but correlation measures only <em>linear</em> dependence.</p>
+
+<p><strong>The covariance matrix.</strong> For a random vector $\mathbf{X} \in \mathbb{R}^d$:
+$$\boldsymbol{\Sigma} = \mathbb{E}[(\mathbf{X} - \mathbb{E}[\mathbf{X}])(\mathbf{X} - \mathbb{E}[\mathbf{X}])^\top] \in \mathbb{R}^{d \times d}$$
+Diagonal entries $\Sigma_{ii} = \sigma_i^2$ are marginal variances; off-diagonal $\Sigma_{ij} = \rho_{ij}\sigma_i\sigma_j$ are pairwise covariances. The covariance matrix is always PSD, since for any $\mathbf{v}$:
+$$\mathbf{v}^\top\boldsymbol{\Sigma}\mathbf{v} = \mathbb{E}\!\left[(\mathbf{v}^\top(\mathbf{X} - \boldsymbol{\mu}))^2\right] \geq 0$$
+Variance properties lift to matrices: $\text{Var}(\mathbf{A}\mathbf{X}) = \mathbf{A}\boldsymbol{\Sigma}\mathbf{A}^\top$, analogous to $\text{Var}(aX) = a^2\sigma^2$.</p>
+
+<p><strong>Cholesky and whitening.</strong> The Cholesky factorization $\boldsymbol{\Sigma} = \mathbf{L}\mathbf{L}^\top$ is the multivariate square root. The <strong>whitening transformation</strong> $\mathbf{Z} = \mathbf{L}^{-1}(\mathbf{X} - \boldsymbol{\mu})$ produces components with identity covariance. The Mahalanobis distance $(\mathbf{x} - \boldsymbol{\mu})^\top\boldsymbol{\Sigma}^{-1}(\mathbf{x} - \boldsymbol{\mu})$ is a multivariate squared $z$-score, and is exactly the exponent in the multivariate Gaussian density.</p>
+
+<h3>Independence and Conditional Expectation</h3>
+
+<p>Random variables $X$ and $Y$ are <strong>independent</strong> if $P(X \in A, Y \in B) = P(X \in A)\,P(Y \in B)$ for all sets $A, B$. A sequence $X_1, \ldots, X_n$ is <strong>i.i.d.</strong> if the $X_i$ are mutually independent and share the same distribution; this is the standing assumption for training data throughout the course.</p>
+
+<p>The <strong>conditional expectation</strong> $\mathbb{E}[Y \mid X = x]$ is the expected value of $Y$ given $X = x$. Key formulas:</p>
+<ul>
+<li><strong>Law of Total Expectation</strong>: $\mathbb{E}[Y] = \mathbb{E}_X[\mathbb{E}[Y \mid X]]$</li>
+<li><strong>Law of Total Variance</strong>: $\text{Var}(Y) = \mathbb{E}_X[\text{Var}(Y \mid X)] + \text{Var}_X(\mathbb{E}[Y \mid X])$</li>
+</ul>
+
+<p>The conditional expectation $\mathbb{E}[Y \mid X]$ is the best predictor of $Y$ from $X$ under squared loss.</p>
+
+<h3>Key Distributions</h3>
+
+<p>The distributions used in the course are connected by summation and limiting operations.</p>
+
+<div class="figure">
+<svg viewBox="0 0 600 260" style="width:100%;max-width:600px;display:block;margin:0 auto">
+  <defs>
+    <marker id="ga" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#777"/></marker>
+    <marker id="ra" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#cc3333"/></marker>
+    <marker id="ba" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#4466cc"/></marker>
+  </defs>
+  <!-- Bernoulli -->
+  <rect x="10" y="10" width="110" height="48" rx="4" fill="rgba(0,105,62,0.08)" stroke="#00693e" stroke-width="1.5"/>
+  <text x="65" y="30" text-anchor="middle" font-size="11" fill="#00693e" font-weight="600">Bernoulli($\pi$)</text>
+  <text x="65" y="48" text-anchor="middle" font-size="9" fill="#555">$P(X\!=\!1)=\pi$</text>
+  <!-- Binomial -->
+  <rect x="200" y="10" width="120" height="48" rx="4" fill="rgba(0,105,62,0.08)" stroke="#00693e" stroke-width="1.5"/>
+  <text x="260" y="30" text-anchor="middle" font-size="11" fill="#00693e" font-weight="600">Binomial($n,\pi$)</text>
+  <text x="260" y="48" text-anchor="middle" font-size="9" fill="#555">$X=\sum_{i=1}^n X_i$</text>
+  <!-- Uniform -->
+  <rect x="440" y="10" width="110" height="48" rx="4" fill="rgba(0,105,62,0.08)" stroke="#00693e" stroke-width="1.5"/>
+  <text x="495" y="30" text-anchor="middle" font-size="11" fill="#00693e" font-weight="600">Uniform($a,b$)</text>
+  <text x="495" y="48" text-anchor="middle" font-size="9" fill="#555">flat density</text>
+  <!-- Normal -->
+  <rect x="200" y="140" width="120" height="48" rx="4" fill="rgba(68,102,204,0.08)" stroke="#4466cc" stroke-width="1.5"/>
+  <text x="260" y="160" text-anchor="middle" font-size="11" fill="#4466cc" font-weight="600">Normal($\mu,\sigma^2$)</text>
+  <text x="260" y="178" text-anchor="middle" font-size="9" fill="#555">bell curve</text>
+  <!-- MVN -->
+  <rect x="430" y="140" width="130" height="48" rx="4" fill="rgba(68,102,204,0.08)" stroke="#4466cc" stroke-width="1.5"/>
+  <text x="495" y="158" text-anchor="middle" font-size="11" fill="#4466cc" font-weight="600">Multivariate</text>
+  <text x="495" y="173" text-anchor="middle" font-size="10" fill="#4466cc" font-weight="600">Normal($\boldsymbol{\mu},\boldsymbol{\Sigma}$)</text>
+  <!-- Exponential -->
+  <rect x="10" y="140" width="110" height="48" rx="4" fill="rgba(0,105,62,0.08)" stroke="#00693e" stroke-width="1.5"/>
+  <text x="65" y="160" text-anchor="middle" font-size="11" fill="#00693e" font-weight="600">Exponential($\lambda$)</text>
+  <text x="65" y="178" text-anchor="middle" font-size="9" fill="#555">waiting time</text>
+  <!-- Chi-squared -->
+  <rect x="80" y="220" width="100" height="35" rx="4" fill="rgba(0,105,62,0.08)" stroke="#00693e" stroke-width="1.5"/>
+  <text x="130" y="238" text-anchor="middle" font-size="11" fill="#00693e" font-weight="600">$\chi^2(k)$</text>
+  <text x="130" y="250" text-anchor="middle" font-size="9" fill="#555">$\sum Z_i^2$</text>
+  <!-- Poisson -->
+  <rect x="420" y="220" width="110" height="35" rx="4" fill="rgba(0,105,62,0.08)" stroke="#00693e" stroke-width="1.5"/>
+  <text x="475" y="238" text-anchor="middle" font-size="11" fill="#00693e" font-weight="600">Poisson($\lambda$)</text>
+  <text x="475" y="250" text-anchor="middle" font-size="9" fill="#555">count of events</text>
+  <!-- Arrows -->
+  <!-- Bernoulli -> Binomial: sum of n iid -->
+  <line x1="120" y1="34" x2="198" y2="34" stroke="#777" stroke-width="1.5" marker-end="url(#ga)"/>
+  <text x="159" y="26" text-anchor="middle" font-size="8" fill="#777">sum of $n$ i.i.d.</text>
+  <!-- Binomial -> Normal: CLT -->
+  <line x1="260" y1="58" x2="260" y2="138" stroke="#cc3333" stroke-width="1.5" marker-end="url(#ra)"/>
+  <text x="275" y="100" font-size="8" fill="#cc3333">CLT ($n\!\to\!\infty$)</text>
+  <!-- Normal -> MVN: d components -->
+  <line x1="320" y1="164" x2="428" y2="164" stroke="#4466cc" stroke-width="1.5" marker-end="url(#ba)"/>
+  <text x="374" y="156" text-anchor="middle" font-size="8" fill="#4466cc">$d$ components</text>
+  <!-- Uniform -> MVN: CLT -->
+  <line x1="495" y1="58" x2="495" y2="138" stroke="#cc3333" stroke-width="1.5" marker-end="url(#ra)"/>
+  <text x="510" y="100" font-size="8" fill="#cc3333">CLT</text>
+  <!-- Bernoulli -> Normal: logistic link (curved) -->
+  <path d="M65,58 Q65,165 198,165" fill="none" stroke="#4466cc" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#ba)"/>
+  <text x="95" y="145" font-size="8" fill="#4466cc">logistic</text>
+  <!-- Normal -> chi2: sum Z_i^2 -->
+  <line x1="218" y1="182" x2="175" y2="220" stroke="#777" stroke-width="1.5" marker-end="url(#ga)"/>
+  <text x="175" y="207" font-size="8" fill="#777">$\sum Z_i^2$</text>
+  <!-- Expo -> chi2: inter-arrival -->
+  <line x1="85" y1="182" x2="115" y2="220" stroke="#777" stroke-width="1.5" marker-end="url(#ga)"/>
+  <text x="68" y="210" font-size="7" fill="#777">inter-arrival</text>
+  <!-- chi2 -> Poisson -->
+  <line x1="180" y1="237" x2="418" y2="237" stroke="#777" stroke-width="1.5" marker-end="url(#ga)"/>
+  <text x="300" y="230" text-anchor="middle" font-size="8" fill="#777">waiting vs. counting</text>
+  <!-- Legend -->
+  <text x="10" y="258" font-size="8" fill="#00693e">■ discrete</text>
+  <text x="80" y="258" font-size="8" fill="#4466cc">■ continuous</text>
+  <text x="165" y="258" font-size="8" fill="#cc3333">→ limiting theorem</text>
+</svg>
+<p class="figure-caption">Distribution relationships used in the course. Green = discrete; blue = continuous. Red arrows = Central Limit Theorem convergence.</p>
+</div>
+
+<p><strong>Bernoulli</strong>$(\pi)$: models a binary outcome, $P(X = 1) = \pi$, $P(X = 0) = 1 - \pi$, with $\mathbb{E}[X] = \pi$ and $\text{Var}(X) = \pi(1 - \pi)$. The building block for logistic regression.</p>
+
+<p><strong>Gaussian (Normal)</strong> $\mathcal{N}(\mu, \sigma^2)$: the bell curve. Its density is
+$$f(x) = \frac{1}{\sqrt{2\pi\sigma^2}}\exp\!\left(-\frac{(x - \mu)^2}{2\sigma^2}\right)$$
+with $\mathbb{E}[X] = \mu$, $\text{Var}(X) = \sigma^2$. Minimizing squared error and maximizing the Gaussian log-likelihood are the same problem. Linear combinations of independent Gaussians are Gaussian.</p>
+
+<div class="figure">
+<svg viewBox="0 0 400 180" style="width:100%;max-width:400px;display:block;margin:0 auto">
+  <!-- Gaussian density plot approximated -->
+  <line x1="30" y1="155" x2="390" y2="155" stroke="#888" stroke-width="1"/>
+  <line x1="30" y1="155" x2="30" y2="10" stroke="#888" stroke-width="1"/>
+  <text x="395" y="158" font-size="9" fill="#888">$x$</text>
+  <text x="12" y="10" font-size="9" fill="#888">$f(x)$</text>
+  <!-- N(0,1) in green -->
+  <path d="M30,154 Q80,153 120,125 Q155,90 210,30 Q265,90 300,125 Q340,153 390,154" fill="none" stroke="#00693e" stroke-width="2.5"/>
+  <!-- N(1,1) in blue, shifted right -->
+  <path d="M50,154 Q100,153 140,128 Q175,95 230,33 Q285,95 320,128 Q360,153 400,154" fill="none" stroke="#4466cc" stroke-width="2" stroke-dasharray="6,3"/>
+  <!-- N(0,4) in red, wider/flatter -->
+  <path d="M30,150 Q70,148 120,135 Q165,118 210,95 Q255,118 300,135 Q350,148 390,150" fill="none" stroke="#cc3333" stroke-width="2" stroke-dasharray="3,2"/>
+  <!-- Legend -->
+  <line x1="40" y1="165" x2="70" y2="165" stroke="#00693e" stroke-width="2.5"/>
+  <text x="75" y="168" font-size="9" fill="#00693e">$\mathcal{N}(0,1)$</text>
+  <line x1="145" y1="165" x2="175" y2="165" stroke="#4466cc" stroke-width="2" stroke-dasharray="5,3"/>
+  <text x="180" y="168" font-size="9" fill="#4466cc">$\mathcal{N}(1,1)$</text>
+  <line x1="255" y1="165" x2="285" y2="165" stroke="#cc3333" stroke-width="2" stroke-dasharray="3,2"/>
+  <text x="290" y="168" font-size="9" fill="#cc3333">$\mathcal{N}(0,4)$</text>
+</svg>
+<p class="figure-caption">Three Gaussian densities: shifting $\mu$ translates the bell; increasing $\sigma^2$ flattens and widens it.</p>
+</div>
+
+<p><strong>De Moivre–Laplace theorem.</strong> The sum of $n$ i.i.d. Bernoulli$(\pi)$ variables is Binomial$(n, \pi)$. As $n$ grows, the standardized Binomial converges to the standard Normal:
+$$\frac{X - n\pi}{\sqrt{n\pi(1-\pi)}} \xrightarrow{d} \mathcal{N}(0, 1)$$</p>
+
+<div class="figure"><img src="../img/prereq-demoivre.png" alt="Three panels showing Binomial(n,0.5) histogram converging to Normal bell curve for n=5, 20, 100"><p class="figure-caption">$\text{Bin}(n, 0.5)$ (bars) vs. $\mathcal{N}(n/2,\; n/4)$ (curve) for $n = 5, 20, 100$. The discrete histogram becomes indistinguishable from the Normal by $n=100$.</p></div>
+
+<div class="figure"><img src="../img/prereq-standardization.png" alt="Three panels: raw Binomial, standardized to match N(0,1), and the limiting N(0,1)"><p class="figure-caption">Left: $\text{Bin}(30, 0.5)$. Center: standardized $Z = (X - \mu)/\sigma$ with $\mathcal{N}(0,1)$ overlay. Right: the limiting $\mathcal{N}(0,1)$.</p></div>
+
+<p><strong>Multivariate Gaussian</strong> $\mathcal{N}(\boldsymbol{\mu}, \boldsymbol{\Sigma})$: for $\mathbf{X} \in \mathbb{R}^d$ with mean vector $\boldsymbol{\mu}$ and covariance matrix $\boldsymbol{\Sigma}$. Any linear transformation $\mathbf{A}\mathbf{X} + \mathbf{b} \sim \mathcal{N}(\mathbf{A}\boldsymbol{\mu} + \mathbf{b},\, \mathbf{A}\boldsymbol{\Sigma}\mathbf{A}^\top)$. The OLS estimator is a linear function of Gaussian noise, which is why its sampling distribution is also Gaussian.</p>
+
+<h2>Statistics</h2>
+
+<h3>Estimators: Bias, Variance, MSE</h3>
+
+<p>We observe data $X_1, \ldots, X_n$ drawn i.i.d. from a distribution with unknown parameter $\theta$. An <strong>estimator</strong> $\hat{\theta} = g(X_1, \ldots, X_n)$ is a function of the data that approximates $\theta$. The <strong>bias</strong> is the systematic error: $\text{Bias}(\hat{\theta}) = \mathbb{E}[\hat{\theta}] - \theta$. An estimator is <strong>unbiased</strong> if $\mathbb{E}[\hat{\theta}] = \theta$. The <strong>mean squared error</strong> combines both:
+$$\text{MSE}(\hat{\theta}) = \mathbb{E}[(\hat{\theta} - \theta)^2] = \text{Bias}(\hat{\theta})^2 + \text{Var}(\hat{\theta})$$</p>
+
+<p>A biased estimator with low variance (Ridge regression) can have lower MSE than an unbiased one with high variance (OLS in high dimensions).</p>
+
+<h3>Sample Statistics</h3>
+
+<p><strong>Sample mean</strong>: $\bar{x} = \frac{1}{n}\sum_{i=1}^{n} x_i$, an unbiased estimator of $\mathbb{E}[X]$.</p>
+
+<p><strong>Sample variance</strong>: $s^2 = \frac{1}{n-1}\sum_{i=1}^{n}(x_i - \bar{x})^2$, an unbiased estimator of $\text{Var}(X)$. The $n - 1$ denominator (Bessel's correction) compensates for using $\bar{x}$ instead of the true mean $\mu$; estimating $\mu$ from the same data costs one degree of freedom.</p>
+
+<p><strong>Sample covariance</strong>: $\widehat{\text{Cov}}(X, Y) = \frac{1}{n-1}\sum_{i=1}^{n}(x_i - \bar{x})(y_i - \bar{y})$.</p>
+
+<h3>Maximum Likelihood Estimation</h3>
+
+<p>Given i.i.d. data $x_1, \ldots, x_n$ from a distribution with density $p(x; \theta)$, the <strong>likelihood</strong> $L(\theta) = \prod_{i=1}^{n} p(x_i; \theta)$ measures how probable the observed data is under $\theta$. The <strong>log-likelihood</strong> converts the product to a sum:
+$$\ell(\theta) = \sum_{i=1}^{n} \log p(x_i; \theta)$$
+The <strong>MLE</strong> is $\hat{\theta}_{\text{MLE}} = \arg\max_\theta\,\ell(\theta)$.</p>
+
+<p><strong>Example: Gaussian mean.</strong> Let $x_i \sim \mathcal{N}(\mu, \sigma^2)$ with $\sigma^2$ known:
+$$\ell(\mu) = -\frac{n}{2}\log(2\pi\sigma^2) - \frac{1}{2\sigma^2}\sum_{i=1}^{n}(x_i - \mu)^2$$
+Maximizing over $\mu$ is equivalent to minimizing $\sum_i(x_i - \mu)^2$. Setting $\partial\ell/\partial\mu = 0$ gives $\hat{\mu}_{\text{MLE}} = \bar{x}$. Minimizing squared error and maximizing the Gaussian log-likelihood are the same optimization problem.</p>
+
+<p><strong>Example: Bernoulli.</strong> Let $x_i \sim \text{Bernoulli}(\pi)$. Then $\ell(\pi) = \sum_i [x_i\log\pi + (1 - x_i)\log(1 - \pi)]$, and $\hat{\pi}_{\text{MLE}} = \bar{x}$, the sample proportion of 1s. Logistic regression extends this by letting $\pi$ depend on $\mathbf{x}$ through a sigmoid.</p>
+
+<p><strong>Asymptotic properties.</strong> Under mild regularity conditions, as $n \to \infty$: the MLE is consistent ($\hat{\theta} \to \theta$ in probability), asymptotically normal ($\sqrt{n}(\hat{\theta} - \theta) \xrightarrow{d} \mathcal{N}(0, \mathcal{I}(\theta)^{-1})$), and efficient (achieves the Cramér–Rao lower bound).</p>
+
+<h2>The Learning Problem</h2>
+
+<h3>Supervised Learning and Empirical Risk Minimization</h3>
+
+<p>In <strong>supervised learning</strong>, we are given a training set $D_n = \{(x_i, y_i)\}_{i=1}^n$ drawn i.i.d. from an unknown joint distribution $\nu$ on $\mathcal{X} \times \mathcal{Y}$, and the goal is to find $f : \mathcal{X} \to \mathcal{Y}$ that predicts well on unseen inputs. The nature of $\mathcal{Y}$ determines the problem type:</p>
+<ul>
+<li><strong>Regression</strong>: $\mathcal{Y} = \mathbb{R}$, predict a continuous quantity</li>
+<li><strong>Classification</strong>: $\mathcal{Y} = \{0, 1\}$ (binary) or $\{1, \ldots, K\}$ (multiclass), assign a discrete label</li>
+</ul>
+
+<p>Fix a <strong>loss function</strong> $\ell(y, f(x)) \geq 0$ and define the <strong>true risk</strong>: $\mathcal{R}(f) = \mathbb{E}_{(x,y) \sim \nu}[\ell(y, f(x))]$. Since $\nu$ is unknown, we minimize the <strong>empirical risk</strong>:
+$$\hat{\mathcal{R}}_n(f) = \frac{1}{n}\sum_{i=1}^{n}\ell(y_i, f(x_i))$$</p>
+
+<div class="def"><span class="label">Definition — Empirical Risk Minimizer</span>The <strong>ERM</strong> over a hypothesis class $\mathcal{F}$ is $\hat{f} = \arg\min_{f \in \mathcal{F}}\hat{\mathcal{R}}_n(f)$. The gap $\mathcal{R}(\hat{f}) - \hat{\mathcal{R}}_n(\hat{f})$ is the generalization gap.</div>
+
+<h3>Generalization and the Bayes Optimal Predictor</h3>
+
+<p><strong>Generalization</strong> measures how well a model trained on $D_n$ performs on new data. A model that fits training data perfectly but fails on unseen inputs has overfit; a model that cannot fit training data has underfit.</p>
+
+<p>The <strong>Bayes optimal predictor</strong> $f^* = \arg\min_f \mathcal{R}(f)$ minimizes true risk. Under squared loss, $f^*(x) = \mathbb{E}[y \mid x]$. Its risk is the <strong>Bayes risk</strong> $\mathcal{R}^* = \mathbb{E}_x[\text{Var}(y \mid x)]$, the irreducible noise floor no predictor can beat. The prediction error decomposes as:
+$$\boxed{\mathcal{R}(\hat{f}) = \underbrace{\mathcal{R}^*}_{\text{irreducible}} + \underbrace{\text{Bias}^2 + \text{Var}}_{\text{reducible}}}$$</p>
+
+<h2>Loss Functions</h2>
+
+<p>The choice of loss function determines what "good prediction" means, and different losses lead to fundamentally different optimization problems.</p>
+
+<h3>Squared Loss</h3>
+
+<p>$$\ell(y, \hat{y}) = (y - \hat{y})^2$$</p>
+
+<p>The standard loss for regression. Convex and differentiable everywhere, with Bayes optimal predictor $f^*(x) = \mathbb{E}[y \mid x]$. Minimizing squared loss is equivalent to Gaussian MLE. Sensitive to outliers, since large errors are penalized quadratically.</p>
+
+<h3>0-1 Loss and Convex Surrogates</h3>
+
+<p>$$\ell_{0\text{-}1}(y, \hat{y}) = \mathbf{1}[\hat{y} \neq y]$$</p>
+
+<p>Counts mistakes. The Bayes classifier under 0-1 loss is $f^*(x) = \arg\max_k P(y = k \mid x)$, but 0-1 loss is non-convex and non-differentiable, making direct minimization NP-hard. Logistic regression and cross-entropy replace it with convex, differentiable surrogates.</p>
+
+<h3>Logistic Loss and Cross-Entropy</h3>
+
+<p>For binary classification with $y \in \{0, 1\}$ and a model outputting $\hat{p} = \sigma(\mathbf{x}^\top\boldsymbol{\theta}) \in (0, 1)$ where $\sigma(t) = 1/(1 + e^{-t})$:
+$$\ell_{\text{logistic}}(y, \hat{p}) = -y\log\hat{p} - (1-y)\log(1 - \hat{p})$$</p>
+
+<p>Maximizing the Bernoulli likelihood equals minimizing this loss. It is convex in $\boldsymbol{\theta}$ and penalizes confident wrong predictions heavily. The multiclass generalization is <strong>cross-entropy</strong>: $\ell_{\text{CE}}(y, \hat{\mathbf{p}}) = -\log\hat{p}_y$, where $\hat{\mathbf{p}} = \text{softmax}(\mathbf{z})$ with $\text{softmax}(\mathbf{z})_k = e^{z_k}/\sum_j e^{z_j}$.</p>
+
+<h3>Why Convexity of Losses Matters</h3>
+
+<p>A loss $\ell$ convex in model parameters $\boldsymbol{\theta}$ guarantees that any local minimum of $\hat{\mathcal{R}}_n$ is a global minimum, so gradient descent converges to the best solution in the hypothesis class. Non-convex losses (0-1 loss, neural network landscapes) can have many local minima.</p>
+
+<div class="figure">
+<svg viewBox="0 0 440 190" style="width:100%;max-width:440px;display:block;margin:0 auto">
+  <defs>
+    <marker id="la" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="#888"/></marker>
+  </defs>
+  <line x1="30" y1="155" x2="415" y2="155" stroke="#888" stroke-width="1" marker-end="url(#la)"/>
+  <line x1="30" y1="155" x2="30" y2="10" stroke="#888" stroke-width="1" marker-end="url(#la)"/>
+  <text x="420" y="158" font-size="9" fill="#888">$\hat{y}$</text>
+  <text x="8" y="10" font-size="9" fill="#888">loss</text>
+  <!-- Grid lines -->
+  <line x1="30" y1="55" x2="410" y2="55" stroke="#444" stroke-width="0.4" stroke-dasharray="3,3" opacity="0.4"/>
+  <line x1="30" y1="105" x2="410" y2="105" stroke="#444" stroke-width="0.4" stroke-dasharray="3,3" opacity="0.4"/>
+  <!-- x-axis labels: -3 to 3, center at x=220 -->
+  <text x="30" y="166" text-anchor="middle" font-size="8" fill="#888">-3</text>
+  <text x="114" y="166" text-anchor="middle" font-size="8" fill="#888">-1.5</text>
+  <text x="220" y="166" text-anchor="middle" font-size="8" fill="#888">0</text>
+  <text x="326" y="166" text-anchor="middle" font-size="8" fill="#888">1.5</text>
+  <text x="410" y="166" text-anchor="middle" font-size="8" fill="#888">3</text>
+  <!-- Squared: (1-y)^2 mapping y in [-3,3] to [0,16], clipped to [0,5] -->
+  <!-- at y=-3: (1-(-3))^2=16 (clip), y=1: 0, y=3: 4 -->
+  <!-- scale: x=30+(y+3)*63.3, loss: 155-loss*30 (clip at 10) -->
+  <path d="M30,10 Q85,10 140,130 Q165,155 220,132 Q275,108 325,10 Q365,10 410,10" fill="none" stroke="#00693e" stroke-width="2.5"/>
+  <!-- Logistic: log(1+exp(-y)), at y=-3: 3.049 (clip), y=0: 0.693, y=3: 0.049 -->
+  <path d="M30,63 Q80,70 130,90 Q175,112 220,134 Q275,148 325,153 Q370,155 410,155" fill="none" stroke="#4466cc" stroke-width="2" stroke-dasharray="8,4"/>
+  <!-- 0-1 loss: 1 for y<1, 0 for y>=1 -->
+  <polyline points="30,125 210,125 210,155 410,155" fill="none" stroke="#cc3333" stroke-width="2" stroke-dasharray="4,3"/>
+  <!-- Legend -->
+  <line x1="45" y1="175" x2="75" y2="175" stroke="#00693e" stroke-width="2.5"/>
+  <text x="80" y="178" font-size="9" fill="#00693e">squared $(1-\hat{y})^2$</text>
+  <line x1="195" y1="175" x2="225" y2="175" stroke="#4466cc" stroke-width="2" stroke-dasharray="7,3"/>
+  <text x="230" y="178" font-size="9" fill="#4466cc">logistic</text>
+  <line x1="310" y1="175" x2="340" y2="175" stroke="#cc3333" stroke-width="2" stroke-dasharray="4,2"/>
+  <text x="345" y="178" font-size="9" fill="#cc3333">0-1</text>
+</svg>
+<p class="figure-caption">Three losses for true label $y=1$: squared (convex, smooth), logistic (convex, asymptotes to 0), and 0-1 (non-convex, non-differentiable, step at $\hat{y}=1$).</p>
+</div>
+
+<h2>Generative vs. Discriminative Models</h2>
+
+<p>There are two philosophically different approaches to supervised learning. The joint distribution $p(x, y)$ factorizes in two ways:
+$$p(x, y) = \underbrace{p(y \mid x)}_{\text{discriminative}} \cdot p(x) = \underbrace{p(x \mid y)}_{\text{class-conditional}} \cdot p(y)$$</p>
+
+<div class="def"><span class="label">Definition — Discriminative Model</span>A <strong>discriminative model</strong> directly models $p(y \mid x)$: given input $x$, what is the label? Training maximizes the conditional likelihood $\sum_i \log p(y_i \mid x_i)$.</div>
+
+<div class="def"><span class="label">Definition — Generative Model</span>A <strong>generative model</strong> models $p(x \mid y)$ and $p(y)$, then uses Bayes' rule $p(y \mid x) = p(x \mid y)\,p(y)/p(x)$ for prediction. Training maximizes the joint likelihood $\sum_i \log p(x_i, y_i)$.</div>
+
+<p>Discriminative models (linear regression, logistic regression, neural networks) learn the decision boundary directly and tend to perform better with large $n$, since they only model what is needed for prediction. Generative models (Gaussian Discriminant Analysis, Naive Bayes) model the full data-generating process, requiring stronger assumptions but potentially more data-efficient when those assumptions hold.</p>
+
+<table style="width:100%;border-collapse:collapse;margin:18px 0;font-size:0.92em">
+  <thead>
+    <tr style="border-bottom:1px solid var(--border)">
+      <th style="text-align:left;padding:8px 12px">Approach</th>
+      <th style="text-align:left;padding:8px 12px">Models</th>
+      <th style="text-align:left;padding:8px 12px">Training objective</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:8px 12px">Logistic regression (disc.)</td>
+      <td style="padding:8px 12px">$p(y \mid x)$ directly</td>
+      <td style="padding:8px 12px">$\max \sum_i \log p(y_i \mid x_i; \boldsymbol{\theta})$</td>
+    </tr>
+    <tr>
+      <td style="padding:8px 12px">Gaussian Discriminant Analysis (gen.)</td>
+      <td style="padding:8px 12px">$p(x \mid y)$ and $p(y)$</td>
+      <td style="padding:8px 12px">$\max \sum_i \log p(x_i, y_i; \boldsymbol{\theta})$</td>
+    </tr>
+  </tbody>
+</table>
+
+</div>
+
+<script src="../js/theme.js"></script>
+<script src="../js/sidebar.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body, {
+    delimiters: [
+      {left: '$$', right: '$$', display: true},
+      {left: '$', right: '$', display: false}
+    ],
+    macros: {
+      '\\R': '\\mathbb{R}',
+      '\\E': '\\mathbb{E}',
+      '\\Var': '\\text{Var}',
+      '\\Cov': '\\text{Cov}',
+      '\\Bias': '\\text{Bias}',
+      '\\MSE': '\\text{MSE}',
+      '\\rank': '\\text{rank}'
+    }
+  })">
+</script>
+</body>
+</html>

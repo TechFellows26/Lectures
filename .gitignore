@@ -9,6 +9,7 @@ build/
 develop-eggs/
 dist/
 downloads/
+!website/web/downloads/
 eggs/
 .eggs/
 lib/
@@ -65,6 +66,7 @@ notes/detailed-notes/img/
 # Exclude PDFs except in specific directories
 !notes/**/*.pdf
 !papers/*.pdf
+!website/web/downloads/**/*.pdf
 
 # Data
 *.h5

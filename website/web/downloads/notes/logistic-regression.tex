@@ -1,0 +1,307 @@
+\documentclass[main.tex]{subfiles}
+
+\begin{document}
+
+\section*{\Huge\textcolor{mantis}{Logistic Regression}}
+\addcontentsline{toc}{section}{Logistic Regression}
+\vspace{0.5cm}
+
+\section{Problem Setup}
+
+Linear regression deals with finding the expected value of an explained variable $y$ given some explanatory variable $x$ where $y \in \R$. Now consider the case where $y$ is a \textbf{boolean variable} in $\{0, 1\}$.
+
+Similar to the regression case, we consider a training set:
+$$D_n := \{(X_i, Y_i)\}_{1 \leq i \leq n}$$
+
+The data points $(X_i, Y_i)$ are i.i.d. random variables following a distribution $\mathcal{P}$ on $\mathcal{X} \times \mathcal{Y}$, where $\mathcal{X} = \R^d$ and $\mathcal{Y} = \{0, 1\}$.
+
+\subsection{Practical Example: Email Spam Classification}
+
+Consider the task of classifying emails as spam ($Y = 1$) or not spam ($Y = 0$). Given features $\mathbf{x}$ extracted from an email (word frequencies, sender information, etc.), we want to predict the probability that the email is spam.
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[
+    width=10cm,
+    height=6.5cm,
+    xlabel={Spam Score $\mathbf{x}^\top\boldsymbol{\beta}$},
+    ylabel={$P(\text{Spam} | \mathbf{x})$},
+    xmin=-6, xmax=6,
+    ymin=-0.05, ymax=1.05,
+    grid=both,
+    grid style={line width=.1pt, draw=gray!30},
+    major grid style={line width=.2pt,draw=gray!50},
+    axis lines=left,
+    legend pos=south east,
+    title={\textbf{Sigmoid Function: Mapping Scores to Probabilities}},
+    title style={font=\bfseries\color{mantis}},
+]
+\addplot[domain=-6:6, samples=100, color=mantis, thick] {1/(1+exp(-x))};
+\addplot[dashed, gray] coordinates {(0, 0) (0, 1)};
+\addplot[dashed, gray] coordinates {(-6, 0.5) (6, 0.5)};
+\addplot[only marks, mark=*, mark size=2.5pt, color=red!70!black] coordinates {
+    (-4, 0.02) (-3, 0.05) (-2.5, 0.08) (-1.5, 0.18) (-0.5, 0.38)
+};
+\addplot[only marks, mark=*, mark size=2.5pt, color=blue!70!black] coordinates {
+    (0.5, 0.62) (1.5, 0.82) (2.5, 0.92) (3, 0.95) (4, 0.98)
+};
+\legend{$\sigma(z) = \frac{1}{1+e^{-z}}$, , , Not Spam, Spam}
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+The sigmoid function maps any real-valued score to a probability between 0 and 1. Emails with high spam scores are classified as spam; those with low scores are not. The decision boundary occurs at $\mathbf{x}^\top\boldsymbol{\beta} = 0$, where $P(\text{Spam}) = 0.5$.
+
+\section{Motivation for the Logistic Transformation}
+
+This setup is similar to linear regression, except that our target function $y = p(x)$ is \textbf{not linear}. We need to find a way to view this new function as a linear function, subject to two constraints:
+
+\textbf{Boundedness.} The function $p(x)$ must be bounded between 0 and 1, since it represents a probability.
+
+\textbf{Diminishing sensitivity.} The change in $p(x)$ is not exactly linear in $x$. If our prediction $p(x)$ is already large (close to 1), changing $x$ by a small amount should not affect the final prediction as much as if $p(x)$ were close to 0.5. In other words, if we are confident in our prediction, we need a larger move in $x$ to change our prediction significantly.
+
+\subsection{Constructing the Transformation}
+
+How can we make a function that is bounded asymptotically in $y$ and requires a multiplicative change in the output to reflect a linear change in the input?
+
+A natural choice is the \textbf{logarithm} -- but this is only bounded in one direction. To bound it in \textbf{both directions}, we use the \textbf{logistic (logit) transformation}:
+$$\text{logit}(p) = \log\left(\frac{p}{1-p}\right)$$
+
+Hence the term \textbf{logistic regression}.
+
+\subsection{Deriving the Logistic Function}
+
+Setting the logit equal to a linear function of $x$:
+$$\log\left(\frac{p}{1-p}\right) = \beta_0 + \mathbf{x}^\top \boldsymbol{\beta}$$
+
+Solving for $p$:
+\begin{align}
+\frac{p}{1-p} &= e^{\beta_0 + \mathbf{x}^\top \boldsymbol{\beta}} \\[8pt]
+p &= (1-p) \cdot e^{\beta_0 + \mathbf{x}^\top \boldsymbol{\beta}} \\[8pt]
+p &= e^{\beta_0 + \mathbf{x}^\top \boldsymbol{\beta}} - p \cdot e^{\beta_0 + \mathbf{x}^\top \boldsymbol{\beta}} \\[8pt]
+p\left(1 + e^{\beta_0 + \mathbf{x}^\top \boldsymbol{\beta}}\right) &= e^{\beta_0 + \mathbf{x}^\top \boldsymbol{\beta}} \\[8pt]
+p(\mathbf{x}; \beta_0, \boldsymbol{\beta}) &= \frac{e^{\beta_0 + \mathbf{x}^\top \boldsymbol{\beta}}}{1 + e^{\beta_0 + \mathbf{x}^\top \boldsymbol{\beta}}} = \frac{1}{1 + e^{-(\beta_0 + \mathbf{x}^\top \boldsymbol{\beta})}}
+\end{align}
+
+This is the \textbf{sigmoid function} (or logistic function), denoted $\sigma(z) = \frac{1}{1 + e^{-z}}$.
+
+\begin{remark}
+The overall specification is much easier to grasp in terms of the transformed probability (the logit) than in terms of the untransformed probability.
+\end{remark}
+
+\section{Decision Boundaries and Classification}
+
+To minimize the misclassification rate, we predict $Y = 1$ when $p \geq 0.5$ and $Y = 0$ when $p < 0.5$. This means predicting 1 whenever $\beta_0 + \mathbf{x}^\top \boldsymbol{\beta} \geq 0$, and 0 otherwise.
+
+\textbf{Result:} Logistic regression gives us a \textbf{linear classifier}.
+
+\subsection{The Decision Boundary}
+
+The \textbf{decision boundary} separating the two predicted classes is the solution of:
+$$\beta_0 + \mathbf{x}^\top \boldsymbol{\beta} = 0$$
+
+This is a \textbf{hyperplane} in $\R^d$. Finding the logistic regression parameters is therefore \textbf{equivalent to finding a linear classifier}.
+
+\subsection{Distance from the Decision Boundary}
+
+We derive the signed distance from a point $\mathbf{x}$ to the decision boundary.
+
+\textbf{Setup:} The decision boundary is $\{\mathbf{z} : \boldsymbol{\beta}^\top \mathbf{z} + \beta_0 = 0\}$. The unit normal vector to this hyperplane is $\frac{\boldsymbol{\beta}}{|\boldsymbol{\beta}|}$.
+
+\textbf{Derivation:} Let $\mathbf{x}_0$ be any point on the decision boundary (so $\boldsymbol{\beta}^\top \mathbf{x}_0 + \beta_0 = 0$). The signed distance from $\mathbf{x}$ to the boundary is the projection of $(\mathbf{x} - \mathbf{x}_0)$ onto the unit normal:
+$$\text{distance} = (\mathbf{x} - \mathbf{x}_0) \cdot \frac{\boldsymbol{\beta}}{|\boldsymbol{\beta}|} = \frac{\mathbf{x}^\top \boldsymbol{\beta} - \mathbf{x}_0^\top \boldsymbol{\beta}}{|\boldsymbol{\beta}|}$$
+
+Since $\mathbf{x}_0$ is on the boundary, we have $\mathbf{x}_0^\top \boldsymbol{\beta} = -\beta_0$. Substituting:
+$$\boxed{\text{distance} = \frac{\beta_0 + \mathbf{x}^\top \boldsymbol{\beta}}{|\boldsymbol{\beta}|}}$$
+
+\textbf{Interpretation:} The class probabilities depend on the \textbf{distance from the boundary}. Probabilities approach 0 or 1 more rapidly when $|\boldsymbol{\beta}|$ is larger.
+
+\section{Choice of Loss Function}
+
+To minimize the empirical risk, we need to choose a loss function to assess the performance of a prediction.
+
+\subsection{Binary Loss (0-1 Loss)}
+
+A natural loss is the \textbf{binary loss}: 1 if there is a mistake ($f(X_i) \neq Y_i$), and 0 otherwise. The empirical risk is:
+$$\hat{\mathcal{R}}_n(\boldsymbol{\beta}) = \frac{1}{n} \sum_{i=1}^{n} \mathbf{1}_{Y_i \neq \mathbf{1}_{X_i^\top \boldsymbol{\beta} \geq 0}}$$
+
+\textbf{Problem:} This loss function is \textbf{neither convex nor differentiable} in $\boldsymbol{\beta}$. The minimization problem $\min_{\boldsymbol{\beta}} \hat{\mathcal{R}}_n(\boldsymbol{\beta})$ is extremely hard to solve (NP-hard in general).
+
+\subsection{The Logistic Loss}
+
+The idea of logistic regression is to replace the binary loss with a \textbf{convex surrogate loss}. The \textbf{logistic loss} $\ell: \R \times \{0,1\} \to \R_+$ assigns to a linear prediction $\hat{y} = \mathbf{x}^\top \boldsymbol{\beta}$ and an observation $y \in \{0,1\}$ the loss:
+$$\ell(\hat{y}, y) := y \log(1 + e^{-\hat{y}}) + (1-y) \log(1 + e^{\hat{y}}) \tag{1}$$
+
+\begin{definition}[Logistic Regression Estimator]
+The \textbf{logistic regression estimator} is the solution of:
+$$\hat{\boldsymbol{\beta}}_{\text{logit}} = \underset{\boldsymbol{\beta} \in \R^d}{\arg\min} \frac{1}{n} \sum_{i=1}^{n} \ell(\mathbf{X}_i^\top \boldsymbol{\beta}, Y_i)$$
+where $\ell$ is the logistic loss defined in Equation (1).
+\end{definition}
+
+\textbf{Advantage over hinge loss:} The logistic loss has a \textbf{probabilistic interpretation} by modeling $\mathbb{P}(Y = 1 | X)$.
+
+\section{Maximum Likelihood Derivation}
+
+We now show that \textbf{minimizing the logistic loss is equivalent to maximizing the likelihood} under a Bernoulli model.
+
+\subsection{Probabilistic Model}
+
+We model the conditional probabilities using the sigmoid function:
+\begin{align}
+P(Y = 1 | X = \mathbf{x}) &= \sigma(\boldsymbol{\theta}^\top \mathbf{x}) \\[8pt]
+P(Y = 0 | X = \mathbf{x}) &= 1 - \sigma(\boldsymbol{\theta}^\top \mathbf{x})
+\end{align}
+
+These can be combined into a single expression using the \textbf{Bernoulli distribution}:
+$$P(Y = y | X = \mathbf{x}) = \sigma(\boldsymbol{\theta}^\top \mathbf{x})^y \cdot [1 - \sigma(\boldsymbol{\theta}^\top \mathbf{x})]^{(1-y)}$$
+
+\subsection{Log-Likelihood}
+
+For i.i.d. data, the \textbf{likelihood} is the product over all data points:
+$$L(\boldsymbol{\theta}) = \prod_{i=1}^{n} \sigma(\boldsymbol{\theta}^\top \mathbf{x}^{(i)})^{y^{(i)}} \cdot [1 - \sigma(\boldsymbol{\theta}^\top \mathbf{x}^{(i)})]^{(1-y^{(i)})}$$
+
+Taking the \textbf{logarithm} (which converts the product to a sum):
+$$LL(\boldsymbol{\theta}) = \sum_{i=1}^{n} \left[ y^{(i)} \log \sigma(\boldsymbol{\theta}^\top \mathbf{x}^{(i)}) + (1 - y^{(i)}) \log(1 - \sigma(\boldsymbol{\theta}^\top \mathbf{x}^{(i)})) \right]$$
+
+\subsection{Equivalence to Logistic Loss}
+
+The \textbf{negative log-likelihood} is:
+$$-LL(\boldsymbol{\theta}) = \sum_{i=1}^{n} \left[ -y^{(i)} \log \sigma(\boldsymbol{\theta}^\top \mathbf{x}^{(i)}) - (1 - y^{(i)}) \log(1 - \sigma(\boldsymbol{\theta}^\top \mathbf{x}^{(i)})) \right]$$
+
+Using the identity $\sigma(-z) = 1 - \sigma(z)$, we can write $-\log \sigma(z) = \log(1 + e^{-z})$ and $-\log(1 - \sigma(z)) = -\log \sigma(-z) = \log(1 + e^{z})$.
+
+Substituting with $\hat{y} = \boldsymbol{\theta}^\top \mathbf{x}$:
+$$-LL(\boldsymbol{\theta}) = \sum_{i=1}^{n} \left[ y^{(i)} \log(1 + e^{-\hat{y}^{(i)}}) + (1 - y^{(i)}) \log(1 + e^{\hat{y}^{(i)}}) \right]$$
+
+This is exactly the \textbf{logistic loss} from Equation (1):
+$$\boxed{-LL(\boldsymbol{\theta}) = \sum_{i=1}^{n} \ell(\hat{y}^{(i)}, y^{(i)})}$$
+
+\textbf{Conclusion:} Minimizing the empirical risk with logistic loss $\Leftrightarrow$ Maximizing the log-likelihood under a Bernoulli model.
+
+\section{Gradient Computation}
+
+\subsection{Derivative of the Sigmoid Function}
+
+First, we compute the derivative of $\sigma(z)$ with respect to $z$:
+$$\frac{\partial}{\partial z} \sigma(z) = \frac{\partial}{\partial z} \left( \frac{1}{1 + e^{-z}} \right)$$
+
+Using the quotient rule:
+$$= \frac{e^{-z}}{(1 + e^{-z})^2} = \frac{1}{1 + e^{-z}} \cdot \frac{e^{-z}}{1 + e^{-z}} = \sigma(z) \cdot (1 - \sigma(z))$$
+
+$$\boxed{\frac{\partial}{\partial z} \sigma(z) = \sigma(z)(1 - \sigma(z))}$$
+
+\subsection{Derivative with Respect to Parameters}
+
+Using the chain rule:
+$$\frac{\partial}{\partial \theta_j} \sigma(\boldsymbol{\theta}^\top \mathbf{x}) = \frac{\partial \sigma}{\partial z} \cdot \frac{\partial z}{\partial \theta_j}$$
+where $z = \boldsymbol{\theta}^\top \mathbf{x}$.
+
+Since $\frac{\partial z}{\partial \theta_j} = x_j$:
+$$\boxed{\frac{\partial}{\partial \theta_j} \sigma(\boldsymbol{\theta}^\top \mathbf{x}) = \sigma(\boldsymbol{\theta}^\top \mathbf{x})(1 - \sigma(\boldsymbol{\theta}^\top \mathbf{x})) \cdot x_j}$$
+
+\subsection{Gradient of the Log-Likelihood}
+
+Starting with the log-likelihood for a single data point:
+$$\frac{\partial}{\partial \theta_j} \left[ y \log \sigma(\boldsymbol{\theta}^\top \mathbf{x}) + (1-y) \log(1 - \sigma(\boldsymbol{\theta}^\top \mathbf{x})) \right]$$
+
+Applying the chain rule to each term:
+\begin{align}
+&= \frac{y}{\sigma(\boldsymbol{\theta}^\top \mathbf{x})} \cdot \frac{\partial \sigma}{\partial \theta_j} - \frac{1-y}{1 - \sigma(\boldsymbol{\theta}^\top \mathbf{x})} \cdot \frac{\partial \sigma}{\partial \theta_j} \\[8pt]
+&= \left[ \frac{y}{\sigma(\boldsymbol{\theta}^\top \mathbf{x})} - \frac{1-y}{1 - \sigma(\boldsymbol{\theta}^\top \mathbf{x})} \right] \cdot \frac{\partial \sigma}{\partial \theta_j}
+\end{align}
+
+Finding a common denominator:
+$$= \left[ \frac{y(1 - \sigma(\boldsymbol{\theta}^\top \mathbf{x})) - (1-y)\sigma(\boldsymbol{\theta}^\top \mathbf{x})}{\sigma(\boldsymbol{\theta}^\top \mathbf{x})(1 - \sigma(\boldsymbol{\theta}^\top \mathbf{x}))} \right] \cdot \sigma(\boldsymbol{\theta}^\top \mathbf{x})(1 - \sigma(\boldsymbol{\theta}^\top \mathbf{x})) \cdot x_j$$
+
+Simplifying the numerator:
+$$y - y\sigma(\boldsymbol{\theta}^\top \mathbf{x}) - \sigma(\boldsymbol{\theta}^\top \mathbf{x}) + y\sigma(\boldsymbol{\theta}^\top \mathbf{x}) = y - \sigma(\boldsymbol{\theta}^\top \mathbf{x})$$
+
+The $\sigma(\boldsymbol{\theta}^\top \mathbf{x})(1 - \sigma(\boldsymbol{\theta}^\top \mathbf{x}))$ terms cancel:
+$$\boxed{\frac{\partial LL}{\partial \theta_j} = \left[ y - \sigma(\boldsymbol{\theta}^\top \mathbf{x}) \right] x_j}$$
+
+\subsection{Full Gradient (All Data Points)}
+
+For the entire dataset:
+$$\boxed{\frac{\partial LL(\boldsymbol{\theta})}{\partial \theta_j} = \sum_{i=1}^{n} \left[ y^{(i)} - \sigma(\boldsymbol{\theta}^\top \mathbf{x}^{(i)}) \right] x_j^{(i)}}$$
+
+In vector/matrix notation:
+$$\nabla LL(\boldsymbol{\theta}) = \mathbf{X}^\top (\mathbf{y} - \sigma(\mathbf{X}\boldsymbol{\theta}))$$
+where $\mathbf{X} := (\mathbf{X}_1, \ldots, \mathbf{X}_n)^\top$, $\mathbf{y} := (Y_1, \ldots, Y_n)^\top$, and $\sigma(\mathbf{X}\boldsymbol{\beta})_i := \sigma(\mathbf{X}_i^\top \boldsymbol{\beta})$.
+
+\section{Optimization}
+
+\subsection{No Closed-Form Solution}
+
+\textbf{Bad news:} The equation $\nabla \hat{\mathcal{R}}_n(\boldsymbol{\beta}) = 0$ has \textbf{no closed-form solution}.
+
+It must be solved through \textbf{iterative algorithms}: gradient descent/ascent, Newton's method, or stochastic gradient descent.
+
+\subsection{Convexity Guarantees Unique Solution}
+
+Fortunately, optimization is tractable because the logistic loss is \textbf{convex} in its first argument.
+
+The second derivative of the loss is:
+$$\frac{\partial^2 \ell(\hat{y}, y)}{\partial \hat{y}^2} = \sigma(\hat{y}) \cdot \sigma(-\hat{y}) = \sigma(\hat{y})(1 - \sigma(\hat{y})) > 0$$
+
+Since the second derivative is strictly positive, the loss is \textbf{strictly convex}, and therefore the solution is \textbf{unique}.
+
+\subsection{Gradient Ascent Update Rule}
+
+To maximize the log-likelihood, we use \textbf{gradient ascent}:
+$$\boldsymbol{\theta} := \boldsymbol{\theta} + \alpha \nabla LL(\boldsymbol{\theta})$$
+where $\alpha > 0$ is the learning rate.
+
+\section{Regularization}
+
+Similarly to linear regression, logistic regression may \textbf{overfit} the data, especially when $p > n$ (more features than samples).
+
+To prevent overfitting, we add a \textbf{regularization term} such as $\lambda |\boldsymbol{\beta}|_2^2$ to the logistic loss, yielding \textbf{L2-regularized logistic regression}.
+
+\begin{definition}[Regularized Logistic Regression]
+The \textbf{L2-regularized logistic regression estimator} is the solution of:
+$$\hat{\boldsymbol{\beta}}_{\text{ridge}} = \underset{\boldsymbol{\beta} \in \R^d}{\arg\min} \left\{ \frac{1}{n} \sum_{i=1}^{n} \ell(\mathbf{X}_i^\top \boldsymbol{\beta}, Y_i) + \lambda \|\boldsymbol{\beta}\|_2^2 \right\}$$
+\end{definition}
+
+The regularization parameter $\lambda > 0$ controls the tradeoff between fitting the data and keeping coefficients small. Larger $\lambda$ produces more shrinkage.
+
+\section{Summary: The Training Algorithm}
+
+Putting it all together, the complete logistic regression training procedure is:
+
+\begin{center}
+\fbox{\parbox{0.85\textwidth}{
+\vspace{0.3cm}
+\textbf{\large Algorithm: Logistic Regression via Gradient Ascent}
+\vspace{0.2cm}
+\hrule
+\vspace{0.3cm}
+
+\textbf{Input:} Training set $\{(\mathbf{x}^{(i)}, y^{(i)})\}_{i=1}^{n}$, learning rate $\eta > 0$
+
+\textbf{Output:} Parameter vector $\boldsymbol{\theta} \in \R^d$
+
+\vspace{0.3cm}
+
+\begin{tabular}{@{\hspace{0.5cm}}l@{\hspace{0.3cm}}l}
+1: & Initialize $\theta_j \gets 0$ for all $j = 0, 1, \ldots, d$ \\[6pt]
+2: & \textbf{repeat} \\[6pt]
+3: & \hspace{0.5cm} $\text{gradient}_j \gets 0$ for all $j = 0, 1, \ldots, d$ \\[6pt]
+4: & \hspace{0.5cm} \textbf{for} each training example $(\mathbf{x}, y)$ \textbf{do} \\[6pt]
+5: & \hspace{1.0cm} \textbf{for} each parameter $j$ \textbf{do} \\[6pt]
+6: & \hspace{1.5cm} $\displaystyle \text{gradient}_j \gets \text{gradient}_j + x_j \left( y - \frac{1}{1 + e^{-\boldsymbol{\theta}^\top \mathbf{x}}} \right)$ \\[12pt]
+7: & \hspace{1.0cm} \textbf{end for} \\[6pt]
+8: & \hspace{0.5cm} \textbf{end for} \\[6pt]
+9: & \hspace{0.5cm} $\theta_j \gets \theta_j + \eta \cdot \text{gradient}_j$ for all $j = 0, 1, \ldots, d$ \\[6pt]
+10: & \textbf{until} convergence \\[6pt]
+11: & \textbf{return} $\boldsymbol{\theta}$
+\end{tabular}
+
+\vspace{0.3cm}
+}}
+\end{center}
+
+\vspace{0.3cm}
+
+The algorithm iterates until the parameters converge (i.e., the change in $\boldsymbol{\theta}$ between iterations falls below some threshold $\varepsilon$) or a maximum number of iterations is reached. The learning rate $\eta$ controls the step size: too large leads to oscillation, too small leads to slow convergence.
+
+\end{document}

@@ -1,0 +1,982 @@
+\documentclass[main.tex]{subfiles}
+
+\begin{document}
+
+\section*{\Huge\textcolor{mantis}{Prerequisites}}
+\addcontentsline{toc}{section}{Prerequisites}
+\vspace{0.5cm}
+
+These notes collect the mathematical background assumed throughout the course. Nothing here is derived during lectures; if any section feels genuinely unfamiliar rather than rusty, treat it as a reading assignment before the corresponding lecture.
+
+\needspace{0.33\textheight}
+\section{Calculus}
+
+\subsection{The Derivative}
+
+A function $f : \R \to \R$ assigns to each input $x$ an output $f(x)$. The derivative $f'(x)$ is the instantaneous rate of change of $f$ at $x$. To make this precise, fix a point $x$ and consider a nearby point $x + h$: the ratio
+$$\frac{f(x+h) - f(x)}{h}$$
+is the average rate of change over the interval $[x, x+h]$, geometrically the slope of the \textbf{secant line} through $(x, f(x))$ and $(x+h, f(x+h))$. The derivative is the limit of this slope as $h$ shrinks to zero:
+$$f'(x) = \lim_{h \to 0} \frac{f(x+h) - f(x)}{h}$$
+
+As $h \to 0$, the secant line rotates into the \textbf{tangent line} at $x$; the derivative is the slope of that tangent. On $f(x) = x^2$ at $x = 1$: the left panel shows secants for large $h$; the right panel shows the secant approaching the tangent as $h$ shrinks.
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[
+    width=7.5cm,
+    height=6cm,
+    xlabel={$x$},
+    ylabel={$f(x)$},
+    xmin=-0.3, xmax=3.2,
+    ymin=-0.5, ymax=5,
+    axis lines=left,
+    title={\textbf{Secant: two points}},
+    title style={font=\bfseries\color{mantis}},
+    grid=none,
+]
+\addplot[domain=0:3, samples=100, color=mantis, thick] {x^2};
+% secant through (1,1) and (2,4): slope = 3, line: y = 3x - 2
+\addplot[domain=0.3:2.8, samples=2, color=gray!60] {3*x - 2};
+\addplot[only marks, mark=*, mark size=3pt, color=mantis] coordinates {(1,1)};
+\addplot[only marks, mark=*, mark size=3pt, color=blue] coordinates {(2,4)};
+\node[below right, font=\small, mantis] at (axis cs:1, 0.8) {$(x,\, f(x))$};
+\node[above left, font=\small, blue] at (axis cs:2, 4.2) {$(x+h,\, f(x+h))$};
+% brace for h
+\draw[<->, thick, gray] (axis cs:1, -0.3) -- node[below, font=\small] {$h$} (axis cs:2, -0.3);
+\node[font=\small, gray!70!black] at (axis cs:2.4, 1.5) {slope $= \frac{f(x+h) - f(x)}{h}$};
+\end{axis}
+\end{tikzpicture}
+\hspace{0.5cm}
+\begin{tikzpicture}
+\begin{axis}[
+    width=7.5cm,
+    height=6cm,
+    xlabel={$x$},
+    xmin=-0.3, xmax=3.2,
+    ymin=-0.5, ymax=5,
+    axis lines=left,
+    title={\textbf{Tangent: $h \to 0$, one point}},
+    title style={font=\bfseries\color{mantis}},
+    grid=none,
+]
+\addplot[domain=0:3, samples=100, color=mantis, thick] {x^2};
+% tangent at x=1: slope = 2, line: y = 2x - 1
+\addplot[domain=0:2.5, samples=2, color=red!70!black, thick, dashed] {2*x - 1};
+\addplot[only marks, mark=*, mark size=3pt, color=mantis] coordinates {(1,1)};
+\node[below right, font=\small, mantis] at (axis cs:1, 0.8) {$(x,\, f(x))$};
+\node[font=\small, red!70!black] at (axis cs:2.2, 3.5) {slope $= f'(x)$};
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+\textbf{Standard rules.} For differentiable $f, g$ and constant $c$:
+\begin{itemize}
+    \item $(f + g)' = f' + g'$; \quad $(fg)' = f'g + fg'$; \quad $(f/g)' = (f'g - fg')/g^2$
+    \item \textbf{Chain rule}: $(f \circ g)'(x) = f'(g(x)) \cdot g'(x)$
+    \item $(x^n)' = nx^{n-1}$; \quad $(e^x)' = e^x$; \quad $(\ln x)' = 1/x$
+\end{itemize}
+
+The chain rule is the single most important differentiation rule in the course: backpropagation in neural networks is nothing more than the chain rule applied to a composition of many functions.
+
+\subsection{The Integral}
+
+Given a function $f$, the integral $\int_a^b f(x)\,dx$ is the signed area between $f$ and the $x$-axis on $[a, b]$: the total quantity $f$ accumulates over the interval. To compute it, partition $[a, b]$ into $n$ subintervals of width $\Delta x = (b - a)/n$, approximate the area in each slice by a rectangle of height $f(x_i^*)$ and width $\Delta x$, and sum:
+$$S_n = \sum_{i=1}^{n} f(x_i^*)\,\Delta x$$
+
+As $n$ grows, $\Delta x$ shrinks, the rectangles trace $f$ more faithfully, and the error between the sum and the true area vanishes:
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[
+    width=5cm, height=4.5cm,
+    xlabel={$x$}, xmin=-0.2, xmax=4.3, ymin=0, ymax=3,
+    axis lines=left, grid=none,
+    title={\textbf{$n = 3$}}, title style={font=\bfseries\color{mantis}},
+    xtick={0,4}, xticklabels={$a$,$b$},
+    ytick=\empty,
+]
+% n=3: dx = 4/3 ≈ 1.333
+\draw[fill=mantis!20, draw=mantis!60] (axis cs:0,0) rectangle (axis cs:1.333, 0.5);
+\draw[fill=mantis!35, draw=mantis!70] (axis cs:1.333,0) rectangle (axis cs:2.667, 1.655);
+\draw[fill=mantis!20, draw=mantis!60] (axis cs:2.667,0) rectangle (axis cs:4, 2.133);
+\addplot[domain=0:4.2, samples=100, color=mantis, thick] {sqrt(x) + 0.5};
+% annotate one representative rectangle: area = f(x_i) \Delta x
+\draw[<->, thick, blue!70!black] (axis cs:1.333,-0.3) -- node[below, font=\small] {$\Delta x$} (axis cs:2.667,-0.3);
+\draw[<->, thick, red!70!black] (axis cs:2.88,0) -- node[right, font=\small] {$f(x_i)$} (axis cs:2.88,1.655);
+\addplot[only marks, mark=*, mark size=2.5pt, color=mantis!80!black] coordinates {(1.333, 1.655)};
+\node[above left, font=\small, mantis!80!black] at (axis cs:1.333,1.655) {$\bigl(x_i, f(x_i)\bigr)$};
+\end{axis}
+\end{tikzpicture}
+\hfill
+\begin{tikzpicture}
+\begin{axis}[
+    width=5cm, height=4.5cm,
+    xlabel={$x$}, xmin=-0.2, xmax=4.3, ymin=0, ymax=3,
+    axis lines=left, grid=none,
+    title={\textbf{$n = 8$}}, title style={font=\bfseries\color{mantis}},
+    xtick={0,4}, xticklabels={$a$,$b$},
+    ytick=\empty,
+]
+% n=8: dx = 0.5
+\draw[fill=mantis!20, draw=mantis!60] (axis cs:0,0) rectangle (axis cs:0.5, 0.500);
+\draw[fill=mantis!20, draw=mantis!60] (axis cs:0.5,0) rectangle (axis cs:1, 1.207);
+\draw[fill=mantis!20, draw=mantis!60] (axis cs:1,0) rectangle (axis cs:1.5, 1.500);
+\draw[fill=mantis!20, draw=mantis!60] (axis cs:1.5,0) rectangle (axis cs:2, 1.724);
+\draw[fill=mantis!20, draw=mantis!60] (axis cs:2,0) rectangle (axis cs:2.5, 1.914);
+\draw[fill=mantis!20, draw=mantis!60] (axis cs:2.5,0) rectangle (axis cs:3, 2.081);
+\draw[fill=mantis!20, draw=mantis!60] (axis cs:3,0) rectangle (axis cs:3.5, 2.232);
+\draw[fill=mantis!20, draw=mantis!60] (axis cs:3.5,0) rectangle (axis cs:4, 2.371);
+\addplot[domain=0:4.2, samples=100, color=mantis, thick] {sqrt(x) + 0.5};
+\end{axis}
+\end{tikzpicture}
+\hfill
+\begin{tikzpicture}
+\begin{axis}[
+    width=5cm, height=4.5cm,
+    xlabel={$x$}, xmin=-0.2, xmax=4.3, ymin=0, ymax=3,
+    axis lines=left, grid=none,
+    title={\textbf{$n = 30$}}, title style={font=\bfseries\color{mantis}},
+    xtick={0,4}, xticklabels={$a$,$b$},
+    ytick=\empty,
+]
+% n=30: dx ≈ 0.133, use fill between
+\pgfplotsinvokeforeach{0,1,...,29}{
+    \draw[fill=mantis!20, draw=mantis!60, thin]
+        (axis cs:{#1*4/30},0) rectangle (axis cs:{(#1+1)*4/30},{sqrt(#1*4/30)+0.5});
+}
+\addplot[domain=0:4.2, samples=100, color=mantis, thick] {sqrt(x) + 0.5};
+\end{axis}
+\end{tikzpicture}
+\end{center}
+\vspace{-4pt}
+\begin{center}
+{\footnotesize $\displaystyle\underbrace{\sum_{i=1}^{n} f(x_i)\,\Delta x}_{\text{finite sum of rectangles}} \;\xrightarrow[\Delta x \to 0]{n \to \infty}\; \underbrace{\int_a^b f(x)\,dx}_{\text{exact area}}$}
+\end{center}
+
+The \textbf{Fundamental Theorem of Calculus} connects differentiation and integration: if $F'(x) = f(x)$, then $\int_a^b f(x)\,dx = F(b) - F(a)$. They are inverse operations; this duality appears throughout the course, most directly in the relationship between the probability density function and the cumulative distribution function.
+
+\subsection{Partial Derivatives and the Gradient}
+
+For $f : \R^d \to \R$, the partial derivative $\frac{\partial f}{\partial x_j}$ measures the rate of change of $f$ along the $j$-th coordinate axis while all other coordinates are held fixed. The \textbf{gradient}
+$$\nabla f(\mathbf{x}) = \begin{bmatrix} \frac{\partial f}{\partial x_1} \\ \vdots \\ \frac{\partial f}{\partial x_d} \end{bmatrix} \in \R^d$$
+collects all $d$ partial derivatives into a single vector. Geometrically, $\nabla f(\mathbf{x})$ points in the direction of steepest ascent of $f$ at $\mathbf{x}$, and its magnitude $\|\nabla f\|$ is the rate of increase in that direction. The left panel below shows a 3D surface $f(x_1, x_2) = x_1^2 + 2x_2^2$ sliced at $x_2 = 1$: the partial derivative $\partial f / \partial x_1$ is the slope of the curve in that slice (the tangent line). The right panel extracts the 1D slice.
+
+\begin{center}
+\includegraphics[width=\textwidth]{img/partial_derivative_3d.png}
+\end{center}
+
+On a contour plot (curves of constant $f$), the gradient at each point is perpendicular to the level curve passing through that point. The left panel below shows gradient arrows on the 3D surface; the right shows the same from above, with gradient arrows cutting across contour lines at right angles.
+
+\begin{center}
+\includegraphics[width=0.55\textwidth]{img/gradient_3d.png}
+\end{center}
+
+Gradient descent exploits this directly: stepping in the direction $-\nabla f$ decreases $f$ as rapidly as possible per unit step.
+
+\subsection{Critical Points, the Hessian, and Convexity}
+
+A necessary condition for $\mathbf{x}^*$ to be a local minimum of a differentiable $f : \R^d \to \R$ is $\nabla f(\mathbf{x}^*) = \mathbf{0}$ (the first-order condition). This is necessary but not sufficient: saddle points also satisfy it. To classify critical points, we examine the \textbf{Hessian}, the $d \times d$ matrix of second partial derivatives:
+$$\mathbf{H}_f(\mathbf{x}) = \left[\frac{\partial^2 f}{\partial x_i \partial x_j}\right]_{i,j}$$
+
+At a critical point $\nabla f(\mathbf{x}^*) = \mathbf{0}$: if $\mathbf{H}_f(\mathbf{x}^*)$ is positive definite (all eigenvalues positive), then $\mathbf{x}^*$ is a local minimum; if negative definite, a local maximum; otherwise, a saddle point.
+
+\begin{definition}[Convexity]
+A function $f$ is \textbf{convex} if $\mathbf{H}_f(\mathbf{x}) \succeq 0$ everywhere (equivalently, if $f(t\mathbf{a} + (1-t)\mathbf{b}) \leq t\,f(\mathbf{a}) + (1-t)\,f(\mathbf{b})$ for all $\mathbf{a}, \mathbf{b}$ and $t \in [0,1]$). For convex functions, every local minimum is a global minimum, and the first-order condition $\nabla f(\mathbf{x}^*) = \mathbf{0}$ is both necessary and sufficient.
+\end{definition}
+
+Convexity is the reason linear regression has a unique, closed-form solution while neural network training does not: the squared-error loss is convex in the parameters of a linear model but non-convex in the parameters of a neural network.
+
+\begin{center}
+\includegraphics[width=0.85\textwidth]{img/hessian_3d.png}\\[4pt]
+{\footnotesize Left: $\mathbf{H} \succ 0$ (both $\lambda > 0$): contours are ellipses, curvature is positive along every eigenvector direction $\Rightarrow$ bowl with unique minimum. Right: indefinite $\mathbf{H}$ ($\lambda_1 > 0, \lambda_2 < 0$): the positive-eigenvalue direction curves up, the negative-eigenvalue direction curves down $\Rightarrow$ saddle.}
+\end{center}
+
+\needspace{0.33\textheight}
+\section{Linear Algebra}
+
+\subsection{Matrices as Linear Transformations}
+
+A matrix $\mathbf{A} \in \R^{m \times n}$ defines a linear function $f : \R^n \to \R^m$ by $f(\mathbf{x}) = \mathbf{A}\mathbf{x}$. What this function does is determined by the columns of $\mathbf{A}$: the $j$-th column is the image of the $j$-th standard basis vector $\mathbf{e}_j$:
+$$\mathbf{A}\mathbf{e}_j = \begin{bmatrix} a_{1j} \\ a_{2j} \\ \vdots \\ a_{mj}\end{bmatrix} = \text{(the $j$-th column of $\mathbf{A}$)}$$
+
+Now any vector $\mathbf{x} \in \R^n$ can be decomposed as $\mathbf{x} = x_1\mathbf{e}_1 + x_2\mathbf{e}_2 + \cdots + x_n\mathbf{e}_n$; by linearity,
+$$\mathbf{A}\mathbf{x} = x_1\,(\mathbf{A}\mathbf{e}_1) + x_2\,(\mathbf{A}\mathbf{e}_2) + \cdots + x_n\,(\mathbf{A}\mathbf{e}_n)$$
+
+The output is a linear combination of the columns of $\mathbf{A}$, weighted by the entries of $\mathbf{x}$. Once you know where each basis vector lands, you know where \textit{every} vector lands, since every vector decomposes into basis vectors.
+
+A concrete example helps. Let $\mathbf{A} = \begin{bmatrix} 2 & -1 \\ 0 & 1\end{bmatrix}$ and $\mathbf{x} = \begin{bmatrix}1 \\ 2\end{bmatrix}$. The first column $\begin{bmatrix}2\\0\end{bmatrix}$ tells us $\mathbf{e}_1$ gets stretched horizontally by 2; the second column $\begin{bmatrix}-1\\1\end{bmatrix}$ tells us $\mathbf{e}_2$ gets sheared to the left. The output $\mathbf{A}\mathbf{x} = 1\cdot\begin{bmatrix}2\\0\end{bmatrix} + 2\cdot\begin{bmatrix}-1\\1\end{bmatrix} = \begin{bmatrix}0\\2\end{bmatrix}$ is the linear combination of these transformed basis vectors, with $x_1 = 1$ and $x_2 = 2$ as weights.
+
+\begin{center}
+\begin{tikzpicture}[>=stealth, scale=1.3]
+    \fill[mantis!15] (0,0) -- (1,0) -- (1,1) -- (0,1) -- cycle;
+    \draw[thick, mantis!50] (0,0) -- (1,0) -- (1,1) -- (0,1) -- cycle;
+    \draw[->, thick, color=mantis] (0,0) -- (1,0) node[midway, below] {$\mathbf{e}_1$};
+    \draw[->, thick, color=blue] (0,0) -- (0,1) node[midway, left] {$\mathbf{e}_2$};
+    \node[font=\scriptsize, gray] at (0.5, 0.5) {area $= 1$};
+    \node[below, font=\footnotesize] at (0.5, -0.3) {domain};
+    \draw[->, very thick, darkgray] (1.6, 0.5) -- node[above, font=\small] {$\mathbf{A}$} (3.0, 0.5);
+    \begin{scope}[shift={(4.0,0)}]
+    \fill[blue!10] (0,0) -- (2,0) -- (1,1) -- (-1,1) -- cycle;
+    \draw[thick, blue!40] (0,0) -- (2,0) -- (1,1) -- (-1,1) -- cycle;
+    \draw[->, thick, color=mantis] (0,0) -- (2,0) node[midway, below, font=\small] {$\mathbf{A}\mathbf{e}_1 = \left[\begin{smallmatrix}2\\0\end{smallmatrix}\right]$};
+    \draw[->, thick, color=blue] (0,0) -- (-1,1) node[left, font=\small] {$\mathbf{A}\mathbf{e}_2 = \left[\begin{smallmatrix}-1\\1\end{smallmatrix}\right]$};
+    \node[font=\scriptsize, gray] at (0.5, 0.45) {area $= |\!\det\mathbf{A}|$};
+    \node[below, font=\footnotesize] at (0.5, -0.3) {image};
+    \end{scope}
+\end{tikzpicture}
+\end{center}
+
+Geometrically, the matrix maps the unit square (spanned by $\mathbf{e}_1, \mathbf{e}_2$) to the parallelogram spanned by the columns of $\mathbf{A}$. Every point inside the square moves to the corresponding point inside the parallelogram, and evenly-spaced points in the domain remain evenly spaced in the image. A linear transformation can scale, rotate, reflect, shear, and project, but it cannot bend, twist, or warp.
+
+\subsection{Types of Transformations}
+
+Different matrices produce different geometric effects, depending on their column structure.
+
+\textbf{Diagonal matrices} scale each coordinate axis independently: $\begin{bmatrix}\alpha_1 & 0 \\ 0 & \alpha_2\end{bmatrix}$ sends $\mathbf{e}_1 \mapsto \alpha_1\mathbf{e}_1$ and $\mathbf{e}_2 \mapsto \alpha_2\mathbf{e}_2$, stretching or compressing along each axis without mixing directions. The identity matrix is the special case $\alpha_1 = \alpha_2 = 1$; a negative $\alpha_j$ reflects across the corresponding axis.
+
+\textbf{Shear matrices} have off-diagonal entries that make one coordinate's image depend on another. The matrix $\begin{bmatrix}1 & \beta \\ 0 & 1\end{bmatrix}$ leaves $\mathbf{e}_1$ fixed but pushes $\mathbf{e}_2$ sideways by $\beta$, tilting the unit square into a parallelogram. This is how skewing arises.
+
+\textbf{Rotation matrices} $\mathbf{R}_\theta = \begin{bmatrix}\cos\theta & -\sin\theta \\ \sin\theta & \cos\theta\end{bmatrix}$ rotate every vector by angle $\theta$ counterclockwise; they preserve all lengths and angles (the columns are orthonormal). Any rotation can be decomposed into three shears, a fact exploited in fast image rotation algorithms.
+
+\begin{center}
+\begin{tikzpicture}[>=stealth, scale=0.85]
+% Original
+\begin{scope}[shift={(0,0)}]
+    \fill[mantis!15] (0,0) -- (1,0) -- (1,1) -- (0,1) -- cycle;
+    \draw[thick, mantis!50] (0,0) -- (1,0) -- (1,1) -- (0,1) -- cycle;
+    \draw[->, thick, mantis] (0,0) -- (1,0);
+    \draw[->, thick, blue] (0,0) -- (0,1);
+    \node[below, font=\scriptsize] at (0.5,-0.25) {original};
+\end{scope}
+% Scaling
+\begin{scope}[shift={(2.8,0)}]
+    \fill[mantis!15] (0,0) -- (2,0) -- (2,0.6) -- (0,0.6) -- cycle;
+    \draw[thick, mantis!50] (0,0) -- (2,0) -- (2,0.6) -- (0,0.6) -- cycle;
+    \draw[->, thick, mantis] (0,0) -- (2,0);
+    \draw[->, thick, blue] (0,0) -- (0,0.6);
+    \node[below, font=\scriptsize] at (1,-0.25) {scale};
+\end{scope}
+% Shear
+\begin{scope}[shift={(6.2,0)}]
+    \fill[mantis!15] (0,0) -- (1,0) -- (1.6,1) -- (0.6,1) -- cycle;
+    \draw[thick, mantis!50] (0,0) -- (1,0) -- (1.6,1) -- (0.6,1) -- cycle;
+    \draw[->, thick, mantis] (0,0) -- (1,0);
+    \draw[->, thick, blue] (0,0) -- (0.6,1);
+    \node[below, font=\scriptsize] at (0.8,-0.25) {shear};
+\end{scope}
+% Rotation
+\begin{scope}[shift={(9.0,0)}]
+    \fill[mantis!15] (0,0) -- (0.866,0.5) -- (0.366,1.366) -- (-0.5,0.866) -- cycle;
+    \draw[thick, mantis!50] (0,0) -- (0.866,0.5) -- (0.366,1.366) -- (-0.5,0.866) -- cycle;
+    \draw[->, thick, mantis] (0,0) -- (0.866,0.5);
+    \draw[->, thick, blue] (0,0) -- (-0.5,0.866);
+    \node[below, font=\scriptsize] at (0.2,-0.25) {rotate ($30°$)};
+\end{scope}
+% Reflection
+\begin{scope}[shift={(11.8,0)}]
+    \fill[mantis!15] (0,0) -- (-1,0) -- (-1,1) -- (0,1) -- cycle;
+    \draw[thick, mantis!50] (0,0) -- (-1,0) -- (-1,1) -- (0,1) -- cycle;
+    \draw[->, thick, mantis] (0,0) -- (-1,0);
+    \draw[->, thick, blue] (0,0) -- (0,1);
+    \node[below, font=\scriptsize] at (-0.5,-0.25) {reflect};
+\end{scope}
+\end{tikzpicture}
+\end{center}
+
+Any $m \times n$ matrix can be decomposed (via the singular value decomposition, or SVD) as a rotation, followed by a diagonal scaling, followed by another rotation. Every linear transformation reduces to rotations and axis-aligned stretches.
+
+\subsection{Composition and Non-Commutativity}
+
+Matrix multiplication corresponds to function composition: if $\mathbf{B}$ maps $\R^p \to \R^n$ and $\mathbf{A}$ maps $\R^n \to \R^m$, then $\mathbf{A}\mathbf{B}$ maps $\R^p \to \R^m$ by first applying $\mathbf{B}$, then $\mathbf{A}$. The columns of $\mathbf{A}\mathbf{B}$ are the images of the basis vectors under the composed map: column $j$ of $\mathbf{A}\mathbf{B}$ is $\mathbf{A}(\mathbf{B}\mathbf{e}_j)$, the result of first applying $\mathbf{B}$ to $\mathbf{e}_j$ and then applying $\mathbf{A}$.
+
+An immediate consequence: matrix multiplication is generally not commutative. The diagram below makes this concrete. Start with the same unit square and apply a shear $\mathbf{S}$ followed by a rotation $\mathbf{R}$, then compare with $\mathbf{R}$ first and $\mathbf{S}$ second:
+
+\begin{center}
+\begin{tikzpicture}[>=stealth, scale=0.7]
+% Original
+\begin{scope}[shift={(0,0)}]
+    \fill[mantis!15] (0,0) -- (1,0) -- (1,1) -- (0,1) -- cycle;
+    \draw[thick, mantis!50] (0,0) -- (1,0) -- (1,1) -- (0,1) -- cycle;
+    \node[below, font=\scriptsize] at (0.5,-0.2) {original};
+\end{scope}
+% RS path (top)
+\draw[->, thick, darkgray] (1.5,0.8) -- node[above, font=\scriptsize] {$\mathbf{R}$} (3.0,1.5);
+\begin{scope}[shift={(3.5,1.2)}]
+    \fill[blue!12] (0,0) -- (0.866,0.5) -- (0.366,1.366) -- (-0.5,0.866) -- cycle;
+    \draw[thick, blue!40] (0,0) -- (0.866,0.5) -- (0.366,1.366) -- (-0.5,0.866) -- cycle;
+    \node[above, font=\scriptsize] at (0.2,1.5) {rotated};
+\end{scope}
+\draw[->, thick, darkgray] (5.0,1.8) -- node[above, font=\scriptsize] {$\mathbf{S}$} (6.5,1.5);
+\begin{scope}[shift={(7.0,1.0)}]
+    \fill[red!12] (0,0) -- (0.866,0.5) -- (0.866,1.866) -- (0,1.366) -- cycle;
+    \draw[thick, red!50] (0,0) -- (0.866,0.5) -- (0.866,1.866) -- (0,1.366) -- cycle;
+    \node[above, font=\scriptsize, red!70!black] at (0.4,2.0) {$\mathbf{S}\mathbf{R}$};
+\end{scope}
+% SR path (bottom)
+\draw[->, thick, darkgray] (1.5,0.2) -- node[below, font=\scriptsize] {$\mathbf{S}$} (3.0,-0.5);
+\begin{scope}[shift={(3.5,-1.0)}]
+    \fill[blue!12] (0,0) -- (1,0) -- (1.5,1) -- (0.5,1) -- cycle;
+    \draw[thick, blue!40] (0,0) -- (1,0) -- (1.5,1) -- (0.5,1) -- cycle;
+    \node[below, font=\scriptsize] at (0.75,-0.2) {sheared};
+\end{scope}
+\draw[->, thick, darkgray] (5.5,-0.5) -- node[below, font=\scriptsize] {$\mathbf{R}$} (7.0,-0.3);
+\begin{scope}[shift={(7.5,-1.0)}]
+    \fill[mantis!15] (0,0) -- (0.866,0.5) -- (0.47,1.87) -- (-0.40,1.37) -- cycle;
+    \draw[thick, mantis!60] (0,0) -- (0.866,0.5) -- (0.47,1.87) -- (-0.40,1.37) -- cycle;
+    \node[below, font=\scriptsize, mantis!70!black] at (0.2,-0.2) {$\mathbf{R}\mathbf{S}$};
+\end{scope}
+% Not equal
+\node[font=\large] at (9.5, 0.5) {$\neq$};
+\end{tikzpicture}
+\end{center}
+
+The two results are different because each transformation acts relative to the axes that exist \textit{after} the previous one. Commutativity $\mathbf{A}\mathbf{B} = \mathbf{B}\mathbf{A}$ holds only in special cases, such as when both matrices are diagonal (scaling along the same axes commutes).
+
+\subsection{The Dot Product}
+
+The \textbf{dot product} (inner product) of $\mathbf{x}, \mathbf{y} \in \R^d$ admits two equivalent definitions:
+$$\mathbf{x}^\top\mathbf{y} = \sum_{i=1}^{d} x_i y_i = \|\mathbf{x}\|\,\|\mathbf{y}\|\cos\theta$$
+where $\theta$ is the angle between the two vectors. The algebraic form is a sum of products; the geometric form is a product of lengths times the cosine of the angle between them.
+
+Project $\mathbf{x}$ onto the line spanned by $\mathbf{y}$: the signed length of that projection is $\|\mathbf{x}\|\cos\theta$, and the dot product $\mathbf{x}^\top\mathbf{y}$ equals this projection length times $\|\mathbf{y}\|$. Three cases arise:
+
+\begin{center}
+\begin{tikzpicture}[>=stealth, scale=0.9]
+% Acute
+\begin{scope}[shift={(0,0)}]
+    \draw[->, thick, mantis] (0,0) -- (2.5,0) node[below, font=\small] {$\mathbf{y}$};
+    \draw[->, thick, blue] (0,0) -- (1.5,1.8) node[above, font=\small] {$\mathbf{x}$};
+    \draw[dashed, gray] (1.5,1.8) -- (1.5,0);
+    \draw[thick, red!70!black, <->] (0,-0.3) -- node[below, font=\scriptsize, red!70!black] {proj} (1.5,-0.3);
+    \draw (0.5,0) arc (0:50:0.5) node[midway, right, font=\scriptsize] {$\theta$};
+    \node[below, font=\scriptsize] at (1.25,-0.8) {acute: $\mathbf{x}^\top\mathbf{y} > 0$};
+\end{scope}
+% Right
+\begin{scope}[shift={(5,0)}]
+    \draw[->, thick, mantis] (0,0) -- (2.5,0) node[below, font=\small] {$\mathbf{y}$};
+    \draw[->, thick, blue] (0,0) -- (0,1.8) node[above, font=\small] {$\mathbf{x}$};
+    \draw (0,0.4) -| (0.4,0);
+    \node[below, font=\scriptsize] at (1.25,-0.8) {right: $\mathbf{x}^\top\mathbf{y} = 0$};
+\end{scope}
+% Obtuse
+\begin{scope}[shift={(10,0)}]
+    \draw[->, thick, mantis] (0,0) -- (2.5,0) node[below, font=\small] {$\mathbf{y}$};
+    \draw[->, thick, blue] (0,0) -- (-1.2,1.5) node[above, font=\small] {$\mathbf{x}$};
+    \draw[dashed, gray] (-1.2,1.5) -- (-1.2,0);
+    \draw[thick, red!70!black, <->] (-1.2,-0.3) -- node[below, font=\scriptsize, red!70!black] {proj $< 0$} (0,-0.3);
+    \node[below, font=\scriptsize] at (0.6,-0.8) {obtuse: $\mathbf{x}^\top\mathbf{y} < 0$};
+\end{scope}
+\end{tikzpicture}
+\end{center}
+
+When $\theta < 90°$, the vectors point in a similar direction and the dot product is positive. When $\theta = 90°$, the projection vanishes and the dot product is zero. When $\theta > 90°$, the projection falls behind the origin and the dot product is negative. For a PSD matrix $\mathbf{A}$, the condition $\mathbf{v}^\top\mathbf{A}\mathbf{v} \geq 0$ means the angle between $\mathbf{v}$ and $\mathbf{A}\mathbf{v}$ is never obtuse.
+
+\subsection{Norms}
+
+A \textbf{norm} $\|\mathbf{x}\|$ assigns a notion of ``size'' to each vector. Different norms measure size differently, and the difference matters for regularization.
+
+The \textbf{Euclidean ($\ell_2$) norm} $\|\mathbf{x}\|_2 = \sqrt{x_1^2 + x_2^2 + \cdots + x_d^2}$ measures straight-line length from the origin. The \textbf{$\ell_1$ norm} $\|\mathbf{x}\|_1 = |x_1| + |x_2| + \cdots + |x_d|$ sums absolute values (``taxicab distance''). The difference is visible in their \textit{unit balls}, the set of all vectors with $\|\mathbf{x}\| \leq 1$:
+
+\begin{center}
+\begin{tikzpicture}[>=stealth, scale=1.3]
+% L2 ball
+\begin{scope}[shift={(0,0)}]
+    \fill[mantis!12] (0,0) circle (1);
+    \draw[thick, mantis] (0,0) circle (1);
+    \draw[->, thin, gray] (-1.4,0) -- (1.4,0) node[right, font=\scriptsize] {$x_1$};
+    \draw[->, thin, gray] (0,-1.4) -- (0,1.4) node[above, font=\scriptsize] {$x_2$};
+    \node[below, font=\scriptsize] at (0,-1.6) {$\ell_2$: circle};
+\end{scope}
+% L1 ball
+\begin{scope}[shift={(4,0)}]
+    \fill[blue!12] (1,0) -- (0,1) -- (-1,0) -- (0,-1) -- cycle;
+    \draw[thick, blue] (1,0) -- (0,1) -- (-1,0) -- (0,-1) -- cycle;
+    \draw[->, thin, gray] (-1.4,0) -- (1.4,0) node[right, font=\scriptsize] {$x_1$};
+    \draw[->, thin, gray] (0,-1.4) -- (0,1.4) node[above, font=\scriptsize] {$x_2$};
+    \fill[red!70!black] (1,0) circle (1.5pt);
+    \fill[red!70!black] (0,1) circle (1.5pt);
+    \fill[red!70!black] (-1,0) circle (1.5pt);
+    \fill[red!70!black] (0,-1) circle (1.5pt);
+    \node[below, font=\scriptsize] at (0,-1.6) {$\ell_1$: diamond (corners on axes)};
+\end{scope}
+\end{tikzpicture}
+\end{center}
+
+The $\ell_1$ ball has sharp corners that sit on the coordinate axes. When a regularization constraint (like $\|\boldsymbol{\theta}\|_1 \leq t$) forces the solution onto the boundary of this ball, those corners naturally push coefficients to be exactly zero, producing sparse solutions. The $\ell_2$ ball is smooth; its boundary has no preferred directions, so coefficients shrink toward zero but rarely reach it. This geometric distinction is the reason Lasso ($\ell_1$) produces sparse models while Ridge ($\ell_2$) produces small-but-dense ones.
+
+\subsection{Rank, Determinant, and Invertibility}
+
+These three concepts quantify how much of the output space a transformation actually ``uses.''
+
+\textbf{Rank and the null space.} The \textbf{rank} of $\mathbf{A} \in \R^{m \times n}$ is the dimension of its image: the set of all possible outputs $\{\mathbf{A}\mathbf{x} : \mathbf{x} \in \R^n\}$. Equivalently, it counts how many of the columns of $\mathbf{A}$ are linearly independent. When $\rank(\mathbf{A}) = r < n$, the transformation collapses an $n$-dimensional input space onto an $r$-dimensional subspace; some directions in the input are completely lost.
+
+The directions that are lost form the \textbf{null space} $\ker(\mathbf{A}) = \{\mathbf{x} : \mathbf{A}\mathbf{x} = \mathbf{0}\}$: all inputs that get mapped to zero. Its dimension is $n - r$. Consider a $2 \times 2$ matrix with rank 1: both columns point in the same direction, so the entire 2D plane gets flattened onto a single line. Every vector perpendicular to that line is in the null space.
+
+A rank-deficient transformation sends multiple distinct inputs to the same output, so it cannot be inverted; the information along the null space is lost.
+
+\textbf{Determinant.} The \textbf{determinant} of a transformation is the factor by which it scales areas (in 2D) or volumes (in higher dimensions). Consider the $2 \times 2$ matrix $\mathbf{A} = \begin{bmatrix} a_{1} & b_{1} \\ a_{2} & b_{2} \end{bmatrix}$ with columns $\mathbf{a}$ and $\mathbf{b}$. The unit square (spanned by $\mathbf{e}_1, \mathbf{e}_2$, area $= 1$) maps to the parallelogram spanned by $\mathbf{a}$ and $\mathbf{b}$. The area of that parallelogram is base times height: take $\mathbf{a}$ as the base (length $\|\mathbf{a}\|$) and drop a perpendicular from $\mathbf{b}$ to $\mathbf{a}$. The height is $\|\mathbf{b}\|\sin\theta$, where $\theta$ is the angle between the columns. The signed area is
+$$\text{area} = a_1 b_2 - a_2 b_1 = \det(\mathbf{A})$$
+
+This quantity is the determinant: the factor by which the transformation stretches or compresses area.
+
+\begin{center}
+\begin{tikzpicture}[>=stealth, scale=1.1]
+% Unit square
+\fill[mantis!15] (0,0) -- (1,0) -- (1,1) -- (0,1) -- cycle;
+\draw[thick, mantis!50] (0,0) -- (1,0) -- (1,1) -- (0,1) -- cycle;
+\draw[->, thick, mantis] (0,0) -- (1,0) node[midway, below] {$\mathbf{e}_1$};
+\draw[->, thick, blue] (0,0) -- (0,1) node[midway, left] {$\mathbf{e}_2$};
+\node[font=\scriptsize, gray] at (0.5,0.5) {area $= 1$};
+
+\draw[->, very thick, darkgray] (1.8, 0.5) -- node[above, font=\small] {$\mathbf{A}$} (3.5, 0.5);
+
+% Parallelogram
+\begin{scope}[shift={(4.5,0)}]
+    \fill[blue!10] (0,0) -- (3.5,0.5) -- (4.3,2.5) -- (0.8,2.0) -- cycle;
+    \draw[thick, blue!40] (0,0) -- (3.5,0.5) -- (4.3,2.5) -- (0.8,2.0) -- cycle;
+    \draw[->, thick, mantis] (0,0) -- (3.5,0.5) node[midway, below] {$\mathbf{a}$};
+    \draw[->, thick, blue] (0,0) -- (0.8,2.0) node[left] {$\mathbf{b}$};
+    % Height
+    \draw[dashed, red!70!black, thick] (0.8,2.0) -- (1.0, 0.14);
+    \node[right, font=\small, red!70!black] at (1.1, 1.0) {$h = \|\mathbf{b}\|\sin\theta$};
+    % Angle
+    \draw (0.7,0.1) arc (8:68:0.7);
+    \node[font=\small] at (0.85,0.65) {$\theta$};
+\end{scope}
+\end{tikzpicture}
+\end{center}
+
+\vspace{-4pt}
+When $\det(\mathbf{A}) = 0$, the columns $\mathbf{a}$ and $\mathbf{b}$ are parallel; the parallelogram collapses to a line and the area is zero:
+
+\begin{center}
+\begin{tikzpicture}[>=stealth, scale=1.1]
+    \draw[->, thick, mantis] (0,0) -- (3,1) node[below right] {$\mathbf{a}$};
+    \draw[->, thick, blue] (0,0) -- (1.5,0.5) node[above left] {$\mathbf{b}$};
+    \draw[thick, red!70!black, dotted] (-0.5,-0.17) -- (3.5,1.17);
+    \node[font=\small, red!70!black] at (1.5, -0.5) {$\det = 0$: $\mathbf{b} \parallel \mathbf{a}$, area $= 0$};
+\end{tikzpicture}
+\end{center}
+
+When $\det(\mathbf{A}) > 0$, the columns $\mathbf{a}, \mathbf{b}$ span a parallelogram with positive area and the orientation (handedness) of the original square is preserved. When $\det(\mathbf{A}) < 0$, the area is the same but the orientation is flipped (a reflection). When $\det(\mathbf{A}) = 0$, the columns are parallel, the parallelogram collapses to a line, and the transformation is not invertible; you cannot recover the input from the output because an entire dimension of information has been lost.
+
+In $d$ dimensions, $\det(\mathbf{A})$ is the signed volume of the $d$-dimensional parallelepiped spanned by the $d$ columns of $\mathbf{A}$.
+
+\textit{Properties.} The determinant is multiplicative: $\det(\mathbf{A}\mathbf{B}) = \det(\mathbf{A})\det(\mathbf{B})$, which is geometrically natural: composing two transformations multiplies their volume scaling factors. It also equals the product of eigenvalues: $\det(\mathbf{A}) = \prod_j \lambda_j$.
+
+\textbf{Invertibility.} A square matrix $\mathbf{A}$ is \textbf{invertible} if and only if $\det(\mathbf{A}) \neq 0$, equivalently $\rank(\mathbf{A}) = d$, equivalently the null space is trivial ($\ker(\mathbf{A}) = \{\mathbf{0}\}$). Geometrically: if no dimension is collapsed, the transformation can be reversed. The inverse $\mathbf{A}^{-1}$ satisfies $\mathbf{A}\mathbf{A}^{-1} = \mathbf{A}^{-1}\mathbf{A} = \mathbf{I}_d$ and is unique. Key identity: $(\mathbf{A}\mathbf{B})^{-1} = \mathbf{B}^{-1}\mathbf{A}^{-1}$ (undo the second transformation first, then the first).
+
+In linear regression, $\mathbf{X}^\top\mathbf{X}$ must be invertible for a unique OLS solution, which requires $\rank(\mathbf{X}) = d$ and hence $n \geq d$. When $\rank(\mathbf{X}) < d$, there exist directions $\mathbf{v} \neq \mathbf{0}$ with $\mathbf{X}\mathbf{v} = \mathbf{0}$, so infinitely many parameter vectors produce the same predictions.
+
+\subsection{Orthogonal Matrices}
+
+A square matrix $\mathbf{Q} \in \R^{d \times d}$ is \textbf{orthogonal} if its columns are mutually orthogonal unit vectors, which is equivalent to $\mathbf{Q}^\top\mathbf{Q} = \mathbf{Q}\mathbf{Q}^\top = \mathbf{I}$ (so $\mathbf{Q}^{-1} = \mathbf{Q}^\top$, the cheapest possible inverse). To see why columns must be orthonormal, write it out: the $(i,j)$ entry of $\mathbf{Q}^\top\mathbf{Q}$ is $\mathbf{q}_i^\top\mathbf{q}_j$, which must be 1 when $i = j$ (unit length) and 0 otherwise (orthogonality).
+
+Three geometric properties follow from a single algebraic trick: $\mathbf{Q}^\top\mathbf{Q} = \mathbf{I}$.
+\begin{enumerate}
+    \item \textbf{Lengths are preserved}: $\|\mathbf{Q}\mathbf{v}\|^2 = (\mathbf{Q}\mathbf{v})^\top(\mathbf{Q}\mathbf{v}) = \mathbf{v}^\top\mathbf{Q}^\top\mathbf{Q}\mathbf{v} = \mathbf{v}^\top\mathbf{v} = \|\mathbf{v}\|^2$.
+    \item \textbf{Angles are preserved}: $(\mathbf{Q}\mathbf{u})^\top(\mathbf{Q}\mathbf{v}) = \mathbf{u}^\top\mathbf{v}$, so the cosine of the angle between any two vectors is unchanged.
+    \item \textbf{Volumes are preserved}: $\det(\mathbf{Q}^\top\mathbf{Q}) = \det(\mathbf{I}) = 1$ gives $\det(\mathbf{Q})^2 = 1$, so $\det(\mathbf{Q}) = \pm 1$. When $+1$, $\mathbf{Q}$ is a pure rotation; when $-1$, it includes a reflection.
+\end{enumerate}
+
+An orthogonal matrix can rotate and reflect but cannot stretch, compress, or shear. Orthogonal matrices appear in the eigendecomposition $\mathbf{A} = \mathbf{Q}\boldsymbol{\Lambda}\mathbf{Q}^\top$ of a symmetric matrix: rotate axes to align with the eigenvectors ($\mathbf{Q}^\top$), scale each axis by the corresponding eigenvalue ($\boldsymbol{\Lambda}$), rotate back ($\mathbf{Q}$). The $\mathbf{Q}$ parts preserve geometry; all the stretching happens in $\boldsymbol{\Lambda}$.
+
+\subsection{Positive Definiteness}
+
+A symmetric matrix $\mathbf{A} \in \R^{d \times d}$ is \textbf{positive definite} ($\mathbf{A} \succ 0$) if $\mathbf{v}^\top\mathbf{A}\mathbf{v} > 0$ for all $\mathbf{v} \neq \mathbf{0}$, and \textbf{positive semi-definite} ($\mathbf{A} \succeq 0$) if $\mathbf{v}^\top\mathbf{A}\mathbf{v} \geq 0$.
+
+Start with the scalar case. If $a > 0$, then $b(ab) = a b^2 > 0$ for every $b \neq 0$; a positive number stretches $b$ in the direction $b$ already points, never flipping it past the origin. Now consider $\mathbf{v}^\top(\mathbf{A}\mathbf{v})$: this is the dot product of $\mathbf{v}$ with its image $\mathbf{A}\mathbf{v}$, so by our earlier discussion of the dot product, the condition $\mathbf{v}^\top\mathbf{A}\mathbf{v} > 0$ says exactly that the angle between $\mathbf{v}$ and $\mathbf{A}\mathbf{v}$ is always acute.
+
+\begin{center}
+\begin{tikzpicture}[>=stealth, scale=0.9]
+% PD case
+\begin{scope}[shift={(0,0)}]
+    \draw[->, thick, blue] (0,0) -- (1.5,1.8) node[above, font=\small] {$\mathbf{v}$};
+    \draw[->, thick, mantis] (0,0) -- (2.5,1.2) node[right, font=\small] {$\mathbf{A}\mathbf{v}$};
+    \draw (0.6,0.72) arc (50:25:0.94);
+    \node[font=\scriptsize] at (1.1,0.65) {$\theta < 90°$};
+    \node[below, font=\scriptsize] at (1.25,-0.3) {PD: acute angle $\Rightarrow$ $\mathbf{v}^\top\!\mathbf{A}\mathbf{v} > 0$};
+\end{scope}
+% Indefinite case
+\begin{scope}[shift={(7,0)}]
+    \draw[->, thick, blue] (0,0) -- (1.5,1.8) node[above, font=\small] {$\mathbf{v}$};
+    \draw[->, thick, red!70!black] (0,0) -- (-1.0,2.0) node[above, font=\small] {$\mathbf{A}\mathbf{v}$};
+    \draw (0.42,0.50) arc (50:117:0.65);
+    \node[font=\scriptsize] at (0.0,0.85) {$\theta > 90°$};
+    \node[below, font=\scriptsize] at (0.25,-0.3) {Indefinite: obtuse $\Rightarrow$ $\mathbf{v}^\top\!\mathbf{A}\mathbf{v} < 0$};
+\end{scope}
+\end{tikzpicture}
+\end{center}
+
+Geometrically: a positive definite matrix never sends a vector past $90°$ from where it started. Positive semi-definiteness allows the boundary case (angle exactly $90°$, i.e., the vector is sent into a lower-dimensional subspace) but never past it.
+
+\textbf{Eigenvalues.} Since $\mathbf{A}\mathbf{v}_j = \lambda_j\mathbf{v}_j$ for each eigenvector, the image of $\mathbf{v}_j$ points in the same direction when $\lambda_j > 0$ and in the opposite direction when $\lambda_j < 0$. A negative eigenvalue reverses an eigenvector, sending it past $90°$, so positive definiteness requires all eigenvalues strictly positive and positive semi-definiteness requires all eigenvalues nonnegative. Since all eigenvalues are nonnegative, $\det(\mathbf{A}) = \prod_j\lambda_j \geq 0$ for PSD matrices.
+
+\textbf{Decomposition as a square root.} Just as every nonneg real $a$ has a square root $a = (\sqrt{a})^2$, a symmetric PSD matrix admits a factorization $\mathbf{A} = \mathbf{B}^\top\mathbf{B}$, which immediately proves $\mathbf{A} \succeq 0$ since $\mathbf{v}^\top\mathbf{B}^\top\mathbf{B}\mathbf{v} = \|\mathbf{B}\mathbf{v}\|^2 \geq 0$. Conversely, the eigendecomposition $\mathbf{A} = \mathbf{Q}\boldsymbol{\Lambda}\mathbf{Q}^\top$ with $\boldsymbol{\Lambda} \geq 0$ gives $\mathbf{B} = \boldsymbol{\Lambda}^{1/2}\mathbf{Q}^\top$. The Cholesky factorization $\mathbf{A} = \mathbf{L}\mathbf{L}^\top$ (lower-triangular $\mathbf{L}$) is the computationally preferred variant of this square root.
+
+\textbf{Why PSD guarantees a unique minimum.} Consider the quadratic form $f(\mathbf{x}) = \frac{1}{2}\mathbf{x}^\top\mathbf{A}\mathbf{x} - \mathbf{b}^\top\mathbf{x}$. Setting $\nabla f = \mathbf{A}\mathbf{x} - \mathbf{b} = \mathbf{0}$ gives the critical point $\mathbf{x}^* = \mathbf{A}^{-1}\mathbf{b}$. To see why this is a minimum, perturb it by any $\mathbf{e} \neq \mathbf{0}$:
+$$f(\mathbf{x}^* + \mathbf{e}) = f(\mathbf{x}^*) + \tfrac{1}{2}\,\mathbf{e}^\top\mathbf{A}\,\mathbf{e}$$
+(the cross terms cancel because $\mathbf{A}\mathbf{x}^* = \mathbf{b}$). When $\mathbf{A} \succ 0$, the perturbation term $\mathbf{e}^\top\mathbf{A}\,\mathbf{e} > 0$, so \textit{every} direction away from $\mathbf{x}^*$ increases the objective: a bowl with a single bottom. When $\mathbf{A}$ is indefinite, some eigenvalues are negative, so $\mathbf{e}^\top\mathbf{A}\,\mathbf{e} < 0$ along those eigenvectors: the critical point is a saddle, not a minimum.
+
+\begin{center}
+\begin{tikzpicture}[>=stealth, scale=0.85]
+% PD: contour ellipses (bowl)
+\begin{scope}[shift={(0,0)}]
+    \draw[mantis!30, thick] (0,0) ellipse (0.5 and 0.35);
+    \draw[mantis!45, thick] (0,0) ellipse (1.0 and 0.7);
+    \draw[mantis!60, thick] (0,0) ellipse (1.5 and 1.05);
+    \draw[mantis!75, thick] (0,0) ellipse (2.0 and 1.4);
+    \fill[red!70!black] (0,0) circle (2pt) node[below right, font=\scriptsize] {$\mathbf{x}^*$ (min)};
+    \draw[->, thin, gray] (-2.5,0) -- (2.5,0) node[right, font=\scriptsize] {$x_1$};
+    \draw[->, thin, gray] (0,-1.8) -- (0,1.8) node[above, font=\scriptsize] {$x_2$};
+    \node[font=\scriptsize, mantis!70!black] at (0, -2.3) {$\mathbf{A} \succ 0$: bowl (unique minimum)};
+\end{scope}
+% Indefinite: contour hyperbolae (saddle) -- split domain to avoid x=0 singularity
+\begin{scope}[shift={(7,0)}]
+    \draw[red!40, thick] plot[domain=0.17:1.8, samples=50, smooth] (\x, {0.3/\x});
+    \draw[red!40, thick] plot[domain=-1.8:-0.17, samples=50, smooth] (\x, {0.3/\x});
+    \draw[red!40, thick] plot[domain=0.17:1.8, samples=50, smooth] (\x, {-0.3/\x});
+    \draw[red!40, thick] plot[domain=-1.8:-0.17, samples=50, smooth] (\x, {-0.3/\x});
+    \draw[red!55, thick] plot[domain=0.45:1.8, samples=50, smooth] (\x, {0.8/\x});
+    \draw[red!55, thick] plot[domain=-1.8:-0.45, samples=50, smooth] (\x, {0.8/\x});
+    \draw[red!55, thick] plot[domain=0.45:1.8, samples=50, smooth] (\x, {-0.8/\x});
+    \draw[red!55, thick] plot[domain=-1.8:-0.45, samples=50, smooth] (\x, {-0.8/\x});
+    \draw[red!70, thick] plot[domain=0.85:1.8, samples=50, smooth] (\x, {1.5/\x});
+    \draw[red!70, thick] plot[domain=-1.8:-0.85, samples=50, smooth] (\x, {1.5/\x});
+    \draw[red!70, thick] plot[domain=0.85:1.8, samples=50, smooth] (\x, {-1.5/\x});
+    \draw[red!70, thick] plot[domain=-1.8:-0.85, samples=50, smooth] (\x, {-1.5/\x});
+    \fill[red!70!black] (0,0) circle (2pt) node[below right, font=\scriptsize] {saddle};
+    \draw[->, thin, gray] (-2.5,0) -- (2.5,0) node[right, font=\scriptsize] {$x_1$};
+    \draw[->, thin, gray] (0,-1.8) -- (0,1.8) node[above, font=\scriptsize] {$x_2$};
+    \node[font=\scriptsize, red!70!black] at (0, -2.3) {Indefinite: saddle (no minimum)};
+\end{scope}
+\end{tikzpicture}
+\end{center}
+
+The Hessian of the OLS objective is $\frac{2}{n}\mathbf{X}^\top\mathbf{X}$, which is PSD since $\mathbf{v}^\top\mathbf{X}^\top\mathbf{X}\mathbf{v} = \|\mathbf{X}\mathbf{v}\|^2 \geq 0$, and strictly PD when $\mathbf{X}$ has full column rank. The OLS loss surface is therefore a bowl with a unique global minimum.
+
+\textbf{The PSD cone.} Start with the scalar analogy. The nonnegative reals $[0, \infty)$ form a \textit{ray} starting at the origin: scale any nonneg number by a nonneg constant, you get a nonneg number; add two nonneg numbers, you get a nonneg number. The set is closed under nonneg combinations. Now ask: what does the analogous set look like for matrices?
+
+A $2 \times 2$ symmetric matrix $\begin{bmatrix}a & c \\ c & b\end{bmatrix}$ is described by three numbers $(a, b, c)$, so we can plot the set of all such matrices as points in $\R^3$. The PSD conditions are $a \geq 0$, $b \geq 0$, and $\det = ab - c^2 \geq 0$. The boundary surface $ab = c^2$ is literally a cone: at ``height'' $a = b = k$, the allowed off-diagonal values are $|c| \leq k$, so the cross-section is an interval $[-k, k]$ that widens linearly as $k$ grows.
+
+\begin{center}
+\begin{tikzpicture}[>=stealth, scale=1.0]
+\begin{axis}[
+    width=9cm,
+    height=7cm,
+    xlabel={$a$},
+    ylabel={$c$},
+    xmin=-0.5, xmax=5.5,
+    ymin=-3.5, ymax=3.5,
+    axis lines=middle,
+    grid=none,
+    samples=100,
+]
+% Shade PSD region: upper parabola closed to x-axis, then lower
+\addplot[fill=mantis!12, draw=none, domain=0:5.5, samples=80] {sqrt(2*x)} \closedcycle;
+\addplot[fill=mantis!12, draw=none, domain=0:5.5, samples=80] {-sqrt(2*x)} \closedcycle;
+% Parabola boundary
+\addplot[domain=0:5.5, color=mantis, thick, samples=80] {sqrt(2*x)};
+\addplot[domain=0:5.5, color=mantis, thick, samples=80] {-sqrt(2*x)};
+% Labels
+\node[font=\small, mantis!70!black] at (axis cs:3.5, 0) {PSD region};
+\node[font=\small, mantis!70!black] at (axis cs:3.5, -0.5) {$c^2 \leq 2a$};
+\node[font=\scriptsize, mantis] at (axis cs:4.8, 2.8) {$c^2 = 2a$};
+% Mark specific matrices
+\addplot[only marks, mark=*, mark size=3pt, color=blue] coordinates {(2, 0)};
+\node[above right, font=\small, blue] at (axis cs:2.05, 0.1) {$2\mathbf{I}$};
+\addplot[only marks, mark=*, mark size=3pt, color=mantis!80!black] coordinates {(3, 1)};
+\node[above right, font=\small, mantis!80!black] at (axis cs:3.05, 1.05) {PSD};
+\addplot[only marks, mark=*, mark size=3pt, color=red!70!black] coordinates {(1, 2)};
+\node[above right, font=\small, red!70!black] at (axis cs:1.05, 2.05) {not PSD};
+\addplot[only marks, mark=*, mark size=2.5pt, color=darkgray] coordinates {(0, 0)};
+\node[below right, font=\small, darkgray] at (axis cs:0.1, -0.15) {$\mathbf{0}$};
+\end{axis}
+\end{tikzpicture}\\[4pt]
+{\footnotesize Cross-section at $b = 2$: the shaded region is the set of PSD matrices $\left[\begin{smallmatrix}a & c \\ c & 2\end{smallmatrix}\right]$ with $c^2 \leq 2a$.}
+\end{center}
+
+The identity matrix $\mathbf{I}$ sits at $(1,1,0)$ inside the cone; the zero matrix is the tip at the origin. Every PSD matrix is a point inside or on the surface. If you pick two points inside the cone (two PSD matrices $\mathbf{A}$ and $\mathbf{B}$) and draw the line segment between them, every point on that segment ($\alpha\mathbf{A} + (1-\alpha)\mathbf{B}$ for $\alpha \in [0,1]$) is also inside the cone. That is convexity. If you also scale either point by any $\alpha \geq 0$ (stretching the ray from the origin through that point), you stay inside. That is what makes it a cone rather than just a convex set.
+
+Proof: $\mathbf{v}^\top(\alpha\mathbf{A} + \beta\mathbf{B})\mathbf{v} = \alpha\,\mathbf{v}^\top\!\mathbf{A}\mathbf{v} + \beta\,\mathbf{v}^\top\!\mathbf{B}\mathbf{v} \geq 0$ whenever $\alpha, \beta \geq 0$ and $\mathbf{A}, \mathbf{B} \succeq 0$.
+
+\subsection{Orthogonal Projection}
+
+Given a subspace $V \subset \R^n$ and a vector $\mathbf{y}$, the \textbf{orthogonal projection} of $\mathbf{y}$ onto $V$ is the unique point $\hat{\mathbf{y}} \in V$ closest to $\mathbf{y}$ in Euclidean distance. The residual $\mathbf{y} - \hat{\mathbf{y}}$ is perpendicular to every vector in $V$; this is both the definition and the optimality condition.
+
+\begin{center}
+\begin{tikzpicture}[scale=1.2]
+    \fill[mantis!8] (-0.5,0) -- (4,0) -- (4,0.01) -- (-0.5,0.01) -- cycle;
+    \draw[->, thick] (-0.5,0) -- (4,0) node[right] {$V$};
+    \draw[->, color=mantis, thick] (0,0) -- (2.5, 0) node[below, yshift=-3pt] {$\hat{\mathbf{y}}$};
+    \draw[->, color=darkgray, thick] (0,0) -- (2.5, 2) node[above right] {$\mathbf{y}$};
+    \draw[dashed, color=red!70!black, thick] (2.5,0) -- (2.5, 2);
+    \node[right, color=red!70!black, font=\small] at (2.65, 1) {$\mathbf{y} - \hat{\mathbf{y}}$};
+    \draw (2.3,0) rectangle (2.5, 0.2);
+    \node[font=\scriptsize, gray] at (1.0, -0.35) {$\hat{\mathbf{y}} \in V$ minimizes $\|\mathbf{y} - \hat{\mathbf{y}}\|$};
+\end{tikzpicture}
+\end{center}
+
+Why does the shortest path from a point to a plane always hit the plane at a right angle? Because any other path through $V$ introduces a component along $V$ that only adds to the distance. The perpendicularity condition $\hat{\mathbf{y}} \perp (\mathbf{y} - \hat{\mathbf{y}})$ can be verified via the Pythagorean theorem: for any other $\mathbf{z} \in V$, $\|\mathbf{y} - \mathbf{z}\|^2 = \|\mathbf{y} - \hat{\mathbf{y}}\|^2 + \|\hat{\mathbf{y}} - \mathbf{z}\|^2 \geq \|\mathbf{y} - \hat{\mathbf{y}}\|^2$.
+
+OLS does exactly this. The fitted values $\hat{\mathbf{y}} = \mathbf{X}\hat{\boldsymbol{\theta}}$ are the orthogonal projection of the observed $\mathbf{y}$ onto the column space of $\mathbf{X}$; the normal equations $\mathbf{X}^\top(\mathbf{y} - \mathbf{X}\hat{\boldsymbol{\theta}}) = \mathbf{0}$ state that the residual is perpendicular to every column of $\mathbf{X}$.
+
+\needspace{0.33\textheight}
+\section{Probability}
+
+\subsection{From Counting to Density}
+
+In a finite sample space $\Omega$ with equally likely outcomes, the probability of an event $A \subseteq \Omega$ is the ratio
+$$P(A) = \frac{|A|}{|\Omega|}$$
+which counts favorable outcomes and divides by the total. This works because each individual outcome carries a definite positive probability $1/|\Omega|$.
+
+In the continuous case, this counting approach breaks down entirely. If $X$ takes values in $\R$, then $P(X = x) = 0$ for every single $x$: uncountably many points must share a total probability of 1, and no individual point can carry positive mass. We cannot count points, so we replace counting with \textit{density}. A \textbf{probability density function} (PDF) $f : \R \to [0, \infty)$ assigns to each point $x$ a \textit{density}, a probability per unit length, such that the probability of $X$ falling in an interval $[a, b]$ is recovered by integrating:
+$$P(a \leq X \leq b) = \int_a^b f(x)\,dx$$
+
+The transition from discrete to continuous is precisely the transition from sums to integrals, from mass functions to density functions. In the discrete case we sum $p(x)$ over the favorable values; in the continuous case we integrate $f(x)$ over the favorable region. The quantity $f(x)\,dx$ is the probability contained in an infinitesimal slice $[x, x + dx]$, exactly as in a Riemann sum: chop the region into thin slices of width $dx$, assign each slice a probability proportional to the local density $f(x)$, and sum.
+
+Note that $f(x)$ itself is not a probability; it can exceed 1 (consider a Uniform$(0, 0.1)$ distribution, where $f(x) = 10$ on $(0, 0.1)$). What must equal 1 is the total integral: $\int_{-\infty}^{\infty} f(x)\,dx = 1$.
+
+\subsection{CDF, PDF, and Calculus}
+
+The \textbf{cumulative distribution function} (CDF) $F(x) = P(X \leq x) = \int_{-\infty}^{x} f(t)\,dt$ accumulates density from the left. It is nondecreasing, with $F(-\infty) = 0$ and $F(\infty) = 1$. Differentiation inverts integration: $f(x) = F'(x)$. The PDF is the derivative of the CDF; the CDF is the integral of the PDF.
+
+\subsection{Expectation}
+
+The \textbf{expectation} of $X$ is its density-weighted average:
+$$\E[X] = \begin{cases} \sum_x x\, p(x) & \text{(discrete: sum of values weighted by mass)} \\ \int_{-\infty}^{\infty} x\, f(x)\,dx & \text{(continuous: integral of values weighted by density)} \end{cases}$$
+
+\textbf{Linearity of expectation}: $\E[aX + bY] = a\E[X] + b\E[Y]$, regardless of whether $X$ and $Y$ are independent. No assumptions about dependence are needed.
+
+\subsection{Variance, Covariance, and the Covariance Matrix}
+
+The \textbf{variance} $\Var(X) = \E[(X - \E[X])^2] = \E[X^2] - (\E[X])^2$ measures dispersion around the mean. It is always nonnegative, since it is an expectation of a squared quantity.
+
+\textbf{Properties:}
+\begin{itemize}
+    \item $\Var(aX + b) = a^2\Var(X)$ (shifting by $b$ does not change spread)
+    \item $\Var(X + Y) = \Var(X) + \Var(Y) + 2\Cov(X, Y)$
+    \item If $X, Y$ independent: $\Var(X + Y) = \Var(X) + \Var(Y)$
+\end{itemize}
+
+The \textbf{covariance} $\Cov(X, Y) = \E[(X - \E[X])(Y - \E[Y])] = \E[XY] - \E[X]\E[Y]$ measures the linear association between $X$ and $Y$: positive when they tend to move together, negative when they move oppositely, zero when there is no linear relationship. The \textbf{correlation} $\rho_{X,Y} = \Cov(X, Y) / (\sigma_X\,\sigma_Y) \in [-1, 1]$ is the scale-free version.
+
+When $\rho = 0$, the scatter cloud is circular (no preferred direction); as $|\rho| \to 1$, it elongates into an ellipse aligned with the diagonal:
+
+\begin{center}
+\begin{tikzpicture}[scale=0.65]
+% rho = 0
+\begin{scope}[shift={(0,0)}]
+    \draw[->, thin, gray] (-2.2,0) -- (2.2,0);
+    \draw[->, thin, gray] (0,-2.2) -- (0,2.2);
+    \draw[mantis!50, thick] (0,0) ellipse (1.5 and 1.5);
+    \foreach \i in {1,...,30} {
+        \pgfmathsetmacro{\rx}{1.3*rand}
+        \pgfmathsetmacro{\ry}{1.3*rand}
+        \fill[mantis!70] (\rx,\ry) circle (1.2pt);
+    }
+    \node[below, font=\scriptsize] at (0,-2.6) {$\rho = 0$};
+\end{scope}
+% rho = +0.8
+\begin{scope}[shift={(6,0)}]
+    \draw[->, thin, gray] (-2.2,0) -- (2.2,0);
+    \draw[->, thin, gray] (0,-2.2) -- (0,2.2);
+    \draw[blue!60, thick, rotate=45] (0,0) ellipse (2.0 and 0.65);
+    \foreach \i in {1,...,30} {
+        \pgfmathsetmacro{\rz}{1.3*rand}
+        \pgfmathsetmacro{\rw}{0.45*rand}
+        \pgfmathsetmacro{\rx}{cos(45)*\rz - sin(45)*\rw}
+        \pgfmathsetmacro{\ry}{sin(45)*\rz + cos(45)*\rw}
+        \fill[blue!70] (\rx,\ry) circle (1.2pt);
+    }
+    \node[below, font=\scriptsize] at (0,-2.6) {$\rho \approx +0.8$};
+\end{scope}
+% rho = -0.8
+\begin{scope}[shift={(12,0)}]
+    \draw[->, thin, gray] (-2.2,0) -- (2.2,0);
+    \draw[->, thin, gray] (0,-2.2) -- (0,2.2);
+    \draw[red!60, thick, rotate=-45] (0,0) ellipse (2.0 and 0.65);
+    \foreach \i in {1,...,30} {
+        \pgfmathsetmacro{\rz}{1.3*rand}
+        \pgfmathsetmacro{\rw}{0.45*rand}
+        \pgfmathsetmacro{\rx}{cos(-45)*\rz - sin(-45)*\rw}
+        \pgfmathsetmacro{\ry}{sin(-45)*\rz + cos(-45)*\rw}
+        \fill[red!70] (\rx,\ry) circle (1.2pt);
+    }
+    \node[below, font=\scriptsize] at (0,-2.6) {$\rho \approx -0.8$};
+\end{scope}
+\end{tikzpicture}
+\end{center}
+
+\textbf{Correlation as cosine of angle.} The correlation coefficient has a clean geometric meaning beyond these scatter plots. Given $n$ observations $(x_1, y_1), \ldots, (x_n, y_n)$, center both variables: $\tilde{x}_i = x_i - \bar{x}$ and $\tilde{y}_i = y_i - \bar{y}$. Now treat $\tilde{\mathbf{x}} = (\tilde{x}_1, \ldots, \tilde{x}_n)$ and $\tilde{\mathbf{y}} = (\tilde{y}_1, \ldots, \tilde{y}_n)$ as vectors in $\R^n$. The sample correlation is
+$$r = \frac{\sum_i \tilde{x}_i\,\tilde{y}_i}{\sqrt{\sum_i \tilde{x}_i^2}\;\sqrt{\sum_i \tilde{y}_i^2}} = \frac{\tilde{\mathbf{x}} \cdot \tilde{\mathbf{y}}}{\|\tilde{\mathbf{x}}\|\;\|\tilde{\mathbf{y}}\|} = \cos\theta$$
+where $\theta$ is the angle between the two centered data vectors. Parallel vectors ($\theta = 0$) give $r = 1$; orthogonal vectors ($\theta = 90°$) give $r = 0$; antiparallel vectors ($\theta = 180°$) give $r = -1$. The coefficient of determination $R^2 = \cos^2\theta$ is the fraction of one variable's variance explained by the other: at $45°$, exactly half the variance is explained; below $30°$, at least $75\%$.
+
+In OLS, the fitted values $\hat{\mathbf{y}}$ are the orthogonal projection of $\mathbf{y}$ onto the column space of $\mathbf{X}$, and the multiple $R$ is the cosine of the angle between the centered response $\mathbf{y} - \bar{y}\mathbf{1}$ and its projection.
+
+$\Cov(X, Y) = 0$ does not imply independence (e.g., $X \sim \text{Uniform}(-1, 1)$ and $Y = X^2$ are uncorrelated but perfectly dependent). Independence always implies zero covariance, but correlation measures only \emph{linear} dependence.
+
+\textbf{The covariance matrix as high-dimensional variance.} For a random vector $\mathbf{X} \in \R^d$, the \textbf{covariance matrix}
+$$\boldsymbol{\Sigma} = \E[(\mathbf{X} - \E[\mathbf{X}])(\mathbf{X} - \E[\mathbf{X}])^\top] \in \R^{d \times d}$$
+is the natural multivariate generalization of scalar variance: the diagonal entries $\Sigma_{ii} = \sigma_i^2$ are the variances of individual components, and the off-diagonal entries $\Sigma_{ij} = \rho_{ij}\sigma_i\sigma_j$ are the pairwise covariances. This structure yields a clean factorization:
+$$\boldsymbol{\Sigma} = \operatorname{diag}(\boldsymbol{\sigma})\;\mathbf{C}\;\operatorname{diag}(\boldsymbol{\sigma})$$
+where $\operatorname{diag}(\boldsymbol{\sigma})$ is the diagonal matrix of standard deviations and $\mathbf{C}$ is the correlation matrix (ones on the diagonal, $\rho_{ij}$ off-diagonal). The covariance matrix encodes two things: the marginal dispersions $\sigma_i$ and the linear dependencies $\rho_{ij}$ between components.
+
+The covariance matrix is always PSD, since for any fixed $\mathbf{v}$,
+$$\mathbf{v}^\top\boldsymbol{\Sigma}\mathbf{v} = \E\!\left[(\mathbf{v}^\top(\mathbf{X} - \boldsymbol{\mu}))^2\right] \geq 0$$
+which is the multivariate analog of $\sigma^2 \geq 0$. Variance properties lift to matrices: $\Var(\mathbf{A}\mathbf{X}) = \mathbf{A}\boldsymbol{\Sigma}\mathbf{A}^\top$ (analogous to $\Var(aX) = a^2\sigma^2$), and adding a constant vector does not change dispersion ($\Var(\mathbf{a} + \mathbf{X}) = \boldsymbol{\Sigma}$, analogous to $\Var(a + X) = \sigma^2$).
+
+\textbf{Cholesky and whitening.} The Cholesky factorization $\boldsymbol{\Sigma} = \mathbf{L}\mathbf{L}^\top$ is the multivariate square root, with $\mathbf{L}$ playing the role of $\sigma$. In the scalar case, the $z$-score $Z = (X - \mu)/\sigma$ standardizes to zero mean and unit variance; the multivariate analog is the \textbf{whitening transformation} $\mathbf{Z} = \mathbf{L}^{-1}(\mathbf{X} - \boldsymbol{\mu})$, which produces components with identity covariance $\Var(\mathbf{Z}) = \mathbf{I}$. Similarly, the precision matrix $\boldsymbol{\Sigma}^{-1}$ is the multivariate analog of $1/\sigma^2$, and the Mahalanobis distance $(\mathbf{x} - \boldsymbol{\mu})^\top\boldsymbol{\Sigma}^{-1}(\mathbf{x} - \boldsymbol{\mu})$ is a multivariate squared $z$-score, which is exactly the exponent in the multivariate Gaussian density.
+
+\subsection{Independence and Conditional Expectation}
+
+Random variables $X$ and $Y$ are \textbf{independent} if knowing $X$ tells you nothing about $Y$: $P(X \in A, Y \in B) = P(X \in A)\,P(Y \in B)$ for all sets $A, B$. A sequence $X_1, \ldots, X_n$ is \textbf{i.i.d.} (independent and identically distributed) if the $X_i$ are mutually independent and share the same distribution; this is the standing assumption for training data throughout the course.
+
+The \textbf{conditional expectation} $\E[Y \mid X = x]$ is the expected value of $Y$ given that $X = x$; it is a function of $x$. Key formulas:
+\begin{itemize}
+    \item \textbf{Law of Total Expectation}: $\E[Y] = \E_X[\E[Y \mid X]]$
+    \item \textbf{Law of Total Variance}: $\Var(Y) = \E_X[\Var(Y \mid X)] + \Var_X(\E[Y \mid X])$
+\end{itemize}
+
+The conditional expectation $\E[Y \mid X]$ is the best predictor of $Y$ from $X$ under squared loss, a fact proved in the linear regression notes and the fundamental reason we use squared error.
+
+\subsection{Key Distributions}
+
+The distributions used in the course are connected by summation and limiting operations. The map below shows the relationships; the subsequent figures visualize the most important one.
+
+\begin{center}
+\begin{tikzpicture}[
+    >=stealth,
+    every node/.style={font=\small},
+    disc/.style={draw=mantis, fill=mantis!8, rounded corners=3pt, inner sep=5pt, align=center, minimum width=2.2cm, minimum height=1cm},
+    cont/.style={draw=blue!60!black, fill=blue!5, rounded corners=3pt, inner sep=5pt, align=center, minimum width=2.2cm, minimum height=1cm},
+    arr/.style={->, thick, gray!70!black},
+    redarr/.style={->, thick, red!65!black},
+    lbl/.style={font=\scriptsize, fill=white, inner sep=1.5pt}
+]
+\node[disc] (bern) at (0, 3.5)   {Bernoulli($\pi$)\\[1pt]$P(X\!=\!1)=\pi$};
+\node[disc] (binom) at (4, 3.5)  {Binomial($n,\pi$)\\[1pt]$X=\sum_{i=1}^n X_i$};
+\node[disc] (unif) at (8, 3.5)   {Uniform($a,b$)\\[1pt]flat density};
+\node[cont] (norm) at (4, 0)     {Normal($\mu,\sigma^2$)\\[1pt]bell curve};
+\node[cont] (mvn)  at (8.5, 0)     {Multivariate\\Normal($\boldsymbol{\mu},\boldsymbol{\Sigma}$)};
+\node[disc] (expo) at (0, 0)     {Exponential($\lambda$)\\[1pt]waiting time};
+\node[disc] (chisq) at (1.5,-3)   {$\chi^2(k)$\\[1pt]$\sum Z_i^2$};
+\node[disc] (pois) at (7,-3)    {Poisson($\lambda$)\\[1pt]count of events};
+
+\draw[arr] (bern) -- node[lbl, above] {sum of $n$ i.i.d.} (binom);
+\draw[redarr] (binom) -- node[lbl, right] {CLT ($n \to \infty$)} (norm);
+\draw[redarr] (unif) -- node[lbl, right, xshift=2pt] {CLT} (mvn);
+\draw[arr] (norm) -- node[lbl, above] {$d$ components} (mvn);
+\draw[arr] (bern.south) to[bend right=20] node[lbl, left] {logistic link} (norm.west);
+\draw[arr] (norm) -- node[lbl, below left] {$\sum Z_i^2$} (chisq);
+\draw[arr] (expo) -- node[lbl, left, align=center] {inter-arrival\\times} (chisq);
+\draw[arr] (chisq) -- node[lbl, below] {waiting vs.\ counting} (pois);
+
+\node[font=\footnotesize, gray!70!black] at (4, -4.2) {Green = discrete \quad Blue = continuous/multivariate \quad Red arrows = limiting theorems};
+\end{tikzpicture}
+\end{center}
+
+\textbf{Bernoulli}$(\pi)$: models a binary outcome, $P(X = 1) = \pi$, $P(X = 0) = 1 - \pi$, with $\E[X] = \pi$ and $\Var(X) = \pi(1 - \pi)$. The building block for logistic regression.
+
+\textbf{Gaussian (Normal)} $\mathcal{N}(\mu, \sigma^2)$: the bell curve. Its density is
+$$f(x) = \frac{1}{\sqrt{2\pi\sigma^2}}\exp\!\left(-\frac{(x - \mu)^2}{2\sigma^2}\right)$$
+with $\E[X] = \mu$, $\Var(X) = \sigma^2$. The exponent is the squared deviation from $\mu$ normalized by $\sigma^2$, so minimizing squared error and maximizing the Gaussian log-likelihood are the same problem. Linear combinations of independent Gaussians are Gaussian: $aX + bY \sim \mathcal{N}(a\mu_X + b\mu_Y,\, a^2\sigma_X^2 + b^2\sigma_Y^2)$.
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[
+    width=10cm,
+    height=5.5cm,
+    xlabel={$x$},
+    ylabel={$f(x)$},
+    xmin=-4, xmax=4,
+    ymin=0, ymax=0.45,
+    axis lines=left,
+    legend pos=north east,
+    title={\textbf{Gaussian Densities}},
+    title style={font=\bfseries\color{mantis}},
+    grid=none,
+]
+\addplot[domain=-4:4, samples=100, color=mantis, thick] {exp(-x^2/2)/sqrt(2*3.14159)};
+\addplot[domain=-4:4, samples=100, color=blue, thick, dashed] {exp(-(x-1)^2/2)/sqrt(2*3.14159)};
+\addplot[domain=-4:4, samples=100, color=red!70!black, thick, dotted] {exp(-x^2/8)/sqrt(8*3.14159)};
+\legend{{$\mathcal{N}(0,1)$}, {$\mathcal{N}(1,1)$}, {$\mathcal{N}(0,4)$}}
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+\textbf{De Moivre--Laplace theorem.} The sum of $n$ i.i.d.\ Bernoulli$(\pi)$ random variables is Binomial$(n, \pi)$. As $n$ grows, the standardized Binomial converges to the standard Normal:
+$$\frac{X - n\pi}{\sqrt{n\pi(1-\pi)}} \xrightarrow{d} \mathcal{N}(0, 1)$$
+
+The figure below shows this convergence for $\pi = 0.5$: at $n = 5$ the histogram is visibly discrete; by $n = 100$ it is indistinguishable from the Normal curve.
+
+\begin{center}
+\includegraphics[width=\textwidth]{img/demoivre_laplace.png}\\[4pt]
+{\footnotesize $\text{Bin}(n, 0.5)$ (bars) vs.\ $\mathcal{N}(n/2,\; n/4)$ (curve) for $n = 5, 20, 100$.}
+\end{center}
+
+The standardization step (center by $\mu$, scale by $\sigma$) is what makes the convergence work: it aligns the Binomial with the $\mathcal{N}(0,1)$ template regardless of $n$ and $\pi$.
+
+\begin{center}
+\includegraphics[width=\textwidth]{img/standardization.png}\\[4pt]
+{\footnotesize Left: $\text{Bin}(30, 0.5)$. \quad Center: standardized $Z = (X - \mu)/\sigma$ with $\mathcal{N}(0,1)$ overlay. \quad Right: limiting $\mathcal{N}(0,1)$.}
+\end{center}
+
+\textbf{Multivariate Gaussian} $\mathcal{N}(\boldsymbol{\mu}, \boldsymbol{\Sigma})$: for $\mathbf{X} \in \R^d$ with mean vector $\boldsymbol{\mu}$ and covariance matrix $\boldsymbol{\Sigma}$. Any linear transformation $\mathbf{A}\mathbf{X} + \mathbf{b} \sim \mathcal{N}(\mathbf{A}\boldsymbol{\mu} + \mathbf{b},\, \mathbf{A}\boldsymbol{\Sigma}\mathbf{A}^\top)$. The OLS estimator is a linear function of the Gaussian noise, which is why its sampling distribution is also Gaussian.
+
+\needspace{0.33\textheight}
+\section{Statistics}
+
+\subsection{Estimators: Bias, Variance, MSE}
+
+We observe data $X_1, \ldots, X_n$ drawn i.i.d. from a distribution with unknown parameter $\theta$. An \textbf{estimator} $\hat{\theta} = g(X_1, \ldots, X_n)$ is a function of the data that approximates $\theta$; its quality is measured by how close it tends to be.
+
+The \textbf{bias} is the systematic error: $\Bias(\hat{\theta}) = \E[\hat{\theta}] - \theta$. An estimator is \textbf{unbiased} if $\E[\hat{\theta}] = \theta$. The \textbf{variance} $\Var(\hat{\theta})$ measures how much $\hat{\theta}$ fluctuates across different samples. The \textbf{mean squared error} combines both:
+$$\MSE(\hat{\theta}) = \E[(\hat{\theta} - \theta)^2] = \Bias(\hat{\theta})^2 + \Var(\hat{\theta})$$
+
+This decomposition is fundamental to the course: a biased estimator with low variance (Ridge regression) can have lower MSE than an unbiased one with high variance (OLS in high dimensions).
+
+\subsection{Sample Statistics}
+
+Given observations $x_1, \ldots, x_n$:
+
+\textbf{Sample mean}: $\bar{x} = \frac{1}{n}\sum_{i=1}^{n} x_i$, an unbiased estimator of $\E[X]$.
+
+\textbf{Sample variance}: $s^2 = \frac{1}{n-1}\sum_{i=1}^{n}(x_i - \bar{x})^2$, an unbiased estimator of $\Var(X)$. The $n - 1$ denominator (Bessel's correction) compensates for using $\bar{x}$ instead of the true mean $\mu$; estimating $\mu$ from the same data costs one degree of freedom.
+
+\textbf{Sample covariance}: $\widehat{\Cov}(X, Y) = \frac{1}{n-1}\sum_{i=1}^{n}(x_i - \bar{x})(y_i - \bar{y})$.
+
+\subsection{Maximum Likelihood Estimation}
+
+Given i.i.d. data $x_1, \ldots, x_n$ from a distribution with density $p(x; \theta)$, the \textbf{likelihood} $L(\theta) = \prod_{i=1}^{n} p(x_i; \theta)$ measures how probable the observed data is under parameter $\theta$. The \textbf{log-likelihood} converts the product to a sum:
+$$\ell(\theta) = \sum_{i=1}^{n} \log p(x_i; \theta)$$
+
+The \textbf{Maximum Likelihood Estimator (MLE)} is $\hat{\theta}_{\text{MLE}} = \arg\max_\theta\,\ell(\theta)$.
+
+\textbf{Example: Gaussian mean.} Let $x_i \sim \mathcal{N}(\mu, \sigma^2)$ with $\sigma^2$ known. Then
+\begin{align}
+\ell(\mu) &= -\frac{n}{2}\log(2\pi\sigma^2) - \frac{1}{2\sigma^2}\sum_{i=1}^{n}(x_i - \mu)^2
+\end{align}
+
+Maximizing over $\mu$ is equivalent to minimizing $\sum_i(x_i - \mu)^2$. Setting $\partial\ell/\partial\mu = 0$:
+$$\frac{1}{\sigma^2}\sum_{i=1}^{n}(x_i - \mu) = 0 \implies \hat{\mu}_{\text{MLE}} = \bar{x}$$
+
+Minimizing squared error and maximizing the Gaussian log-likelihood are the same optimization problem. OLS is MLE under a Gaussian noise model.
+
+\textbf{Example: Bernoulli.} Let $x_i \sim \text{Bernoulli}(\pi)$. The log-likelihood is $\ell(\pi) = \sum_i [x_i\log\pi + (1 - x_i)\log(1 - \pi)]$. Setting $d\ell/d\pi = 0$ gives $\hat{\pi}_{\text{MLE}} = \bar{x}$, the sample proportion of 1s. Logistic regression extends this by letting $\pi$ depend on $\mathbf{x}$ through a sigmoid function.
+
+\textbf{Asymptotic properties.} Under mild regularity conditions, as $n \to \infty$: the MLE is \textit{consistent} ($\hat{\theta} \to \theta$ in probability), \textit{asymptotically normal} ($\sqrt{n}(\hat{\theta} - \theta) \xrightarrow{d} \mathcal{N}(0, \mathcal{I}(\theta)^{-1})$), and \textit{efficient} (achieves the Cram\'er-Rao lower bound), where $\mathcal{I}(\theta) = -\E[\partial^2 \log p(X;\theta)/\partial\theta^2]$ is the Fisher information.
+
+\needspace{0.33\textheight}
+\section{The Learning Problem}
+
+\subsection{Supervised Learning and Empirical Risk Minimization}
+
+In \textbf{supervised learning}, we are given a training set $D_n = \{(x_i, y_i)\}_{i=1}^n$ of input-label pairs drawn i.i.d. from an unknown joint distribution $\nu$ on $\mathcal{X} \times \mathcal{Y}$, and the goal is to find a function $f : \mathcal{X} \to \mathcal{Y}$ that predicts labels well on \textit{new, unseen} inputs.
+
+The nature of $\mathcal{Y}$ determines the problem type:
+\begin{itemize}
+    \item \textbf{Regression}: $\mathcal{Y} = \R$, predict a continuous quantity
+    \item \textbf{Classification}: $\mathcal{Y} = \{0, 1\}$ (binary) or $\{1, \ldots, K\}$ (multiclass), assign a discrete label
+\end{itemize}
+
+To measure how good a predictor $f$ is, we fix a \textbf{loss function} $\ell(y, f(x)) \geq 0$ and define the \textbf{true risk} as the expected loss on a fresh draw: $\mathcal{R}(f) = \E_{(x,y) \sim \nu}[\ell(y, f(x))]$. Since $\nu$ is unknown, we minimize the \textbf{empirical risk} instead:
+$$\hat{\mathcal{R}}_n(f) = \frac{1}{n}\sum_{i=1}^{n}\ell(y_i, f(x_i))$$
+
+\begin{definition}[Empirical Risk Minimizer]
+The \textbf{ERM} over a hypothesis class $\mathcal{F}$ is $\hat{f} = \arg\min_{f \in \mathcal{F}}\hat{\mathcal{R}}_n(f)$.
+\end{definition}
+
+The fundamental question: when does minimizing $\hat{\mathcal{R}}_n$ also minimize $\mathcal{R}$? The gap $\mathcal{R}(\hat{f}) - \hat{\mathcal{R}}_n(\hat{f})$ is the generalization gap, and controlling it is the central theme of the bias-variance tradeoff.
+
+\subsection{Generalization and the Bayes Optimal Predictor}
+
+\textbf{Generalization} is how well a model trained on $D_n$ performs on new data. A model that fits the training data perfectly but fails on unseen inputs has \textit{overfit}; a model that cannot even fit training data has \textit{underfit}.
+
+The best possible predictor, ignoring computational constraints and the fact that $\nu$ is unknown, is the \textbf{Bayes optimal predictor}: $f^* = \arg\min_f \mathcal{R}(f)$. Under squared loss, $f^*(x) = \E[y \mid x]$, as derived in the linear regression notes. Its risk is the \textbf{Bayes risk} $\mathcal{R}^* = \E_x[\Var(y \mid x)]$, the irreducible noise floor that no predictor can beat. The prediction error of any estimator $\hat{f}$ decomposes as:
+
+$$\boxed{\mathcal{R}(\hat{f}) = \underbrace{\mathcal{R}^*}_{\text{irreducible}} + \underbrace{\Bias^2 + \Var}_{\text{reducible}}}$$
+
+\needspace{0.33\textheight}
+\section{Loss Functions}
+
+The choice of loss function determines what ``good prediction'' means, and different losses lead to fundamentally different optimization problems.
+
+\subsection{Squared Loss}
+
+$$\ell(y, \hat{y}) = (y - \hat{y})^2$$
+
+The standard loss for regression. Convex and differentiable everywhere, with the Bayes optimal predictor $f^*(x) = \E[y \mid x]$. As shown above, minimizing squared loss is equivalent to Gaussian MLE. The downside is sensitivity to outliers, since large errors are penalized quadratically.
+
+\subsection{0-1 Loss and Convex Surrogates}
+
+$$\ell_{0\text{-}1}(y, \hat{y}) = \mathbf{1}[\hat{y} \neq y]$$
+
+Counts mistakes. The Bayes classifier under 0-1 loss is $f^*(x) = \arg\max_k P(y = k \mid x)$, but 0-1 loss is non-convex and non-differentiable, making direct minimization NP-hard even for linear classifiers. Logistic regression and cross-entropy replace it with convex, differentiable surrogates that are tractable to optimize.
+
+\subsection{Logistic Loss and Cross-Entropy}
+
+For binary classification with $y \in \{0, 1\}$ and a model outputting $\hat{p} = \sigma(\mathbf{x}^\top\boldsymbol{\theta}) \in (0, 1)$ where $\sigma(t) = 1/(1 + e^{-t})$ is the sigmoid:
+$$\ell_{\text{logistic}}(y, \hat{p}) = -y\log\hat{p} - (1-y)\log(1 - \hat{p})$$
+
+Maximizing the Bernoulli likelihood equals minimizing this loss. It is convex in $\boldsymbol{\theta}$, differentiable everywhere, and penalizes confident wrong predictions heavily.
+
+The multiclass generalization is \textbf{cross-entropy}: $\ell_{\text{CE}}(y, \hat{\mathbf{p}}) = -\log\hat{p}_y$, where $\hat{\mathbf{p}} = \text{softmax}(\mathbf{z})$ maps scores $\mathbf{z} \in \R^K$ to probabilities via $\text{softmax}(\mathbf{z})_k = e^{z_k}/\sum_j e^{z_j}$.
+
+\subsection{Why Convexity of Losses Matters}
+
+A loss $\ell$ that is convex in the model parameters $\boldsymbol{\theta}$ guarantees that any local minimum of $\hat{\mathcal{R}}_n$ is a global minimum, so gradient descent is guaranteed to converge to the best solution in the hypothesis class. Non-convex losses (0-1 loss, or the loss landscape of a neural network) can have many local minima, and gradient-based methods may converge to suboptimal solutions.
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[
+    width=10cm,
+    height=5cm,
+    xlabel={$\hat{y}$},
+    ylabel={loss},
+    xmin=-3, xmax=3,
+    ymin=-0.15, ymax=4.5,
+    axis lines=left,
+    grid=major,
+    grid style={gray!15},
+    legend style={at={(0.97,0.97)}, anchor=north east, font=\small, draw=none, fill=white, fill opacity=0.9},
+]
+\addplot[domain=-3:3, samples=100, color=mantis, thick] {(1 - x)^2};
+\addlegendentry{squared: $(1-\hat{y})^2$}
+\addplot[domain=-3:3, samples=100, color=blue!80!black, thick, dashed] {ln(1 + exp(-x))};
+\addlegendentry{logistic: $\log(1+e^{-\hat{y}})$}
+\addplot[color=red!65!black, thick, dotted] coordinates {(-3,1) (1,1) (1,0) (3,0)};
+\addlegendentry{0-1: $\mathbf{1}[\hat{y}<1]$}
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+\needspace{0.33\textheight}
+\section{Generative vs.\ Discriminative Models}
+
+There are two philosophically different approaches to supervised learning. The joint distribution $p(x, y)$ factorizes in two ways:
+$$p(x, y) = \underbrace{p(y \mid x)}_{\text{discriminative}} \cdot p(x) = \underbrace{p(x \mid y)}_{\text{class-conditional}} \cdot p(y)$$
+
+\begin{definition}[Discriminative Model]
+A \textbf{discriminative model} directly models $p(y \mid x)$: given input $x$, what is the label? Training maximizes the conditional likelihood $\sum_i \log p(y_i \mid x_i)$.
+\end{definition}
+
+\begin{definition}[Generative Model]
+A \textbf{generative model} models $p(x \mid y)$ and $p(y)$, then uses Bayes' rule $p(y \mid x) = p(x \mid y)\,p(y)/p(x)$ for prediction. Training maximizes the joint likelihood $\sum_i \log p(x_i, y_i)$.
+\end{definition}
+
+Discriminative models (linear regression, logistic regression, neural networks) learn the decision boundary directly and tend to perform better with large $n$, since they only model what is needed for prediction. Generative models (Gaussian Discriminant Analysis, Naive Bayes) model the full data-generating process, which requires stronger assumptions but can be more data-efficient when those assumptions hold.
+
+\begin{center}
+\small
+\begin{tabular}{lll}
+\hline
+\textbf{Approach} & \textbf{Models} & \textbf{Training objective} \\
+\hline
+Logistic regression (disc.) & $p(y \mid x)$ directly & $\max \sum_i \log p(y_i \mid x_i; \boldsymbol{\theta})$ \\
+Gaussian Discrim.\ Analysis (gen.) & $p(x \mid y)$ and $p(y)$ & $\max \sum_i \log p(x_i, y_i; \boldsymbol{\theta})$ \\
+\hline
+\end{tabular}
+\end{center}
+
+\end{document}

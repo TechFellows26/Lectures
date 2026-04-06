@@ -31,7 +31,6 @@
         e.preventDefault();
         h.scrollIntoView({ behavior: 'smooth' });
         history.replaceState(null, '', '#' + h.id);
-        if (window.innerWidth <= 860) sidebar.classList.remove('open');
       });
       li.appendChild(a);
       nav.appendChild(li);
@@ -65,8 +64,12 @@
 
     var toggle = document.querySelector('.sidebar-toggle');
     if (toggle) {
+      var collapsed = localStorage.getItem('lebnet-sidebar') === 'collapsed';
+      if (collapsed) document.body.classList.add('sidebar-collapsed');
+
       toggle.addEventListener('click', function() {
-        sidebar.classList.toggle('open');
+        var isCollapsed = document.body.classList.toggle('sidebar-collapsed');
+        localStorage.setItem('lebnet-sidebar', isCollapsed ? 'collapsed' : 'open');
       });
     }
   }
@@ -79,6 +82,11 @@
 
   document.addEventListener('DOMContentLoaded', function() {
     var sidebar = document.getElementById('sidebar');
-    if (sidebar) document.body.classList.add('has-sidebar');
+    if (sidebar) {
+      document.body.classList.add('has-sidebar');
+      if (localStorage.getItem('lebnet-sidebar') === 'collapsed') {
+        document.body.classList.add('sidebar-collapsed');
+      }
+    }
   });
 })();

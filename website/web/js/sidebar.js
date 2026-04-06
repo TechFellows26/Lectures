@@ -62,15 +62,24 @@
     });
     updateActive();
 
-    var toggle = document.querySelector('.sidebar-toggle');
-    if (toggle) {
-      var collapsed = localStorage.getItem('lebnet-sidebar') === 'collapsed';
-      if (collapsed) document.body.classList.add('sidebar-collapsed');
+    function collapse() {
+      document.body.classList.add('sidebar-collapsed');
+      localStorage.setItem('lebnet-sidebar', 'collapsed');
+    }
 
-      toggle.addEventListener('click', function() {
-        var isCollapsed = document.body.classList.toggle('sidebar-collapsed');
-        localStorage.setItem('lebnet-sidebar', isCollapsed ? 'collapsed' : 'open');
-      });
+    function expand() {
+      document.body.classList.remove('sidebar-collapsed');
+      localStorage.setItem('lebnet-sidebar', 'open');
+    }
+
+    var collapseBtn = document.querySelector('.sidebar-collapse-btn');
+    if (collapseBtn) collapseBtn.addEventListener('click', collapse);
+
+    var expandBtn = document.querySelector('.sidebar-expand-btn');
+    if (expandBtn) expandBtn.addEventListener('click', expand);
+
+    if (localStorage.getItem('lebnet-sidebar') === 'collapsed') {
+      document.body.classList.add('sidebar-collapsed');
     }
   }
 

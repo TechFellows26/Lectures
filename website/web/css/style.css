@@ -773,55 +773,20 @@ th {
 .page-nav {
   display: flex;
   justify-content: space-between;
-  align-items: stretch;
-  gap: 16px;
   margin-top: 60px;
-  padding-top: 28px;
-  border-top: 1.5px solid var(--border);
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
   font-family: 'Source Sans 3', sans-serif;
+  font-size: 0.82em;
 }
 
-.page-nav > a.page-nav-link {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 14px 18px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  text-decoration: none;
-  color: var(--fg);
-  min-width: 0;
-  max-width: 48%;
-  transition: border-color 0.15s, background 0.15s;
-}
-
-.page-nav > a.page-nav-link:hover {
-  border-color: var(--accent);
-  background: var(--sidebar-active-bg);
-  text-decoration: none;
-}
-
-.page-nav-link--next {
-  margin-left: auto;
-  text-align: right;
-  align-items: flex-end;
-}
-
-.page-nav-label {
-  font-size: 0.68em;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--muted);
-}
-
-.page-nav-title {
-  font-size: 0.88em;
-  font-weight: 500;
+.page-nav a {
   color: var(--accent);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  text-decoration: none;
+}
+
+.page-nav a:hover {
+  text-decoration: underline;
 }
 
 
@@ -853,9 +818,6 @@ th {
   }
 
   .navbar-links a { padding: 6px 10px; font-size: 0.72em; }
-
-  .page-nav { flex-direction: column; gap: 10px; }
-  .page-nav > a.page-nav-link { max-width: 100%; }
 }
 
 @media (max-width: 600px) {

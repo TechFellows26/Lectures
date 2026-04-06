@@ -352,7 +352,6 @@ body.has-sidebar {
 
 body.has-sidebar .paper {
   margin-left: 260px;
-  margin-right: 260px;
   max-width: none;
   padding: 50px 40px 100px;
   display: flex;
@@ -715,6 +714,7 @@ th {
 }
 
 .katex { font-size: 1.05em; }
+svg foreignObject .katex { font-size: 1em; }
 
 
 /* =========================================
@@ -724,7 +724,6 @@ th {
 @media (max-width: 1100px) {
   body.has-sidebar .paper {
     margin-left: 220px;
-    margin-right: 220px;
     padding: 40px 36px 80px;
   }
   .sidebar { width: 220px; }
